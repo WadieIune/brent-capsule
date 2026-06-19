@@ -1,0 +1,7 @@
+# Salidas de ejecución (se regeneran al reproducir)
+results/*
+!results/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]

@@ -1,0 +1,68 @@
+{
+  "data": {
+    "mode": "series_bundle",
+    "target_col": "BRENT",
+    "series_bundle": {
+      "dataset_dir": "/data",
+      "bundle_target_col": "BRENT_fwd_logret_1",
+      "bundle_price_col": "BRENT",
+      "bundle_target_is_log_return": true,
+      "use_precomputed_split": true
+    }
+  },
+  "dataset": {
+    "lookback": 32,
+    "horizon": 1,
+    "support_resistance_horizon": 5,
+    "image_size": 96,
+    "min_label_confidence": 0.35,
+    "use_synthetic_pretrain": false,
+    "embargo": 5,
+    "feature_cols": [],
+    "feature_regex_keep": [],
+    "feature_regex_drop": []
+  },
+  "cv": {
+    "scheme": "walk_forward",
+    "n_splits": 3,
+    "embargo": 5,
+    "valid_fraction": 0.15,
+    "expanding": true,
+    "min_train_size": 96
+  },
+  "training": {
+    "epochs": 6,
+    "fine_tune_epochs": 4,
+    "batch_size": 16,
+    "learning_rate": 0.0003,
+    "fine_tune_learning_rate": 0.0001,
+    "dropout": 0.3,
+    "regression_loss_weight": 0.5,
+    "unfreeze_last_blocks": 2,
+    "patience": 4,
+    "num_workers": 2,
+    "device": "cpu",
+    "amp": false,
+    "cache_images": true,
+    "pretrained_backbone": false,
+    "seed": 42,
+    "monitor_metric": "macro_f1",
+    "class_weight_scheme": "balanced",
+    "freeze_backbone_bn": true
+  },
+  "backtest": {
+    "enabled": true,
+    "periods_per_year": 252,
+    "signal": "sign",
+    "fee_bps": 0.0,
+    "pbo_partitions": 16
+  },
+  "output": {
+    "root_dir": "/results",
+    "model_dir": "/results/models",
+    "report_dir": "/results/reports",
+    "dataset_dir": "/results/datasets",
+    "metadata_dir": "/results/metadata",
+    "cache_dir": "/results/cache"
+  }
+}

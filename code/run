@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Punto de entrada de la cápsula Code Ocean — BRENT Pattern System v2.
+# Code Ocean ejecuta /code/run. Lee datos de /data y escribe en /results.
+set -euo pipefail
+
+cd "$(dirname "$0")"          # -> /code
+mkdir -p /results
+
+echo "=================================================================="
+echo " BRENT Pattern System v2 — Reproducible Run (Code Ocean)"
+echo "=================================================================="
+python --version
+python -c "import torch, numpy, pandas; print('torch', torch.__version__, '| numpy', numpy.__version__, '| pandas', pandas.__version__)"
+echo "------------------------------------------------------------------"
+
+# Entrenamiento + validación cruzada purgada (walk-forward) + backtest (DSR/PBO).
+python -m brent_pattern_system.train_torch --config /code/config_codeocean.json
+
+echo "------------------------------------------------------------------"
+echo "Resultados escritos en /results :"
+ls -R /results || true
+echo "Run completado."

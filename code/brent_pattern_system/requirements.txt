@@ -1,0 +1,14 @@
+# --- Núcleo (obligatorio) ---
+numpy>=1.24
+pandas>=2.0
+requests>=2.31
+
+# --- PyTorch (ruta recomendada para GPU) ---
+# Para GPU instala la build CUDA adecuada ANTES que el resto, p.ej.:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+torch>=2.2
+torchvision>=0.17
+
+# --- Opcionales ---
+timm>=1.0            # backbone EfficientNet alternativo (fallback si torchvision falla)
+# tensorflow>=2.16   # solo si usas la ruta train_tf (no necesaria para la ruta torch/GPU)

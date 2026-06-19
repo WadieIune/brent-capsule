@@ -1,0 +1,24 @@
+metadata_version: 1
+name: "BRENT Pattern System v2 — Chartismo CNN con CV purgada, walk-forward y backtest (DSR/PBO)"
+description: >
+  Sistema de reconocimiento de patrones chartistas sobre el precio del Brent
+  mediante una CNN multitarea (EfficientNet sobre codificación imagen GASF/GADF +
+  mapa de features). Incorpora validación cruzada purgada con embargo y backtest
+  walk-forward, con métricas robustas frente al overfitting de backtest
+  (Probabilistic Sharpe Ratio, Deflated Sharpe Ratio y Probability of Backtest
+  Overfitting / CSCV) siguiendo a López de Prado. La cápsula reproduce el
+  entrenamiento, la evaluación out-of-sample y el backtest de extremo a extremo.
+authors:
+  - name: "Wadie Albakri"
+corresponding_contributor:
+  name: "Wadie Albakri"
+tags:
+  - "machine-learning"
+  - "deep-learning"
+  - "quantitative-finance"
+  - "time-series"
+  - "backtesting"
+  - "cross-validation"
+  - "pytorch"
+  - "brent"
+license: "Proprietary — All Rights Reserved (see /code/LICENSE)"
