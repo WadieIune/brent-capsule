@@ -1,0 +1,86 @@
+# =============================================================================
+# Configuración del experimento — GPU (rendimiento, régimen de entrenamiento largo)
+# -----------------------------------------------------------------------------
+# Pensada para la ejecución posterior en una máquina/cápsula con GPU (CUDA).
+# Activa mixed precision (AMP), cuDNN benchmark, más épocas, imagen mayor y
+# walk-forward con más folds. Mantiene la MISMA metodología que la config CPU;
+# solo cambian los hiperparámetros de escala/rendimiento.
+#
+# Uso:
+#   CONFIG=/code/config_gpu.yaml /code/run
+#   (o) python -m brent_pattern_system.train_torch --config code/config_gpu.yaml
+# =============================================================================
+
+data:
+  mode: series_bundle
+  target_col: BRENT
+  series_bundle:
+    dataset_dir: /data
+    bundle_target_col: BRENT_fwd_logret_1
+    bundle_price_col: BRENT
+    bundle_target_is_log_return: true
+    use_precomputed_split: true
+
+dataset:
+  lookback: 32
+  horizon: 1
+  support_resistance_horizon: 5
+  image_size: 160                 # resolución mayor: más capacidad del backbone
+  min_label_confidence: 0.35
+  use_synthetic_pretrain: true    # pre-entrenamiento sintético de la cabeza
+  synthetic_samples: 8000
+  synthetic_seed: 123
+  embargo: 5
+  feature_cols: []
+  feature_regex_keep: []
+  feature_regex_drop: []
+
+cv:
+  scheme: walk_forward
+  n_splits: 5
+  embargo: 5
+  valid_fraction: 0.15
+  expanding: true
+  min_train_size: 128
+
+training:
+  epochs: 25                      # régimen largo (warm-up)
+  fine_tune_epochs: 15            # fine-tuning más extenso
+  batch_size: 32                  # sube a 64/128 si la VRAM lo permite
+  learning_rate: 0.0003
+  fine_tune_learning_rate: 0.0001
+  dropout: 0.3
+  regression_loss_weight: 0.5
+  unfreeze_last_blocks: 3
+  patience: 6
+  num_workers: 8                  # ajusta al nº de vCPU de la máquina
+  device: cuda
+  amp: true                       # mixed precision (acelera y ahorra VRAM)
+  cudnn_benchmark: true
+  pin_memory: true
+  persistent_workers: true
+  cache_images: true
+  grad_clip_norm: 1.0
+  lr_scheduler: cosine
+  pretrained_backbone: true       # usa pesos ImageNet (requiere red la 1ª vez)
+  seed: 42
+  monitor_metric: macro_f1
+  class_weight_scheme: balanced
+  use_focal_loss: false
+  focal_gamma: 2.0
+  freeze_backbone_bn: true
+
+backtest:
+  enabled: true
+  periods_per_year: 252
+  signal: sign
+  fee_bps: 0.0
+  pbo_partitions: 16
+
+output:
+  root_dir: /results
+  model_dir: /results/models
+  report_dir: /results/reports
+  dataset_dir: /results/datasets
+  metadata_dir: /results/metadata
+  cache_dir: /results/cache

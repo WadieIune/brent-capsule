@@ -1,0 +1,74 @@
+# =============================================================================
+# Configuración del experimento — Code Ocean (CPU, reproducible, offline)
+# -----------------------------------------------------------------------------
+# Equivalente en YAML de config_codeocean.json. YAML es el formato recomendado
+# por ser más legible y comentable; el pipeline acepta ambos indistintamente
+# (ver brent_pattern_system/config.py::load_config).
+#
+# Rutas Code Ocean: los datos se montan en /data y las salidas van a /results.
+# =============================================================================
+
+data:
+  mode: series_bundle
+  target_col: BRENT
+  series_bundle:
+    dataset_dir: /data                     # datos montados por Code Ocean
+    bundle_target_col: BRENT_fwd_logret_1  # target: log-retorno forward 1 día
+    bundle_price_col: BRENT
+    bundle_target_is_log_return: true
+    use_precomputed_split: true
+
+dataset:
+  lookback: 32                    # longitud de ventana (días de negociación)
+  horizon: 1                      # horizonte del retorno objetivo (días)
+  support_resistance_horizon: 5   # horizonte para future_low / future_high
+  image_size: 96                  # resolución de la imagen RGB (px); CPU -> pequeña
+  min_label_confidence: 0.35      # umbral mínimo de etiqueta débil
+  use_synthetic_pretrain: false   # desactivado en CPU (coste); ver config_gpu.yaml
+  embargo: 5                      # embargo temporal (López de Prado)
+  feature_cols: []
+  feature_regex_keep: []
+  feature_regex_drop: []
+
+cv:
+  scheme: walk_forward   # 'single' (holdout purgado) o 'walk_forward' (multipath)
+  n_splits: 3
+  embargo: 5
+  valid_fraction: 0.15
+  expanding: true
+  min_train_size: 96
+
+training:
+  epochs: 6                       # warm-up (backbone congelado)
+  fine_tune_epochs: 4             # fine-tuning de últimos bloques
+  batch_size: 16
+  learning_rate: 0.0003
+  fine_tune_learning_rate: 0.0001
+  dropout: 0.3
+  regression_loss_weight: 0.5     # lambda en L = L_cls + lambda * L_reg
+  unfreeze_last_blocks: 2
+  patience: 4
+  num_workers: 2
+  device: cpu
+  amp: false                      # mixed precision solo aplica en GPU
+  cache_images: true
+  pretrained_backbone: false      # sin descargas de red (reproducible offline)
+  seed: 42
+  monitor_metric: macro_f1        # métrica de selección de modelo
+  class_weight_scheme: balanced   # pesos de clase por desbalance
+  freeze_backbone_bn: true
+
+backtest:
+  enabled: true
+  periods_per_year: 252
+  signal: sign                    # posición = signo del retorno predicho
+  fee_bps: 0.0
+  pbo_partitions: 16              # particiones CSCV para el PBO
+
+output:
+  root_dir: /results
+  model_dir: /results/models
+  report_dir: /results/reports
+  dataset_dir: /results/datasets
+  metadata_dir: /results/metadata
+  cache_dir: /results/cache

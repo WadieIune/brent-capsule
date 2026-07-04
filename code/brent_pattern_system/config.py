@@ -152,12 +152,39 @@ def deep_update(base: Dict[str, Any], updates: Dict[str, Any]) -> Dict[str, Any]
 
 
 
+def _read_config_file(path: str) -> Dict[str, Any]:
+    """Lee un fichero de configuración JSON o YAML según su extensión.
+
+    JSON no requiere dependencias externas. YAML requiere PyYAML; si no está
+    instalado se lanza un error explicativo. Ambos formatos producen el mismo
+    diccionario de configuración, por lo que el resto del pipeline es idéntico.
+    """
+    ext = os.path.splitext(path)[1].lower()
+    if ext in (".yaml", ".yml"):
+        try:
+            import yaml  # type: ignore
+        except ImportError as exc:  # pragma: no cover - depende del entorno
+            raise ImportError(
+                "Para configuraciones .yaml/.yml necesitas PyYAML: pip install pyyaml. "
+                "Alternativamente usa un fichero .json."
+            ) from exc
+        with open(path, "r", encoding="utf-8") as fh:
+            data = yaml.safe_load(fh)
+    else:
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    if data is None:
+        data = {}
+    if not isinstance(data, dict):
+        raise ValueError(f"El fichero de configuración '{path}' debe contener un objeto/dict en la raíz.")
+    return data
+
+
 def load_config(path: str | None = None) -> Dict[str, Any]:
     if path is None:
         cfg = copy.deepcopy(DEFAULT_CONFIG)
     else:
-        with open(path, "r", encoding="utf-8") as fh:
-            user_cfg = json.load(fh)
+        user_cfg = _read_config_file(path)
         cfg = deep_update(DEFAULT_CONFIG, user_cfg)
     ensure_directories(cfg)
     return cfg

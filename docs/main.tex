@@ -1,0 +1,519 @@
+% =============================================================================
+% BRENT Pattern System v2 - Manuscrito para revista (Systems and Soft Computing)
+% Clase Elsevier elsarticle. Compilar con:
+%   pdflatex main
+%   bibtex   main
+%   pdflatex main
+%   pdflatex main
+% (o simplemente: latexmk -pdf main.tex)
+%
+% Este documento es AUTOCONTENIDO: no depende de ficheros de imagen externos.
+% Las figuras se representan como marcadores (placeholders) con su pie, de modo
+% que el PDF compila sin recursos adicionales; sustituya cada placeholder por el
+% \includegraphics correspondiente cuando disponga de las figuras finales.
+% =============================================================================
+\documentclass[preprint,12pt,3p]{elsarticle}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{siunitx}
+\usepackage[hidelinks]{hyperref}
+\usepackage{listings}
+
+\journal{Systems and Soft Computing}
+
+% --- Placeholder de figura autocontenido -------------------------------------
+\newcommand{\figplaceholder}[2]{%
+  \begin{figure}[!ht]
+  \centering
+  \fbox{\parbox[c][3.2cm][c]{0.9\linewidth}{\centering\itshape
+  [Figura pendiente de insertar: #2]}}
+  \caption{#2}
+  \label{#1}
+  \end{figure}}
+
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single,
+        columns=fullflexible,keepspaces=true}
+
+\begin{document}
+
+\begin{frontmatter}
+
+\title{Redes neuronales convolucionales para la deteccion de anomalias en los
+mercados de \emph{commodities}: un sistema de patrones del Brent debilmente
+supervisado con validacion temporal robusta}
+
+\author[a]{Autor Uno\corref{cor1}}
+\ead{autor.uno@institucion.edu}
+\author[b]{Autor Dos}
+\cortext[cor1]{Autor de correspondencia.}
+\address[a]{Afiliacion 1}
+\address[b]{Afiliacion 2}
+
+\begin{abstract}
+Los mercados de \emph{commodities} estan expuestos a cambios abruptos de
+regimen, incidencias de calidad de datos y patrones de precios visualmente
+distintivos que resultan dificiles de captar con modelos puramente lineales.
+Este articulo desarrolla un marco basado en redes neuronales convolucionales
+(CNN) para el cribado de anomalias en \emph{commodities}, tomando al crudo Brent
+como activo focal. El diseno empirico se apoya en un \emph{bundle} multiactivo
+con 37 series de mercado efectivas y 180 variables de entrada derivadas de
+\emph{commodities}, divisas, indices bursatiles y tipos de interes. Cada ventana
+de 32 dias se transforma en una imagen de tres canales que combina un
+\emph{Gramian Angular Summation Field} (GASF) del nivel del Brent, un
+\emph{Gramian Angular Difference Field} (GADF) de los retornos recientes y un
+mapa multivariante comprimido. Estas imagenes alimentan una red multitarea
+EfficientNet-B1 que predice conjuntamente etiquetas de patrones chartistas
+debilmente supervisadas y tres objetivos continuos (\texttt{future\_return},
+\texttt{future\_low}, \texttt{future\_high}); una capa de cribado convierte las
+salidas en banderas operativas de \emph{outliers}. Respecto a la version inicial
+del sistema, esta segunda version (v2) incorpora una \textbf{metodologia de
+validacion temporal robusta} siguiendo a Lopez de Prado: validacion cruzada
+\emph{purgada} con \emph{embargo}, \emph{backtest walk-forward} y metricas de
+robustez financiera (\emph{Probabilistic Sharpe Ratio}, \emph{Deflated Sharpe
+Ratio} y \emph{Probability of Backtest Overfitting} via CSCV). El sistema se
+empaqueta ademas como una \emph{compute capsule} reproducible y exporta todos los
+resultados y la configuracion del experimento a un libro Excel para su validacion
+por revisores. Los resultados deben interpretarse como una validacion funcional
+del \emph{pipeline} y no como un techo de rendimiento, dado que la corrida
+documentada emplea un esquema deliberadamente corto en CPU; la version v2 esta
+preparada para entrenamiento prolongado en GPU.
+\end{abstract}
+
+\begin{keyword}
+Redes neuronales convolucionales \sep deteccion de anomalias \sep mercados de
+\emph{commodities} \sep crudo Brent \sep representacion visual de series
+temporales \sep validacion \emph{walk-forward} \sep reproducibilidad
+\end{keyword}
+
+\end{frontmatter}
+
+% =============================================================================
+\section{Introduccion}
+% =============================================================================
+La calidad de los datos de mercado es una cuestion de primer orden para la
+negociacion de \emph{commodities}, la medicion del riesgo de mercado y la
+gobernanza de modelos. En entornos con modelos internos, los supervisores exigen
+demostrar no solo una calibracion estadistica solida, sino tambien controles
+robustos sobre la oportunidad, la completitud y la trazabilidad de los datos que
+alimentan las metricas de riesgo. Este requisito es especialmente agudo en
+\emph{commodities}, donde saltos abruptos, episodios de iliquidez y fricciones de
+reporte generan patrones que se asemejan tanto a estres genuino de mercado como a
+anomalias de datos.
+
+La literatura ha mostrado que las CNN pueden reutilizarse fuera del dominio de
+las imagenes naturales convirtiendo series temporales en objetos visuales
+estructurados. Transformaciones como los \emph{Gramian Angular Fields} preservan
+la geometria temporal y permiten a las CNN extraer rasgos locales y globales de
+datos financieros \cite{wang2015imaging}. Las revisiones sobre \emph{deep
+learning} en finanzas documentan un uso creciente de CNN para extraccion de
+patrones y prediccion direccional \cite{sezer2020financial,hoseinzade2019cnnpred,
+tsantekidis2020using,bao2025datadriven,giantsidi2025deep}.
+
+Sin embargo, la mayoria de aplicaciones financieras se centran en la prediccion
+direccional mas que en el cribado de anomalias, y la evidencia en
+\emph{commodities} es mas limitada que en renta variable. Estudios recientes
+sobre prediccion del crudo confirman la relevancia del \emph{deep learning}
+\cite{shen2024intelligent,aldabagh2023hybrid,jin2024price,foroutan2024deep}, pero
+el vinculo entre arquitecturas CNN basadas en imagenes y la deteccion operativa
+de anomalias en Brent sigue insuficientemente explorado.
+
+La contribucion de este trabajo es quintuple. (i) Presenta una representacion RGB
+multiactivo y debilmente supervisada de las ventanas de Brent. (ii) Documenta una
+arquitectura multitarea EfficientNet-B1 \cite{tan2019efficientnet} que clasifica
+patrones chartistas y predice magnitudes del retorno futuro. (iii) Anade una capa
+de cribado de \emph{outliers} sensible a patrones. (iv) \textbf{Novedad de la v2:}
+incorpora una validacion temporal rigurosa (CV purgada con \emph{embargo},
+\emph{walk-forward} y metricas PSR/DSR/PBO) siguiendo a Lopez de Prado
+\cite{lopezdeprado2018advances,bailey2012sharpe,bailey2014deflated,
+bailey2017probability}, corrigiendo la principal limitacion metodologica de la
+version inicial. (v) Empaqueta el sistema como una \emph{compute capsule}
+reproducible con exportacion integral de configuracion y resultados a Excel,
+alineada con las expectativas de trazabilidad del BCE y de BCBS~239
+\cite{ecb2025guide,bcbs239}.
+
+% =============================================================================
+\section{Literatura relacionada y posicionamiento}
+% =============================================================================
+Las raices metodologicas combinan tres corrientes. La primera es el
+reconocimiento computacional de patrones de precio: Lo et al.
+\cite{lo2000foundations} formalizaron el analisis estadistico de patrones
+tecnicos. La segunda es la representacion visual de series temporales: Wang y
+Oates \cite{wang2015imaging} mostraron que las transformaciones de imagen mejoran
+la clasificacion e imputacion al mapear secuencias 1D en objetos 2D. La tercera
+es la difusion del \emph{deep learning} en finanzas
+\cite{sezer2020financial,hoseinzade2019cnnpred,tsantekidis2020using}.
+
+En deteccion de anomalias, las revisiones subrayan que las anomalias en series
+multivariantes son dificiles por la dependencia temporal, las interacciones
+transversales, la no estacionariedad y la escasez de \emph{ground truth}
+\cite{choi2021deep,li2023deep}. Los enfoques financieros suelen apoyarse en
+\emph{autoencoders}, redes recurrentes o hibridos estadistico-neuronales
+\cite{crepey2022anomaly,perez2024hybrid}. Los estudios de \emph{commodities} y
+crudo confirman el valor de arquitecturas no lineales
+\cite{shen2024intelligent,aldabagh2023hybrid,jin2024price,foroutan2024deep}, pero
+optimizan el error de prediccion mas que las banderas operativas de anomalia. El
+presente estudio ocupa un nicho diferenciado: Brent como activo focal dentro de un
+sistema multiactivo de codificacion de imagenes cuyo resultado es un marco de
+cribado de anomalias sensible a patrones.
+
+Una diferencia central de la v2 respecto a la literatura CNN-finanzas es la
+adopcion explicita del marco de validacion de Lopez de Prado
+\cite{lopezdeprado2018advances}: la evaluacion solapada con \emph{stride}~1 se
+sustituye por particiones purgadas con \emph{embargo} y por un \emph{backtest
+walk-forward} evaluado con el \emph{Deflated Sharpe Ratio}
+\cite{bailey2014deflated} y la \emph{Probability of Backtest Overfitting}
+\cite{bailey2017probability}.
+
+\begin{table}[!ht]
+\centering
+\caption{Literatura representativa que posiciona el marco propuesto.}
+\label{tab:lit}
+\small
+\begin{tabular}{p{2.6cm}p{2.4cm}p{3.1cm}}
+\toprule
+\textbf{Estudio} & \textbf{Dominio} & \textbf{Relevancia} \\
+\midrule
+Lo et al. \cite{lo2000foundations} & Analisis tecnico & Base del etiquetado por patrones \\
+Wang y Oates \cite{wang2015imaging} & ML series temporales & Series a imagenes (GAF) \\
+Hoseinzade y Haratizadeh \cite{hoseinzade2019cnnpred} & Renta variable & CNN con contexto multivariable \\
+Tsantekidis et al. \cite{tsantekidis2020using} & Microestructura & Aprendizaje de representaciones \\
+Crepey et al. \cite{crepey2022anomaly} & Anomalias financieras & Casos de uso practicos \\
+Shen et al. \cite{shen2024intelligent} & Prediccion crudo & Idoneidad de modelos no lineales \\
+Lopez de Prado \cite{lopezdeprado2018advances} & Fin. ML & CV purgada, PSR/DSR/PBO \\
+\textbf{Este estudio} & Cribado anomalias & Brent RGB + EfficientNet-B1 + reglas + validacion robusta \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% =============================================================================
+\section{Datos, construccion del bundle y diseno experimental}
+% =============================================================================
+El material empirico procede del Brent Pattern System. La matriz \emph{wide raw}
+contiene 7004 filas diarias y 181 columnas, de las cuales 180 son variables de
+entrada utilizables y una es el \emph{target} de log-retorno \emph{forward} a un
+dia. El \emph{bundle} cubre del 2 de enero de 2007 al 6 de marzo de 2026, pero las
+ventanas multiactivo plenamente validas comienzan a finales de 2019 porque las
+ultimas variables disponibles se asocian a ESTR y SOFR.
+
+El \emph{pipeline} solicito originalmente 28 series de Yahoo Finance, 9 de FRED y
+4 nodos AAA de la curva del BCE. El \emph{bundle} final efectivo contiene 37
+series base y 180 variables. Los cuatro nodos AAA solicitados al BCE (EUR\_AAA\_2Y,
+5Y, 10Y y 30Y) estan ausentes del \emph{bundle} entregado; esto se trata
+explicitamente como una limitacion.
+
+\begin{table}[!ht]
+\centering
+\caption{Inputs efectivos y configuracion de la corrida documentada.}
+\label{tab:inputs}
+\small
+\begin{tabular}{p{4.6cm}p{3.4cm}}
+\toprule
+\textbf{Input / parametro} & \textbf{Valor} \\
+\midrule
+Periodo del \emph{bundle}        & 2007-01-02 a 2026-03-06 \\
+Matriz \emph{raw}                & 7004 $\times$ 181 \\
+Matriz de variables              & 7004 $\times$ 180 \\
+Series base efectivas            & 37 \\
+Variables de entrada             & 180 \\
+Variable objetivo                & \texttt{BRENT\_fwd\_logret\_1} \\
+Ventana \emph{lookback}          & 32 dias \\
+Horizonte de retorno             & 1 dia \\
+Horizonte soporte/resistencia    & 5 dias \\
+Resolucion de imagen (v2 CPU)    & 96 $\times$ 96 \\
+Resolucion de imagen (v2 GPU)    & 160 $\times$ 160 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Las 180 variables se organizan en seis grupos: 37 cierres \emph{raw}, 37
+log-retornos a un dia, 37 volatilidades moviles a 20 dias, 28 porcentajes de rango
+intradia, 37 ratios de medias moviles (5/20) y 4 \emph{spreads}/ratios
+(SPREAD\_WTI\_BRENT, RATIO\_WTI\_BRENT, SPREAD\_US10Y\_US2Y, BRENT\_EURUSD\_RATIO).
+
+\figplaceholder{fig:composicion}{Composicion de las 180 variables de entrada
+efectivas utilizadas en el experimento Brent.}
+
+\begin{table}[!ht]
+\centering
+\caption{Particiones temporales del experimento Brent.}
+\label{tab:splits}
+\small
+\begin{tabular}{p{2.9cm}rp{2.0cm}p{2.0cm}}
+\toprule
+\textbf{Particion} & \textbf{Ventanas} & \textbf{Inicio} & \textbf{Fin} \\
+\midrule
+Train (precomp.) & 986 & 2019-12-02 & 2024-11-20 \\
+Test (precomp.)  & 247 & 2024-11-21 & 2026-03-04 \\
+Train etiquetado & 887 & 2019-12-02 & 2024-05-21 \\
+Validacion       & 99  & 2024-05-22 & 2024-11-20 \\
+Test etiquetado  & 244 & 2024-11-21 & 2026-02-26 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Fuga de informacion y motivacion de la v2.}
+La version inicial no presenta \emph{look-ahead leakage} (cada ventana usa solo
+informacion hasta su fecha final y los \emph{targets} empiezan tras el fin de la
+ventana), pero emplea \emph{stride}~1, lo que crea solapamiento entre ventanas
+consecutivas: la primera ventana de test comparte 31 de sus 32 observaciones con
+la ultima de train. Esto no es fuga futura, pero implica que el test original no es
+un \emph{backtest} purgado ni con \emph{embargo}. La v2 corrige exactamente esta
+limitacion (Seccion~\ref{sec:validacion}).
+
+% =============================================================================
+\section{Metodologia}
+% =============================================================================
+\subsection{Etiquetado de patrones debilmente supervisado}
+El \emph{bundle} aporta un unico \emph{target} numerico explicito (el log-retorno
+\emph{forward} a un dia). Para la clasificacion, el sistema crea etiquetas debiles
+a partir de la trayectoria del precio del Brent dentro de cada ventana de 32 dias.
+Tras un suavizado por media movil de tres puntos, se identifican minimos y maximos
+locales y se traducen en puntuaciones de patron. Las clases candidatas son
+\texttt{double\_bottom}, \texttt{double\_top}, \texttt{ascending\_channel},
+\texttt{descending\_channel}, \texttt{high\_tight\_flag}, \texttt{head\_shoulders},
+\texttt{inverse\_head\_shoulders} y \texttt{range}. Una ventana recibe la clase de
+mayor puntuacion si su confianza supera un umbral de 0.35; en caso contrario se
+descarta del subconjunto supervisado. Solo seis clases sobreviven en la muestra
+documentada, lo que refuerza el desbalance entre clases.
+
+\subsection{Codificacion RGB de ventanas multiactivo}
+Cada observacion es una ventana de $32 \times 180$. En lugar de alimentar el
+tensor \emph{raw} a un modelo 1D, el sistema lo convierte en una imagen de tres
+canales. El canal rojo es un GASF del nivel del Brent: si $x_t$ se reescala a
+$\tilde{x}_t \in [-1,1]$, entonces $\phi_t = \arccos(\tilde{x}_t)$ y
+\begin{equation}
+\mathrm{GASF}_{ij} = \cos(\phi_i + \phi_j).
+\end{equation}
+El canal verde es un GADF de los retornos recientes,
+$\mathrm{GADF}_{ij} = \sin(\phi_i - \phi_j)$. El canal azul es un mapa
+multivariante comprimido obtenido escalando robustamente las 180 variables,
+recortandolas a un rango estable y redimensionando a una imagen cuadrada. La
+representacion es semanticamente rica pero no invertible: la red aprende un
+\emph{embedding} latente, coherente con la literatura de representacion visual
+\cite{wang2015imaging}.
+
+\figplaceholder{fig:encoding}{Codificacion de tres canales: GASF de niveles, GADF
+de retornos y mapa multiactivo de variables.}
+
+\subsection{Arquitectura CNN y objetivo multitarea}
+El modelo usa EfficientNet-B1 \cite{tan2019efficientnet} como \emph{backbone}
+visual. Encima se anade un bloque denso compartido de 256 unidades, activacion
+SiLU y \emph{dropout}, seguido de dos ramas: una cabeza de clasificacion con ocho
+\emph{logits} y una cabeza de regresion con tres salidas (\texttt{future\_return},
+\texttt{future\_low}, \texttt{future\_high}). El objetivo global es
+\begin{equation}
+\mathcal{L} = \mathcal{L}_{\text{cls}} + \lambda\, \mathcal{L}_{\text{reg}},
+\qquad \lambda = 0.5,
+\end{equation}
+con $\mathcal{L}_{\text{cls}}$ entropia cruzada (opcionalmente ponderada por clase
+o \emph{focal loss} \cite{lin2017focal} en la v2 para mitigar el desbalance) y
+$\mathcal{L}_{\text{reg}}$ SmoothL1/Huber.
+
+\subsection{Capa de cribado de \emph{outliers}}
+Tras la inferencia, el sistema calcula una bandera de \emph{outlier} que combina
+la confianza del modelo y diagnosticos por reglas. Una ventana se marca cuando se
+cumple al menos una condicion: \texttt{weighted\_outlier\_score} $\geq 0.68$,
+confianza dominante en la ventana movil $< 0.55$, o \emph{metric distance}
+$\geq 2.5$. La longitud de la ventana movil es 10 y el peso acumulado objetivo es
+0.99. La senal de anomalia es asi sensible a patrones pero no equivale a una
+\emph{misclasificacion}.
+
+% =============================================================================
+\subsection{Validacion temporal robusta (aportacion de la v2)}
+\label{sec:validacion}
+% =============================================================================
+La v2 sustituye la evaluacion solapada por el marco de Lopez de Prado
+\cite{lopezdeprado2018advances}.
+
+\paragraph{CV purgada con \emph{embargo}.} Dado el solapamiento inducido por el
+\emph{stride}~1, las etiquetas de ventanas cercanas comparten informacion. Se
+\emph{purgan} del conjunto de entrenamiento las ventanas cuyo intervalo de
+informacion se solapa con el de validacion/test, y se aplica un \emph{embargo} de
+$h$ observaciones tras cada bloque de validacion para eliminar la contaminacion
+serial residual. En la configuracion documentada, \texttt{embargo}~$=5$.
+
+\paragraph{\emph{Backtest walk-forward}.} La evaluacion adopta un esquema
+\emph{walk-forward} de $K$ folds (ventana expansiva), reentrenando en cada paso y
+concatenando las predicciones \emph{out-of-sample} en una unica trayectoria
+\emph{multipath}. La estrategia direccional toma posicion segun el signo del
+retorno predicho.
+
+\paragraph{Metricas de robustez financiera.} Sobre la curva de resultados se
+calculan el \emph{Probabilistic Sharpe Ratio} (PSR) \cite{bailey2012sharpe}, que
+ajusta el Sharpe por asimetria y curtosis y por la longitud de la muestra; el
+\emph{Deflated Sharpe Ratio} (DSR) \cite{bailey2014deflated}, que penaliza el
+numero de configuraciones probadas (\emph{selection bias}); y la
+\emph{Probability of Backtest Overfitting} (PBO) mediante
+\emph{Combinatorially Symmetric Cross-Validation} (CSCV)
+\cite{bailey2017probability}. Formalmente, el PSR estima
+\begin{equation}
+\widehat{\mathrm{PSR}}(\mathrm{SR}^{*}) =
+\Phi\!\left( \frac{(\widehat{\mathrm{SR}} - \mathrm{SR}^{*})\sqrt{n-1}}
+{\sqrt{1 - \hat{\gamma}_3 \widehat{\mathrm{SR}} +
+\frac{\hat{\gamma}_4 - 1}{4}\widehat{\mathrm{SR}}^2}} \right),
+\end{equation}
+donde $\hat{\gamma}_3$ y $\hat{\gamma}_4$ son la asimetria y la curtosis de los
+retornos y $\Phi$ es la normal estandar acumulada.
+
+\figplaceholder{fig:walkforward}{Esquema \emph{walk-forward} con purga y
+\emph{embargo}: ventanas de \emph{train}/\emph{valid}/\emph{test} desplazadas en el
+tiempo.}
+
+% =============================================================================
+\section{Resultados empiricos para Brent}
+% =============================================================================
+La muestra etiquetada esta estructuralmente desbalanceada:
+\texttt{ascending\_channel}, \texttt{descending\_channel} y \texttt{range} dominan
+el subconjunto supervisado. Este desbalance se refleja en la confusion del
+\emph{hold-out} y en la tendencia a sobrepredecir clases tipo canal.
+
+\begin{table}[!ht]
+\centering
+\caption{Rendimiento agregado por particion (corrida corta documentada).}
+\label{tab:agregado}
+\scriptsize
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Part.} & \textbf{n} & \textbf{Acc.\%} & \textbf{Top-2\%} &
+\textbf{MAE ret.} & \textbf{Signo\%} & \textbf{R$^2$} \\
+\midrule
+Entren. & 887  & 85.0 & 95.3 & 3.15 & 52.20 & -1.27 \\
+Valid.  & 99   & 53.5 & 77.8 & 3.17 & 47.47 & -4.59 \\
+Test    & 244  & 53.3 & 81.6 & 2.64 & 52.46 & -2.43 \\
+Total   & 1230 & 76.2 & 91.1 & 3.05 & 51.87 & -1.51 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+En el \emph{hold-out} temporal, la exactitud top-1 frente a etiquetas debiles
+alcanza el 53.3\% y la top-2 el 81.6\%. Esta brecha sugiere que la representacion
+capta un vecindario plausible de alternativas geometricas. La prediccion del
+retorno sigue siendo dificil (MAE en test de 2.64 pp y R$^2$ negativo), coherente
+con el esquema deliberadamente corto de entrenamiento.
+
+\begin{table}[!ht]
+\centering
+\caption{Informe de clasificacion por clase en el conjunto de test.}
+\label{tab:porclase}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Clase} & \textbf{Prec.\%} & \textbf{Recall\%} & \textbf{F1\%} & \textbf{Sop.} \\
+\midrule
+ascending\_channel  & 45.6 & 81.6 & 58.5 & 76 \\
+descending\_channel & 63.3 & 59.4 & 61.3 & 96 \\
+range               & 61.1 & 15.3 & 24.4 & 72 \\
+\midrule
+Global              & --   & --   & 53.3 & 244 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+El modelo discrimina los regimenes tipo canal mejor que el comportamiento de
+rango: \texttt{ascending\_channel} logra recall alto y precision menor, mientras
+\texttt{range} tiene precision aceptable pero recall de solo 15.3\%.
+Operativamente, el sistema reconoce mejor la morfologia direccional que la
+congestion sin direccion.
+
+\figplaceholder{fig:confusion}{Matriz de confusion normalizada por filas del
+conjunto de test.}
+
+La capa de anomalias permanece activa tras las cabezas de patrones y regresion. A
+lo largo de las 2290 ventanas de inferencia, 942 se marcan como \emph{outliers}
+(41.1\%). La mayor parte de la activacion proviene de baja confianza dominante mas
+que del umbral de \emph{weighted score}: la incertidumbre es un motor principal de
+las alertas.
+
+% =============================================================================
+\section{Discusion}
+% =============================================================================
+El experimento respalda tres conclusiones. Primera, las codificaciones
+convolucionales de ventanas cortas preservan estructura util (top-2 $>$ 80\%).
+Segunda, el contexto multiactivo aporta valor: combinar canales especificos del
+Brent con un mapa amplio de variables evita inferir anomalias solo desde la
+trayectoria del petroleo. Tercera, la capa de anomalias anade relevancia
+operativa al convertir salidas brutas en alertas interpretables.
+
+Desde el riesgo de mercado, las expectativas del BCE y de BCBS~239 enfatizan la
+calidad de datos, la trazabilidad y la escalada oportuna \cite{ecb2025guide,
+bcbs239}. Un cribado CNN no sustituye a la gobernanza, pero actua como control
+analitico de segunda linea que prioriza ventanas para revision humana. La v2
+refuerza este argumento con validacion purgada y metricas DSR/PBO, que acotan el
+riesgo de \emph{overfitting} de \emph{backtest}.
+
+Las limitaciones persisten: la corrida documentada usa un esquema corto en CPU, el
+desbalance es severo, el \emph{bundle} carece de las series AAA del BCE y las
+etiquetas debiles son un \emph{proxy} de la estructura de anomalia. La v2 mitiga la
+limitacion de evaluacion solapada, y su empaquetado reproducible facilita la
+verificacion independiente. La agenda futura incluye entrenamiento prolongado en
+GPU, preentrenamiento sintetico, rebalanceo de clases, recuperacion de nodos del
+BCE y restricciones monotonicas para \texttt{future\_low}/\texttt{future\_high}.
+
+% =============================================================================
+\section{Conclusion}
+% =============================================================================
+Este articulo consolida el proyecto Brent en un manuscrito coherente sobre
+deteccion de anomalias basada en CNN en \emph{commodities}, y presenta la version
+v2 del sistema, que anade validacion temporal robusta (CV purgada con
+\emph{embargo}, \emph{walk-forward} y PSR/DSR/PBO) y reproducibilidad de grado
+publicacion (\emph{compute capsule} y exportacion integral a Excel). Los
+resultados del \emph{hold-out} son moderados en top-1 y solidos en top-2, lo que
+sugiere que la representacion es informativa aunque la corrida corta no este
+optimizada. Con entrenamiento mas profundo en GPU y validacion temporal estricta,
+la arquitectura constituye una base creible para monitorizacion de grado
+productivo.
+
+% =============================================================================
+\appendix
+\section{Reproducibilidad: \emph{compute capsule} y salidas}
+\label{ap:repro}
+% =============================================================================
+El sistema se distribuye como una \emph{compute capsule} de Code Ocean con la
+estructura estandar (\texttt{code/}, \texttt{data/}, \texttt{environment/},
+\texttt{metadata/}, \texttt{results/}, \texttt{run}). La ejecucion es
+determinista: semillas fijadas (\texttt{seed}~$=42$, \texttt{PYTHONHASHSEED}$=0$) y
+entorno \emph{pinned} por \texttt{Dockerfile} y \texttt{requirements.txt}.
+
+\paragraph{Configuracion externa.} Todos los parametros del experimento residen en
+ficheros de configuracion externos al codigo, en JSON o YAML indistintamente
+(\texttt{config\_codeocean.json}, \texttt{config\_codeocean.yaml} y
+\texttt{config\_gpu.yaml}). Se distingue el \emph{descriptor de la capsula}
+(\texttt{metadata/metadata.yml}) de la \emph{configuracion del experimento}
+(ficheros \texttt{config\_*}) y del \emph{registro de reproducibilidad}
+(\texttt{results/run\_manifest.json}), que combina la configuracion resuelta con el
+entorno de ejecucion (versiones, \emph{commit} de git, \emph{timestamp}).
+
+\paragraph{Salida en Excel para validacion.} El \emph{pipeline} exporta un libro
+Excel (\texttt{results/reports/brent\_resultados.xlsx}) con hojas dedicadas a:
+resumen, \textbf{configuracion completa del experimento}, entorno, metricas de
+clasificacion (globales y por clase), matriz de confusion, regresion,
+\emph{backtest} (Sharpe, PSR, DSR, PBO), Sharpe por \emph{fold}, resumen de
+\emph{folds} y predicciones \emph{out-of-sample}. Esta trazabilidad permite a una
+revista reproducir y validar cada cifra frente a la configuracion exacta que la
+produjo.
+
+\paragraph{Ejecucion en GPU.} La configuracion \texttt{config\_gpu.yaml} activa
+\emph{mixed precision} (AMP), \emph{cuDNN benchmark}, \emph{caching} de imagenes,
+mayor resolucion y regimen de entrenamiento prolongado, manteniendo identica la
+metodologia respecto a la corrida CPU reproducible.
+
+% =============================================================================
+\section*{Declaraciones}
+\textbf{Financiacion:} [A completar por los autores].\\
+\textbf{Conflictos de interes:} [A completar por los autores].\\
+\textbf{Disponibilidad de datos:} los resultados se basan en artefactos del
+proyecto Brent suministrados por los autores; las series brutas proceden de Yahoo
+Finance, FRED y el BCE.
+
+% =============================================================================
+\bibliographystyle{elsarticle-num}
+\bibliography{references}
+
+\end{document}

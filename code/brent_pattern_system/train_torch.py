@@ -16,6 +16,7 @@ from .evaluate import evaluate_predictions, predict_indices
 from .feature_engineering import compute_market_features
 from .outlier_control import fit_metric_templates
 from .pattern_metrics import METRIC_COLUMNS
+from .reporting import generate_reports
 from .series_bundle import load_series_bundle, validate_series_bundle
 from .torch_model import train_torch_pipeline
 
@@ -126,11 +127,23 @@ def run(config_path: str | None = None) -> dict:
         summary["backtest"] = walk_forward_backtest(oos, config)
 
     save_json(os.path.join(report_dir, "torch_walkforward_summary.json"), summary)
+
+    # Salida académica en Excel + manifiesto de reproducibilidad (aditivo).
+    # `generate_reports` está diseñado para no lanzar nunca: registra y degrada.
+    reports = generate_reports(config, summary, oos, report_dir)
+    summary["reports"] = reports
+    if reports.get("excel_path"):
+        print(f"[reporting] Excel generado en: {reports['excel_path']}")
+    elif reports.get("csv_fallback"):
+        print(f"[reporting] openpyxl no disponible; CSVs en: {reports.get('csv_fallback')}")
+    if reports.get("error"):
+        print(f"[reporting] aviso: {reports['error']}")
+
     return summary
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Entrenamiento PyTorch para BRENT chartism + outliers")
-    parser.add_argument("--config", type=str, default=None, help="Ruta al JSON de configuración")
+    parser.add_argument("--config", type=str, default=None, help="Ruta al fichero de configuración (.json, .yaml o .yml)")
     args = parser.parse_args()
     run(args.config)
