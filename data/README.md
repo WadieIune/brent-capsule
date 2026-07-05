@@ -19,6 +19,27 @@ Coloca aquí los siguientes ficheros (generados por `SeriesDownloader_2_features
 └── y_test.npy
 ```
 
+## Serie de precios del Brent (FRED) — `brent_fred_daily.csv`
+
+Serie diaria del **Brent spot** (FRED `DCOILBRENTEU`, la fuente original del
+proyecto), columnas `date,BRENT`, del 1987-05-20 al 2026-06-29 (9.922 sesiones).
+
+Es la serie sobre la que se construyen las figuras chartistas del documento
+(`docs/CCN_BRENT_canal`) y, en particular, **cubre el trimestre out-of-sample
+abril–junio 2026** que no está en el `bundle` (este termina el 2026-03-06). Se usa
+FRED como fuente única (train+test) para evitar mezcla de *vintages*.
+
+Reproduce el detector de canal e infiere sobre ella directamente:
+
+```bash
+python code/channel_detector.py predict \
+    --prices data/brent_fred_daily.csv --out preds.csv
+```
+
+Para actualizarla desde el origen:
+`https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU`
+(columnas `observation_date,DCOILBRENTEU` → renombrar a `date,BRENT`).
+
 ## Cómo cargarlos en Code Ocean
 
 1. En la cápsula, pestaña **Data** → *Add data* y sube los ficheros anteriores, o
