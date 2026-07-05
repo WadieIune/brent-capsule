@@ -265,3 +265,19 @@ significativamente mejor -> el macro/cross-asset degrada la detección de canal.
 - Duplicidades verificadas: config JSON≡YAML en sincronía; rama TF sin
   ejercitar (candidata a contrib/); `recurrence_plot` y `_interp_resize_1d` sin
   llamadores. No se eliminó funcionalidad.
+
+## Consolidación de docs + figuras legibles (2026-07-05, 2ª parte)
+
+- **docs/ limpiado a proyecto único** (todo recuperable de git, commit 5238de6):
+  eliminados `CCN_BRENT_pattern/` (doc v2 corta), `main.tex`+`references.bib`+
+  `README.md` (manuscrito elsarticle v2, absorbido) y `risk_framework.{tex,md}`
+  (integrado). Nuevo `docs/README.md` como índice.
+- **Risk framework integrado**: §6 del LaTeX (tabla evidencia→implicación,
+  diagrama TikZ de 4 capas, tabla de 5 paneles del dashboard, gobernanza) y
+  sección 08 del HTML (capas anidadas en CSS + tabla de paneles + regla de oro).
+- **Hoja de ruta integrada**: Anexo D del LaTeX y sección 09 del HTML.
+- **Figuras corregidas** (leyendas superpuestas → fuera del área de datos):
+  brent_timeline (leyenda debajo), comparativa_variantes (leyenda inferior común
+  con entrada "Azar"), oos_2026 (leyenda bajo el panel de probabilidades),
+  multipatron (soporte n+ dentro de las etiquetas del eje), backtest_canal
+  (4 paneles con escalas separadas — antes el Sharpe quedaba aplastado por el %).

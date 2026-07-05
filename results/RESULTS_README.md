@@ -32,8 +32,9 @@ Resultados del BRENT Pattern System v2. El capsule original (código en `/code`)
 - `brent_efficientnet_b1_torch_fold*.pt` — modelos por fold del pipeline base.
 
 ## Documentación (`/docs`)
-- `risk_framework.tex` — marco de riesgo (4 capas + dashboard) para Overleaf/PDF.
-- `RISK_FRAMEWORK.md` — misma versión en Markdown.
+- `CCN_BRENT_canal/` — documento LaTeX del proyecto (Overleaf); incluye el marco
+  de riesgo de 4 capas + dashboard (§6) y anexos de métricas y reproducibilidad.
+- `presentacion_brent.html` — presentación visual autocontenida.
 
 ## Reproducir
 Ver `REPRODUCING.md` para el run base de la cápsula (`code/run`).

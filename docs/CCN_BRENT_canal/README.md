@@ -23,11 +23,15 @@ ficheros.
 
 ## Estructura
 
-- Secciones 1–6: introducción, datos, metodología, resultados, discusión y
-  conclusiones.
+- Secciones 1–5: introducción, datos, metodología, resultados y discusión.
+- **Sección 6 — Marco de aplicación en riesgos**: control de capital en 4 capas
+  (diagrama TikZ) y especificación del cuadro de mando (5 paneles con gatillos),
+  construido sobre la evidencia empírica del propio proyecto.
+- Sección 7: conclusiones.
 - **Anexo A**: formulación matemática completa (etiquetado débil, GASF/GADF,
   CNN multitarea, cabezas logísticas, purga/embargo/walk-forward).
 - **Anexo B**: justificación de cada métrica utilizada (AUC, precisión/recall/F1,
   balanced accuracy, macro-F1, bootstrap ΔAUC, PSR/DSR/PBO, CV purgada) con las
   referencias canónicas — pensado para el comité de publicación.
 - **Anexo C**: reproducibilidad (cápsula, manifiesto, comandos).
+- **Anexo D**: hoja de ruta de mejoras (investigación e ingeniería).

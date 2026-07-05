@@ -62,6 +62,22 @@
   .ci .zero{position:absolute; left:12%; top:0; bottom:0; width:2px; background:var(--charcoal)}
   .ci .seg{position:absolute; top:38%; height:24%; background:var(--burgundy); border-radius:4px}
   .ci .dot{position:absolute; top:26%; width:.55rem; height:.55rem; background:var(--burgundy); border-radius:50%; border:2px solid #fff}
+  /* marco de riesgo: capas anidadas */
+  .layers{max-width:46rem; margin:1.4rem auto}
+  .layer{border-radius:14px; padding:.85rem 1rem 1rem; margin:0 auto; text-align:center}
+  .layer b{display:block; font-size:.9rem}
+  .layer span{font-size:.78rem; opacity:.85}
+  .layer .inner{margin-top:.7rem}
+  .l-blue{background:#E6F1FB; border:1.5px solid #0C447C; color:#0C447C}
+  .l-teal{background:#E1F5EE; border:1.5px solid #0F6E56; color:#0F6E56}
+  .l-cap{background:#F1EFE8; border:1.5px solid #444441; color:#444441; max-width:16rem}
+  .w-95{max-width:95%} .w-88{max-width:88%} .w-78{max-width:78%}
+  .panels td:first-child{white-space:nowrap; font-weight:600; color:var(--charcoal)}
+  .sem{display:inline-block; width:.6rem; height:.6rem; border-radius:50%; margin-right:.25rem; vertical-align:baseline}
+  .sem.y{background:#d99a06} .sem.r{background:#b3261e}
+  ol.roadmap{margin:.4rem 0 0 1.2rem; font-size:.92rem}
+  ol.roadmap li{margin-bottom:.55rem}
+  ol.roadmap b{color:var(--burgundy)}
 </style>
 </head>
 <body>
@@ -74,6 +90,8 @@
   <a href="#h3">Estabilidad y OOS 2026</a>
   <a href="#h4">Sin edge de trading</a>
   <a href="#capas">Chartismo por capas</a>
+  <a href="#riesgo">Marco de riesgo</a>
+  <a href="#mejoras">Hoja de ruta</a>
   <a href="#repro">Reproducibilidad</a>
 </nav>
 
@@ -220,8 +238,83 @@
   Triángulos, cuñas o banderines exigirían nuevas reglas de etiquetado.</p>
 </section>
 
+<section id="riesgo">
+  <h2><span class="n">08</span>Marco de riesgo — control de capital en 4 capas</h2>
+  <p class="lead">El mandato del Risk Director no es predecir la dirección, sino <b>controlar el
+  capital y sobrevivir a los regímenes</b>. La evidencia empírica delimita el papel de cada pieza:
+  la volatilidad (predecible) manda el tamaño; el detector (fiable) describe el régimen; la
+  dirección (no predecible) queda prohibida como criterio de sizing.</p>
+
+  <table>
+    <tr><th>Hallazgo empírico</th><th>Implicación para riesgo</th></tr>
+    <tr><td>Dirección no predecible (corr ≈ 0)</td><td>Prohibido dimensionar capital por "señal direccional"</td></tr>
+    <tr><td>Chartismo no pasa el backtest (DSR ≈ 0, MaxDD −59%)</td><td>El patrón no justifica subir tamaño; sirve de <i>challenge</i> al desk</td></tr>
+    <tr><td>Volatilidad sí predecible (persistencia 0.32–0.45)</td><td><b>Palanca central</b>: sizing y límites por riesgo</td></tr>
+    <tr><td>Detección de canal fiable y estable (AUC 0.97)</td><td>Descriptor de régimen, no alfa</td></tr>
+    <tr><td>Cross-asset define correlación, no dirección</td><td>Agregación del riesgo de cartera, no el trade</td></tr>
+  </table>
+
+  <div class="layers">
+    <div class="layer l-blue"><b>Capa 4 · Riesgo de cartera y correlación</b><span>VaR/ES · netting largo-corto · correlación móvil</span>
+      <div class="inner layer l-teal w-95"><b>Capa 3 · Overlay de régimen ◂ detector de canal</b><span>probabilidad de canal como descriptor, no como señal</span>
+        <div class="inner layer l-blue w-95"><b>Capa 2 · Límites duros</b><span>bruto/neto · concentración · drawdown y stop</span>
+          <div class="inner layer l-blue w-88"><b>Capa 1 · Sizing por riesgo</b><span>vol targeting · tamaño ∝ 1/σ (risk parity)</span>
+            <div class="inner layer l-cap w-78"><b>Capital</b><span>presupuesto de riesgo</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="margin:1.4rem 0 .6rem">Cuadro de mando (5 paneles, semáforo <span class="sem y"></span>aviso · <span class="sem r"></span>brecha)</h3>
+  <table class="panels">
+    <tr><th>Panel (capa)</th><th>Métricas y gatillos</th></tr>
+    <tr><td>A · Sizing (C1)</td><td>σ prevista (EWMA λ=0.94 / GARCH); tamaño objetivo wᵢ; vol realizada/objetivo <span class="sem y"></span>&gt;1.2 recortar · <span class="sem r"></span>&gt;1.5 de-risk 50%</td></tr>
+    <tr><td>B · Límites (C2)</td><td>Bruto <span class="sem y"></span>&gt;85% · <span class="sem r"></span>≥100% bloquea; neto acotado (no hay edge); concentración <span class="sem y"></span>&gt;25% · <span class="sem r"></span>&gt;35% activo / &gt;50% sector; drawdown <span class="sem y"></span>−8% · <span class="sem r"></span>−12% flat</td></tr>
+    <tr><td>C · Régimen (C3)</td><td><code>pred_canal</code> + <code>confianza</code> por activo; % cartera contra-régimen <span class="sem y"></span>&gt;30% → revisión; cambio de régimen (conf &gt;0.7, ≥2 días) → recalcular VaR/correlación; conf media &lt;0.5 → no accionar</td></tr>
+    <tr><td>D · Cartera (C4)</td><td>VaR/ES 1d 99%; correlación móvil 60d <span class="sem y"></span>ρ̄&gt;0.6; ratio diversificación <span class="sem r"></span>&lt;1.3; excepciones VaR (Kupiec/Christoffersen)</td></tr>
+    <tr><td>E · Salud modelo</td><td>Edad de la cabeza <span class="sem y"></span>&gt;12m → recalibrar; dato <span class="sem r"></span>&gt;3 días → congelar señal; PSI confianza <span class="sem y"></span>&gt;0.2; dos relojes: régimen anual · vol/correlación diario</td></tr>
+  </table>
+
+  <div class="callout"><b>Regla de oro:</b> ningún gatillo del Panel C <i>aumenta</i> capital — el
+  sizing lo manda el riesgo (A/B), no el patrón. El detector es una herramienta de <i>challenge</i>:
+  ante "más capital porque rompe un canal", la evidencia DSR ≈ 0 exige justificar el tamaño por
+  riesgo. Flujo diario: <code>channel_detector.py predict</code> → Panel C. Multi-commodity: una
+  cabeza logística por activo, mismo enfoque solo-precio.</div>
+</section>
+
+<section id="mejoras">
+  <h2><span class="n">09</span>Hoja de ruta — mejoras propuestas</h2>
+  <p class="lead">Priorización tras la revisión completa del proyecto (detalle en
+  <code>docs/MEJORAS_PROPUESTAS.md</code> y Anexo D del documento LaTeX).</p>
+  <div class="split">
+    <div>
+      <h3 style="margin-bottom:.5rem">Investigación</h3>
+      <ol class="roadmap">
+        <li><b>Ampliar el etiquetador geométrico</b> (triángulos, cuñas, banderines, taza-con-asa): el cuello de botella de la capa 2 es la cobertura de reglas, no el modelo.</li>
+        <li><b>Restricción de orden</b> pred_low ≤ pred_return ≤ pred_high en la CNN multitarea (elimina inversiones soporte/resistencia).</li>
+        <li><b>OOS trimestral continuo</b> (jul–sep 2026…) con FRED como fuente única: evidencia acumulada a coste mínimo.</li>
+        <li><b>Calibración de probabilidades</b> (Platt/isotónica) con curvas de fiabilidad: en riesgo la probabilidad debe estar calibrada, no solo ordenar.</li>
+        <li><b>Baseline no-CNN</b> (logística sobre features geométricas simples) para blindar la elección de EfficientNet ante el comité.</li>
+        <li><b>Módulo de volatilidad dedicado</b> (GARCH/HAR-RV) para la Capa 1: es forecastable, pero no con este pipeline de imágenes.</li>
+      </ol>
+    </div>
+    <div>
+      <h3 style="margin-bottom:.5rem">Ingeniería y datos</h3>
+      <ol class="roadmap">
+        <li><b>Tests mínimos + CI</b>: etiquetador sobre ventanas sintéticas, invariantes de purga/embargo, determinismo del encoding.</li>
+        <li><b>YAML como fuente única</b> de configuración (el JSON duplicado está en sincronía hoy, pero es riesgo de deriva).</li>
+        <li><b>Rama TensorFlow a contrib/</b>: funcional pero no ejercitada por ningún resultado entregado.</li>
+        <li><b>Regenerar demo_predictions.csv</b> con calendario de días hábiles (hereda fines de semana del reindexado antiguo).</li>
+        <li><b>Vintages FRED documentados</b> (~1.19 USD de diferencia media con el CSV original; fuente única ya aplicada en el OOS).</li>
+        <li><b>Nodos BCE AAA</b>: recuperarlos o retirar su mención del descargador.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
 <section id="repro">
-  <h2><span class="n">08</span>Entregables y reproducibilidad</h2>
+  <h2><span class="n">10</span>Entregables y reproducibilidad</h2>
   <div class="split">
     <div>
       <h3 style="margin-bottom:.6rem">Entregables</h3>

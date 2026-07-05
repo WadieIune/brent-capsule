@@ -21,12 +21,21 @@
 \usepackage{float}
 \usepackage{subcaption}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
 \usepackage{hyperref}
 \usepackage[numbers,sort&compress]{natbib}
 \geometry{margin=2.2cm}
 
 \definecolor{burgundy}{HTML}{7A1E2C}
 \definecolor{charcoal}{HTML}{3A3A3A}
+\definecolor{cBlue}{HTML}{E6F1FB}
+\definecolor{cBlueD}{HTML}{0C447C}
+\definecolor{cTeal}{HTML}{E1F5EE}
+\definecolor{cTealD}{HTML}{0F6E56}
+\definecolor{cGray}{HTML}{F1EFE8}
+\definecolor{cGrayD}{HTML}{444441}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \hypersetup{colorlinks=true, linkcolor=burgundy, citecolor=burgundy, urlcolor=burgundy}
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.16}
@@ -66,6 +75,10 @@ esquema, y la estrategia de \emph{trading} derivada del detector no supera el
 azar tras corregir por sesgo de selección (\emph{Deflated Sharpe Ratio}
 $\approx 0$): la geometría del precio es reconocible, pero no constituye una
 ventaja direccional, un resultado coherente con la eficiencia débil del mercado.
+Sobre esta base de evidencia, el documento especifica el marco de aplicación en
+riesgos: un esquema de control de capital en cuatro capas y un cuadro de mando
+en el que el detector actúa como descriptor de régimen, nunca como señal de
+inversión.
 \end{abstract}
 
 \tableofcontents
@@ -505,6 +518,140 @@ restricción de orden y ocasionalmente se invierten. (v) El run reproducible en
 CPU es un régimen corto: valida el \emph{pipeline}, no el techo de rendimiento.
 
 % =============================================================================
+\section{Marco de aplicación en riesgos: control de capital en cuatro capas}
+\label{sec:riskframework}
+% =============================================================================
+El mandato de una dirección de riesgos no es predecir la dirección del mercado,
+sino \textbf{controlar el capital y sobrevivir a los regímenes}. Los hallazgos
+empíricos de las secciones anteriores delimitan con precisión qué puede y qué no
+puede hacer el sistema dentro de ese mandato
+(Tabla~\ref{tab:evidencia-riesgo}).
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{De la evidencia empírica a la implicación de riesgo.}
+\label{tab:evidencia-riesgo}
+\begin{tabularx}{\textwidth}{L L}
+\toprule
+\textbf{Hallazgo empírico} & \textbf{Implicación para riesgo} \\
+\midrule
+Dirección del Brent no predecible (corr $\approx 0$, \emph{hit} $\approx$ tasa base) &
+Prohibido dimensionar capital por ``señal direccional'' del modelo \\
+El chartismo no pasa el \emph{backtest} (DSR $\approx 0$, pierde frente a
+\emph{buy\&hold}, MaxDD $-59\%$) &
+El patrón no justifica subir tamaño; sirve de \emph{challenge} al \emph{desk} \\
+Volatilidad sí predecible (persistencia, correlación 0.32--0.45) &
+Palanca central del marco: \emph{sizing} y límites en función del riesgo \\
+Detección de canal fiable y estable (AUC 0.97, sin decaimiento a 12 meses) &
+Descriptor de régimen, no \emph{alpha} \\
+El \emph{cross-asset} no predice dirección pero define la correlación &
+Agregación del riesgo de cartera, no el \emph{trade} individual \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Las cuatro capas de protección del capital}
+Cada capa acota una dimensión de riesgo; la Capa~3 es la única alimentada por el
+detector, y exclusivamente como \emph{descriptor}:
+
+\begin{center}
+\begin{tikzpicture}[font=\small]
+\tikzstyle{layer}=[rounded corners=6pt, minimum width=13cm, minimum height=1.12cm, align=center, draw]
+\node[layer, fill=cBlue, draw=cBlueD, text=cBlueD] (l4)
+  {\textbf{Capa 4 · Riesgo de cartera y correlación}\\ VaR/ES · \emph{netting} largo-corto · correlación móvil};
+\node[layer, fill=cTeal, draw=cTealD, text=cTealD, below=3mm of l4, minimum width=11.5cm] (l3)
+  {\textbf{Capa 3 · Overlay de régimen} \; $\blacktriangleleft$ detector de canal\\ probabilidad de canal como descriptor, no como señal};
+\node[layer, fill=cBlue, draw=cBlueD, text=cBlueD, below=3mm of l3, minimum width=10cm] (l2)
+  {\textbf{Capa 2 · Límites duros}\\ bruto/neto · concentración · \emph{drawdown} y \emph{stop}};
+\node[layer, fill=cBlue, draw=cBlueD, text=cBlueD, below=3mm of l2, minimum width=8.5cm] (l1)
+  {\textbf{Capa 1 · Sizing por riesgo}\\ \emph{vol targeting} · tamaño $\propto 1/\sigma$};
+\node[layer, fill=cGray, draw=cGrayD, text=cGrayD, below=3mm of l1, minimum width=6cm, minimum height=0.9cm] (c)
+  {\textbf{Capital} · presupuesto de riesgo};
+\end{tikzpicture}
+\end{center}
+
+\begin{description}
+\item[Capa 1 --- Sizing por riesgo (diario).] Como la dirección no es
+  \emph{forecastable} pero la volatilidad sí, cada posición (larga o corta) se
+  dimensiona inversamente a su volatilidad prevista:
+  $w_i = (\text{riesgo objetivo}/\sigma_i)/\sum_j (1/\sigma_j)$ (\emph{risk
+  parity}), con $\sigma_i$ estimada por EWMA ($\lambda=0.94$) o GARCH(1,1). El
+  objetivo de volatilidad de cartera es fijo: si sube la volatilidad, el tamaño
+  baja automáticamente.
+\item[Capa 2 --- Límites duros (intradía).] Topes de exposición bruta y neta (el
+  sesgo direccional debe estar acotado: no hay \emph{edge}), concentración por
+  activo y por sector (energía/metales/agrícolas), y \emph{drawdown}/\emph{stop}
+  con reducción automática de riesgo. Riesgo de curva/\emph{roll} si se opera con
+  futuros.
+\item[Capa 3 --- Overlay de régimen (diario).] El detector etiqueta el régimen
+  (ascendente/descendente/rango) en el cuadro de mando. \emph{Nunca} aumenta
+  capital; solo marca posiciones contra-régimen para revisión y dispara el
+  recálculo de riesgo.
+\item[Capa 4 --- Cartera y correlación (diario).] VaR/ES, \emph{netting} real de
+  largos y cortos, correlación en ventana móvil y ratio de diversificación:
+  detectar cuándo ``posiciones diversificadas'' colapsan en una sola apuesta bajo
+  estrés.
+\end{description}
+
+\subsection{Especificación del cuadro de mando}
+El \emph{dashboard} consume las salidas diarias del detector
+(\texttt{prob\_ascending\_channel}, \texttt{prob\_descending\_channel},
+\texttt{pred\_canal}, \texttt{confianza}, vía
+\texttt{channel\_detector.py predict}) más el libro de posiciones y los
+estimadores de volatilidad/correlación. Semáforo: info $\cdot$ aviso $\cdot$
+brecha.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Paneles del cuadro de mando y gatillos.}
+\label{tab:dashboard}
+\begin{tabularx}{\textwidth}{p{3.4cm} L}
+\toprule
+\textbf{Panel (capa)} & \textbf{Métricas y gatillos} \\
+\midrule
+A --- Exposición y \emph{sizing} (Capa 1, diario) &
+Volatilidad prevista $\sigma_i$ (EWMA/GARCH); tamaño objetivo $w_i$; ratio
+vol.\ realizada/objetivo: aviso $>1.2$ recortar $\cdot$ brecha $>1.5$
+\emph{de-risk} 50\%. \\
+B --- Límites duros (Capa 2, intradía) &
+Utilización de bruto: aviso $>85\%$ $\cdot$ brecha $\geq 100\%$ bloquea nuevas;
+sesgo neto por encima de límite $\to$ justificar; concentración: aviso $>25\%$
+$\cdot$ brecha $>35\%$ por activo, $>50\%$ por sector; \emph{drawdown}: aviso
+$-8\%$ (\emph{de-risk} 30\%) $\cdot$ brecha $-12\%$ (\emph{flat}). \\
+C --- Régimen (Capa 3, detector, diario) &
+Régimen por activo (\texttt{pred\_canal} + \texttt{confianza}); \% de cartera
+contra-régimen ponderado por confianza: aviso $>30\%$ $\to$ revisión del
+\emph{desk}; cambio de régimen (confianza $>0.7$ en $\geq 2$ días) $\to$
+recalcular VaR/correlaciones; confianza media $<0.5$ $\to$ no accionar. \\
+D --- Cartera y correlación (Capa 4, diario) &
+VaR/ES 1d 99\%: aviso VaR $>$ límite $\cdot$ brecha $>2$ excepciones de ES en 20
+días; correlación media móvil 60d: aviso $\bar\rho>0.6$; ratio de
+diversificación: brecha $<1.3$; \emph{backtest} de excepciones VaR
+(Kupiec/Christoffersen) $\to$ recalibrar si falla. \\
+E --- Salud del modelo (diario) &
+Edad de la cabeza logística: aviso $>12$ meses $\to$ recalibrar (justificado por
+la Sección~\ref{sec:recalib}); frescura del dato: brecha si el último precio
+tiene $>3$ días hábiles; deriva de entrada (PSI de la confianza): aviso $>0.2$;
+dos relojes: régimen trimestral--anual, volatilidad/correlación diario. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Gobernanza}
+\textbf{Regla de oro}: ningún gatillo del Panel~C \emph{aumenta} capital; el
+\emph{sizing} lo manda el riesgo (Paneles A/B), no el patrón. El modelo es una
+herramienta de \emph{challenge}: ante la petición de ``más capital porque el
+precio rompe un canal ascendente'', la dirección de riesgos dispone de la
+evidencia formal (DSR $\approx 0$, Sección~\ref{sec:backtest}) para exigir que el
+tamaño se justifique por riesgo y no por chartismo. Para extender el marco a una
+cartera multi-\emph{commodity} basta entrenar una cabeza logística por activo con
+el mismo enfoque solo-precio. Esta separación descriptor/decisión es coherente
+con las expectativas de gobernanza de modelos de BCBS~239 y de la guía de
+modelos internos del BCE \cite{bcbs239,ecb2025guide}.
+
+% =============================================================================
 \section{Conclusiones}
 % =============================================================================
 Un detector de canales sobre el Brent construido con codificación
@@ -834,6 +981,53 @@ Los resultados citados en este documento corresponden a los ficheros de
 \texttt{dos\_ramas\_crossasset.json}, \texttt{multipatron.json},
 \texttt{ventana\_adaptativa.json}, \texttt{backtest\_canal\_dsr\_pbo.json}) y al
 Excel consolidado \texttt{brent\_canal\_resultados.xlsx}.
+
+% =============================================================================
+\section{Hoja de ruta: mejoras propuestas}
+\label{ap:mejoras}
+% =============================================================================
+Priorización tras la revisión completa del proyecto (versión extendida en
+\texttt{docs/MEJORAS\_PROPUESTAS.md}).
+
+\subsection{Investigación}
+\begin{enumerate}
+  \item \textbf{Ampliar el etiquetador geométrico} (triángulos, cuñas,
+    banderines, rectángulos, taza-con-asa): es el cuello de botella real de la
+    ``capa 2'' del chartismo (Sección~\ref{sec:multipatron}), con
+    preentrenamiento sintético de las nuevas clases sobre la infraestructura de
+    plantillas existente.
+  \item \textbf{Restricción de orden en las salidas continuas} de la CNN
+    multitarea ($\widehat{y}_{\mathrm{low}} \leq \widehat{y}_{\mathrm{ret}} \leq
+    \widehat{y}_{\mathrm{high}}$, p.\,ej.\ vía \emph{softplus}): elimina las
+    inversiones soporte/resistencia observadas.
+  \item \textbf{Extensión trimestral del OOS real} (jul--sep 2026 en adelante)
+    con FRED como fuente única, acumulando evidencia de estabilidad a coste
+    marginal mínimo.
+  \item \textbf{Calibración de probabilidades} (Platt/isotónica sobre validación
+    purgada) con curvas de fiabilidad: para el uso en riesgo la probabilidad
+    debe estar calibrada, no solo ordenar bien.
+  \item \textbf{Baseline no-CNN de control}: regresión logística sobre las
+    \emph{features} geométricas simples (pendiente, $R^2$, número de extremos) ya
+    calculadas por el sistema; blinda la elección del \emph{embedding}
+    convolucional ante el comité.
+  \item \textbf{Módulo de volatilidad dedicado} (GARCH/HAR-RV/persistencia) para
+    la Capa~1 del marco de riesgo: la volatilidad es \emph{forecastable} pero
+    este \emph{pipeline} de imágenes no la captura.
+\end{enumerate}
+
+\subsection{Ingeniería}
+\begin{enumerate}
+  \item Tests mínimos (etiquetador sobre ventanas sintéticas conocidas;
+    invariantes de purga/embargo; determinismo de la codificación) e integración
+    continua ligera.
+  \item Tratar el YAML como fuente única de configuración (el JSON duplicado,
+    hoy en sincronía verificada, es un riesgo de deriva).
+  \item Extraer la rama TensorFlow, no ejercitada por ningún resultado, a un
+    directorio \texttt{contrib/} en la versión de revista.
+  \item Regenerar \texttt{demo\_predictions.csv} con el nuevo calendario de días
+    hábiles (la versión entregada hereda fines de semana del reindexado
+    antiguo).
+\end{enumerate}
 
 \bibliographystyle{unsrtnat}
 \bibliography{references}

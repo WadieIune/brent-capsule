@@ -144,5 +144,5 @@ El artefacto entrenado se entrega en `results/models/detector_canal_heads.joblib
 ## Referencias metodológicas
 
 Ver `code/brent_pattern_system/` (docstrings de `metrics.py` y `cv_purged.py`) y la
-bibliografía de `docs/references.bib` (López de Prado 2018; Bailey & López de
-Prado 2012/2014 para PSR/DSR; Bailey et al. 2014/2017 para PBO/CSCV).
+bibliografía de `docs/CCN_BRENT_canal/references.bib` (López de Prado 2018; Bailey
+& López de Prado 2012/2014 para PSR/DSR; Bailey et al. 2014/2017 para PBO/CSCV).

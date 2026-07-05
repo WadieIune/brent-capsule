@@ -44,7 +44,7 @@ investigación, código y datos. Las marcadas ✔ ya se aplicaron en esta revisi
 10. ✔ **Referencias rotas**: `results/RESULTS_README.md` citaba 8 scripts de
     estudio inexistentes en el repo; ahora documenta qué es reproducible desde la
     cápsula y dónde está registrado el resto. `REPRODUCING.md` citaba un
-    `BIBLIOGRAFIA.md` inexistente (→ `docs/references.bib`).
+    `BIBLIOGRAFIA.md` inexistente (→ `docs/CCN_BRENT_canal/references.bib`).
 11. **Duplicidades a vigilar (sin pérdida de funcionalidad)**:
     - `config_codeocean.json` ≡ `config_codeocean.yaml` (verificado en sincronía).
       Riesgo de deriva: tratar el YAML como fuente de verdad y regenerar el JSON,
