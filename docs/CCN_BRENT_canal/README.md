@@ -21,6 +21,12 @@ la cápsula (`results/reports/*.json`, `results/predictions/*.csv`,
 No hay cifras manuales: cualquier número del documento es trazable a esos
 ficheros.
 
+Las figuras chartistas (`canal_galeria`, `canal_oos_2026`, `canal_vs_crossasset`)
+dibujan el túnel del canal sobre el precio real: la galería y la de cross-asset
+usan ventanas del `dataset_wide_with_target.csv`; la del OOS abr–jun 2026 usa la
+serie FRED `DCOILBRENTEU` (fuente original del proyecto) cruzada con
+`results/predictions/oos_recent_predictions.csv`.
+
 ## Estructura
 
 - Secciones 1–5: introducción, datos, metodología, resultados y discusión.

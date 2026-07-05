@@ -78,6 +78,11 @@
   ol.roadmap{margin:.4rem 0 0 1.2rem; font-size:.92rem}
   ol.roadmap li{margin-bottom:.55rem}
   ol.roadmap b{color:var(--burgundy)}
+  figure.chart{margin:1.5rem 0 .5rem; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:.9rem; box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  figure.chart img{width:100%; height:auto; display:block; border-radius:8px}
+  figure.chart figcaption{font-size:.82rem; color:#55555c; margin-top:.6rem; padding:0 .3rem}
+  figure.chart figcaption b{color:var(--charcoal)}
 </style>
 </head>
 <body>
@@ -174,6 +179,15 @@
   <p class="muted">Línea negra = ΔAUC 0. Los cuatro IC95 quedan íntegramente a la derecha del cero
   (+0.019…+0.057); frente a la tabular sola, ΔAUC ≈ +0.47/+0.49. P(solo-precio gana) = 100%.</p>
 
+  <figure class="chart">
+    <img src="figuras_html/canal_vs_crossasset.png" alt="Canal sobre el precio del Brent frente a activos cross-asset en la misma ventana">
+    <figcaption><b>La intuición sobre el precio.</b> A la izquierda, el túnel ascendente es evidente en
+    la trayectoria del Brent (el detector solo-precio lo lee directamente, AUC 0.97). A la derecha, los
+    activos históricamente correlacionados (EURUSD, DAX, oro) recorren <i>la misma ventana</i> sin
+    reproducir esa geometría: la correlación opera sobre los retornos, no sobre la forma local del
+    precio — por eso la rama cross-asset se queda en AUC ≈ 0.50.</figcaption>
+  </figure>
+
   <div class="callout"><b>Implicación de diseño:</b> el detector de producción usa únicamente el precio
   del Brent. Menos datos, menos dependencias, mejor rendimiento — y una respuesta clara al comité sobre
   por qué se descartó el canal cross-asset.</div>
@@ -205,6 +219,15 @@
       la prueba más dura contra el data snooping. Caveat: muestra de 3 meses.</p>
     </div>
   </div>
+
+  <figure class="chart">
+    <img src="figuras_html/canal_oos_2026.png" alt="Régimen detectado sobre el precio real del Brent en el OOS abril-junio 2026">
+    <figcaption><b>Cómo lo usa una dirección de riesgos.</b> El detector marca el túnel ascendente
+    mientras el Brent sube hacia su máximo de abril y, tras el giro, el túnel descendente a lo largo de
+    toda la caída hasta junio. El fondo sombrea el régimen predicho día a día; los puntos verdes son
+    aciertos y las cruces los pocos fallos, concentrados en la transición volátil de mediados de abril.
+    Es un <b>descriptor del régimen vigente</b>, no una predicción del siguiente movimiento.</figcaption>
+  </figure>
 </section>
 
 <section id="h4">
@@ -226,6 +249,17 @@
 
 <section id="capas">
   <h2><span class="n">07</span>Chartismo por capas — qué figuras existen de verdad en el Brent</h2>
+  <p class="lead">Antes del detalle, así es como el algoritmo "dibuja" el patrón sobre casos reales del
+  Brent: traza el mismo túnel que un chartista marcaría a mano, con la recta central y las paralelas
+  que tocan los extremos.</p>
+
+  <figure class="chart">
+    <img src="figuras_html/canal_galeria.png" alt="Galería de canal ascendente, descendente y rango reales del Brent con el túnel detectado">
+    <figcaption><b>Galería de patrones reales con el túnel detectado:</b> canal ascendente (oct-2021),
+    canal descendente (jul–ago 2024) y rango sin dirección (sep-2025). La calidad del ajuste sobre
+    casos reales es la contrapartida visual de los AUC elevados de la tabla siguiente.</figcaption>
+  </figure>
+
   <p class="lead">Extendiendo el detector binario a las 8 figuras del etiquetador (out-of-time 2020–2026):</p>
   <div class="barrow"><span>Canal ascendente <span class="muted">(n+ 2.109)</span></span><div class="track"><div class="fill" style="width:97.3%;background:var(--burgundy)"></div></div><span class="val">0.973</span></div>
   <div class="barrow"><span>Canal descendente <span class="muted">(n+ 1.686)</span></span><div class="track"><div class="fill" style="width:95.6%;background:var(--burgundy-l)"></div></div><span class="val">0.956</span></div>

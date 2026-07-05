@@ -350,6 +350,23 @@ a la imagen sola: el canal adicional actúa como ruido que diluye la señal
 morfológica. Tercera: eliminar también el mapa macro del tercer canal (variante
 solo-precio) produce la mejor detección en ambos patrones.
 
+La intuición de este resultado se aprecia mejor sobre el propio precio
+(Figura~\ref{fig:canalvscross}): en una ventana con un canal ascendente nítido,
+la geometría del túnel es evidente en la trayectoria del Brent, mientras que los
+activos históricamente correlacionados (EURUSD, DAX, oro) recorren la misma
+ventana sin reproducir esa forma. La correlación opera sobre los retornos, no
+sobre la geometría local del nivel; por eso una rama alimentada solo con
+\emph{cross-asset} no puede ``ver'' el canal.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.98\textwidth]{canal_vs_crossasset.pdf}
+    \caption{La geometría del canal es una propiedad local del precio del Brent.
+    Izquierda: túnel ascendente ajustado sobre la ventana del Brent. Derecha: los
+    activos correlacionados sobre la misma ventana no llevan esa estructura.}
+    \label{fig:canalvscross}
+\end{figure}
+
 Para elevar esta observación a afirmación estadística, se estimó la distribución
 de $\Delta\mathrm{AUC} = \mathrm{AUC}_{\text{solo-precio}} -
 \mathrm{AUC}_{\text{rival}}$ mediante \emph{bootstrap} estratificado con
@@ -398,6 +415,26 @@ Canal descendente & 49 & 0.902 & 0.819 & 0.851 & 0.827 & 0.878 & 0.575 \\
     \label{fig:oos}
 \end{figure}
 
+La lectura operativa se ve con claridad al proyectar el régimen detectado sobre
+el precio real (Figura~\ref{fig:canaloos}): el detector marca el túnel ascendente
+mientras el Brent sube hacia su máximo de abril y, tras el giro, identifica el
+túnel descendente a lo largo de toda la caída hasta junio, con los aciertos
+concentrados en las pendientes limpias y los pocos fallos en la transición
+volátil de mediados de abril. Es exactamente la forma en que una dirección de
+riesgos consumiría la señal: un descriptor del régimen vigente, no una predicción
+del siguiente movimiento.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.98\textwidth]{canal_oos_2026.pdf}
+    \caption{Uso operativo del detector sobre el precio real del Brent (FRED) en
+    el trimestre out-of-sample. Túnel ascendente (verde) sobre la subida hasta el
+    máximo de abril; túnel descendente (rojo) sobre la caída posterior; el fondo
+    sombrea el régimen predicho día a día y los marcadores señalan aciertos y
+    fallos frente a la etiqueta geométrica.}
+    \label{fig:canaloos}
+\end{figure}
+
 Con la cautela de una muestra de tres meses, el resultado confirma que el modelo
 entrenado hasta marzo generaliza al trimestre siguiente sin recalibración: la
 detección de canal no es un artefacto del periodo de entrenamiento.
@@ -435,6 +472,23 @@ datos (Figura~\ref{fig:adaptativa}).
 
 \subsection{Chartismo por capas: qué patrones son detectables}
 \label{sec:multipatron}
+Antes del detalle cuantitativo conviene ver qué ``dibuja'' realmente el sistema.
+La Figura~\ref{fig:galeria} muestra tres ventanas reales del Brent con el túnel
+que el algoritmo detecta: un canal ascendente, uno descendente y un rango
+lateral, cada uno con la recta central y las paralelas que un chartista trazaría
+a mano. La calidad del ajuste sobre casos reales es la contrapartida visual de
+los AUC elevados.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{canal_galeria.pdf}
+    \caption{Galería de patrones reales del Brent con el túnel detectado por el
+    sistema: canal ascendente (oct-2021), canal descendente (jul--ago 2024) y
+    rango sin dirección (sep-2025). La etiqueta geométrica y su confianza figuran
+    en cada panel.}
+    \label{fig:galeria}
+\end{figure}
+
 Extendiendo el esquema binario a las ocho clases del etiquetador
 (Figura~\ref{fig:multipatron}): los canales son detectables con AUC 0.96--0.97;
 el rango es detectable con AUC 0.83; el doble techo/suelo emite señal débil
