@@ -1,0 +1,182 @@
+{
+  "ascending_channel": {
+    "mean": {
+      "trend_slope": 0.22574427691150392,
+      "residual_std": 1.3381847379938876,
+      "pattern_range": 8.803604123448821,
+      "n_maxima": 3.6527093596059115,
+      "n_minima": 3.7118226600985222,
+      "symmetry_score": 0.5080216580521001,
+      "drawdown": -0.04460499783765268,
+      "volatility_ratio": 1.038728010942168,
+      "compression_ratio": 1.1890014123970725,
+      "breakout_strength": 0.3321729666354355,
+      "return_mean": 0.002795577463705763,
+      "return_std": 0.00908050867476994
+    },
+    "std": {
+      "trend_slope": 0.14542238205954228,
+      "residual_std": 1.0715017805284046,
+      "pattern_range": 5.111851433623072,
+      "n_maxima": 1.0481417049973552,
+      "n_minima": 1.0977846604269828,
+      "symmetry_score": 0.25664031833629125,
+      "drawdown": 0.04360778535836648,
+      "volatility_ratio": 0.5892530674441083,
+      "compression_ratio": 1.053812295802896,
+      "breakout_strength": 0.2622410000064995,
+      "return_mean": 0.0024670807323740646,
+      "return_std": 0.006155662564264938
+    }
+  },
+  "descending_channel": {
+    "mean": {
+      "trend_slope": -0.30917629501932375,
+      "residual_std": 2.235066498367215,
+      "pattern_range": 12.626809954709143,
+      "n_maxima": 3.62109375,
+      "n_minima": 3.75,
+      "symmetry_score": 0.4952533726947761,
+      "drawdown": -0.16572576528791655,
+      "volatility_ratio": 1.4914322408921377,
+      "compression_ratio": 1.5211058672204856,
+      "breakout_strength": -0.30721153066410944,
+      "return_mean": -0.004018806062647045,
+      "return_std": 0.014221370090892381
+    },
+    "std": {
+      "trend_slope": 0.21210523878139553,
+      "residual_std": 1.0316585318791094,
+      "pattern_range": 6.022029471321861,
+      "n_maxima": 0.8620607888721871,
+      "n_minima": 0.9560661587986472,
+      "symmetry_score": 0.24557813122819666,
+      "drawdown": 0.11030398203863923,
+      "volatility_ratio": 0.7964626927739772,
+      "compression_ratio": 1.0907016764638866,
+      "breakout_strength": 0.29391337802776574,
+      "return_mean": 0.0049247364686817625,
+      "return_std": 0.008795406216406692
+    }
+  },
+  "double_bottom": {
+    "mean": {
+      "trend_slope": 0.029378895914568104,
+      "residual_std": 1.5920389793022833,
+      "pattern_range": 5.834167490468753,
+      "n_maxima": 3.6875,
+      "n_minima": 3.6875,
+      "symmetry_score": 0.5594489302775858,
+      "drawdown": -0.06381454208712221,
+      "volatility_ratio": 1.4444661164153212,
+      "compression_ratio": 1.0899833554776848,
+      "breakout_strength": 0.21002883878786216,
+      "return_mean": 0.00046486651659900373,
+      "return_std": 0.00909354459282203
+    },
+    "std": {
+      "trend_slope": 0.0740579672705469,
+      "residual_std": 0.5505843696637276,
+      "pattern_range": 1.9626920283618952,
+      "n_maxima": 0.582961190818051,
+      "n_minima": 0.46351240544347894,
+      "symmetry_score": 0.25772408380302336,
+      "drawdown": 0.015263749250881089,
+      "volatility_ratio": 1.0006035398725344,
+      "compression_ratio": 0.46182585675811627,
+      "breakout_strength": 0.2938140810558888,
+      "return_mean": 0.0010367819130586583,
+      "return_std": 0.0021650142355145396
+    }
+  },
+  "double_top": {
+    "mean": {
+      "trend_slope": -0.030699507378884897,
+      "residual_std": 1.4622945978871225,
+      "pattern_range": 5.525698723077013,
+      "n_maxima": 3.7096774193548385,
+      "n_minima": 3.6451612903225805,
+      "symmetry_score": 0.6302658705017123,
+      "drawdown": -0.06433697652121632,
+      "volatility_ratio": 1.351915972430416,
+      "compression_ratio": 1.2855308464862232,
+      "breakout_strength": -0.17815282867344379,
+      "return_mean": -0.0006715233816884159,
+      "return_std": 0.008931592206457097
+    },
+    "std": {
+      "trend_slope": 0.07634157062392778,
+      "residual_std": 0.8188278944137959,
+      "pattern_range": 3.2834807471154286,
+      "n_maxima": 0.681248776836867,
+      "n_minima": 0.6978486339607721,
+      "symmetry_score": 0.2152499129296055,
+      "drawdown": 0.026762530009806846,
+      "volatility_ratio": 0.5123398197184499,
+      "compression_ratio": 0.5397421254107408,
+      "breakout_strength": 0.3360692464371583,
+      "return_mean": 0.0011134241631983901,
+      "return_std": 0.0024857058535442543
+    }
+  },
+  "inverse_head_shoulders": {
+    "mean": {
+      "trend_slope": 0.04133675431692584,
+      "residual_std": 0.9409910027025584,
+      "pattern_range": 3.8800010781152343,
+      "n_maxima": 3.0,
+      "n_minima": 5.0,
+      "symmetry_score": 0.6881439970650867,
+      "drawdown": -0.08991890917519973,
+      "volatility_ratio": 1.092099710402365,
+      "compression_ratio": 0.5326456379280118,
+      "breakout_strength": 0.195446484453623,
+      "return_mean": -0.00017705185591857214,
+      "return_std": 0.010335644958081803
+    },
+    "std": {
+      "trend_slope": 1.0,
+      "residual_std": 1.0,
+      "pattern_range": 1.0,
+      "n_maxima": 1.0,
+      "n_minima": 1.0,
+      "symmetry_score": 1.0,
+      "drawdown": 1.0,
+      "volatility_ratio": 1.0,
+      "compression_ratio": 1.0,
+      "breakout_strength": 1.0,
+      "return_mean": 1.0,
+      "return_std": 1.0
+    }
+  },
+  "range": {
+    "mean": {
+      "trend_slope": 4.056131092266457e-05,
+      "residual_std": 2.2557509525849513,
+      "pattern_range": 8.41744061721449,
+      "n_maxima": 3.729032258064516,
+      "n_minima": 3.729032258064516,
+      "symmetry_score": 0.7334388366640207,
+      "drawdown": -0.10360961147912097,
+      "volatility_ratio": 1.2111916710402142,
+      "compression_ratio": 1.0609062209910454,
+      "breakout_strength": -0.07869862901875405,
+      "return_mean": -0.0006433420710240731,
+      "return_std": 0.013134989897293663
+    },
+    "std": {
+      "trend_slope": 0.06980894965722165,
+      "residual_std": 1.195338140932462,
+      "pattern_range": 4.574632395222995,
+      "n_maxima": 0.7813113659561856,
+      "n_minima": 0.844791842422696,
+      "symmetry_score": 0.19775745620142465,
+      "drawdown": 0.06999260234283189,
+      "volatility_ratio": 0.6417837217638767,
+      "compression_ratio": 0.5018652149618046,
+      "breakout_strength": 0.3393778147937939,
+      "return_mean": 0.0022228180323282357,
+      "return_std": 0.008636534788025809
+    }
+  }
+}

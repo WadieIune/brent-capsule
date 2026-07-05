@@ -1,0 +1,47 @@
+{
+  "n_oos": 395,
+  "signal": "sign",
+  "fee_bps": 0.0,
+  "strategy": {
+    "n": 395,
+    "cumulative_return": 0.017074434693634677,
+    "annualized_return": 0.20655657628695975,
+    "annualized_vol": 0.6270695212642959,
+    "sharpe_annual": 0.32939980222687415,
+    "psr_vs_zero": 0.6600287116575583,
+    "max_drawdown": -0.5906940436335408,
+    "hit_rate": 0.5329949238578681
+  },
+  "buy_and_hold": {
+    "n": 395,
+    "cumulative_return": 0.9714216449743072,
+    "annualized_return": 0.628675682203598,
+    "annualized_vol": 0.6259501227597836,
+    "sharpe_annual": 1.0043542757557067,
+    "psr_vs_zero": 0.8954307135652084,
+    "max_drawdown": -0.5097123297479138,
+    "hit_rate": 0.5355329949238579
+  },
+  "deflated_sharpe": {
+    "deflated_sharpe_ratio": 1.6951765969275279e-06,
+    "n_trials": 7,
+    "sr_trials_variance": 8.481786580272063,
+    "expected_max_sharpe_annual": 4.038773567077519,
+    "observed_sharpe_annual": 0.32939980222687415
+  },
+  "pbo": {
+    "pbo": 0.381973581973582,
+    "n_combinations": 12870,
+    "logit_mean": 0.4552376046851325,
+    "logit_median": 1.6094379124341007
+  },
+  "sharpe_per_fold": [
+    -3.420037131644024,
+    2.435374927046546,
+    2.263351611316494,
+    -1.9880776122796384,
+    -0.3676131044439264,
+    -1.2086188342802087,
+    4.850985412098228
+  ]
+}

@@ -1,7 +1,31 @@
-# Salidas de ejecución (se regeneran al reproducir)
+# Salidas de ejecución: se ignoran los artefactos pesados/regenerables, pero se
+# versionan los entregables ligeros (Excel, JSON de métricas, predicciones y el
+# artefacto del detector de canal) para que los revisores puedan validarlos.
 results/*
 !results/.gitkeep
+!results/RESULTS_README.md
+!results/reports
+!results/reports/**
+!results/predictions
+!results/predictions/**
+!results/metadata
+!results/metadata/**
+!results/models
+results/models/*
+!results/models/detector_canal_heads.joblib
+!results/models/torch_training_report_*.json
 
 # Python
 __pycache__/
 *.py[cod]
+
+# LaTeX (compilaciones locales)
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+docs/**/*.log
+docs/**/*.out
+docs/**/*.toc

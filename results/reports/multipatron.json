@@ -1,0 +1,65 @@
+{
+  "double_bottom": {
+    "auc": 0.6393431983385254,
+    "f1": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "pos_train": 50,
+    "pos_test": 48,
+    "base_rate": 0.0243161094224924
+  },
+  "double_top": {
+    "auc": 0.6790087400484597,
+    "f1": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "pos_train": 55,
+    "pos_test": 48,
+    "base_rate": 0.0243161094224924
+  },
+  "ascending_channel": {
+    "auc": 0.9732253642090889,
+    "f1": 0.8996328029375765,
+    "precision": 0.8760429082240763,
+    "recall": 0.9245283018867925,
+    "pos_train": 2109,
+    "pos_test": 795,
+    "base_rate": 0.4027355623100304
+  },
+  "descending_channel": {
+    "auc": 0.9556638990981843,
+    "f1": 0.8442367601246106,
+    "precision": 0.8672,
+    "recall": 0.8224582701062215,
+    "pos_train": 1686,
+    "pos_test": 659,
+    "base_rate": 0.33383991894630194
+  },
+  "high_tight_flag": {
+    "skipped": true,
+    "reason": "soporte insuficiente",
+    "pos_train": 3,
+    "pos_test": 0
+  },
+  "head_shoulders": {
+    "skipped": true,
+    "reason": "soporte insuficiente",
+    "pos_train": 1,
+    "pos_test": 0
+  },
+  "inverse_head_shoulders": {
+    "skipped": true,
+    "reason": "soporte insuficiente",
+    "pos_train": 5,
+    "pos_test": 1
+  },
+  "range": {
+    "auc": 0.8253669942216797,
+    "f1": 0.521181001283697,
+    "precision": 0.5702247191011236,
+    "recall": 0.4799054373522459,
+    "pos_train": 803,
+    "pos_test": 423,
+    "base_rate": 0.21428571428571427
+  }
+}

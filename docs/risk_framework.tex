@@ -1,0 +1,160 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=black, urlcolor=blue}
+
+\definecolor{cBlue}{HTML}{E6F1FB}
+\definecolor{cBlueD}{HTML}{0C447C}
+\definecolor{cTeal}{HTML}{E1F5EE}
+\definecolor{cTealD}{HTML}{0F6E56}
+\definecolor{cGray}{HTML}{F1EFE8}
+\definecolor{cGrayD}{HTML}{444441}
+
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+
+\title{\textbf{Control de capital por posiciones en una cartera de commodities}\\[2pt]
+\large Marco de riesgo de 4 capas y especificación de dashboard\\
+\normalsize BRENT Pattern System v2 --- detector de canal (solo precio)}
+\author{}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Contexto y base de evidencia}
+El detector de patrones chartistas (imagen GAF del precio del Brent + EfficientNet-B1)
+se ha validado empíricamente. El mandato de un \emph{Risk Director} no es predecir la
+direcci\'on, sino \textbf{controlar el capital y sobrevivir a los reg\'imenes}. Los
+hallazgos delimitan qu\'e se puede y qu\'e no se puede hacer:
+
+\begin{table}[h]
+\centering\small
+\begin{tabularx}{\textwidth}{L L}
+\toprule
+\textbf{Hallazgo emp\'irico} & \textbf{Implicaci\'on para riesgo}\\
+\midrule
+Direcci\'on del Brent no predecible (corr $\approx 0$, hit $\approx$ base rate) & Prohibido dimensionar capital por ``se\~nal direccional'' del modelo\\
+Chartismo no pasa el backtest (DSR $=0$, pierde vs buy\&hold, MaxDD $-59\%$) & El patr\'on no justifica subir tama\~no; sirve de \emph{challenge} al desk\\
+Volatilidad s\'i predecible (persistencia, hit $0.58$--$0.72$) & Palanca central: sizing y l\'imites en funci\'on del riesgo\\
+Detecci\'on de canal fiable y estable (AUC $0.97$, sin decaimiento a 12m) & \'Usalo como descriptor de r\'egimen, no como alfa\\
+Cross-asset no predice direcci\'on pero define correlaci\'on & Clave para agregaci\'on de riesgo de cartera, no para el trade\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Marco de control de capital en 4 capas}
+Capas de protecci\'on alrededor del capital: cada una acota una dimensi\'on de riesgo.
+La Capa~3 es la \'unica alimentada por el detector, y solo como \emph{descriptor}.
+
+\begin{center}
+\begin{tikzpicture}[font=\small, node distance=0mm]
+\tikzstyle{layer}=[rounded corners=6pt, minimum width=13cm, minimum height=1.15cm, align=center, draw]
+\node[layer, fill=cBlue, draw=cBlueD, text=cBlueD] (l4) {\textbf{Capa 4 · Riesgo de cartera y correlaci\'on}\\ VaR/ES · netting largo-corto · correlaci\'on m\'ovil};
+\node[layer, fill=cTeal, draw=cTealD, text=cTealD, below=3mm of l4, minimum width=11.5cm] (l3) {\textbf{Capa 3 · Overlay de r\'egimen} \; $\blacktriangleleft$ detector\\ prob. de canal como descriptor, no como se\~nal};
+\node[layer, fill=cBlue, draw=cBlueD, text=cBlueD, below=3mm of l3, minimum width=10cm] (l2) {\textbf{Capa 2 · L\'imites duros}\\ bruto/neto · concentraci\'on · drawdown y stop};
+\node[layer, fill=cBlue, draw=cBlueD, text=cBlueD, below=3mm of l2, minimum width=8.5cm] (l1) {\textbf{Capa 1 · Sizing por riesgo}\\ vol targeting · tama\~no $\propto 1/\sigma$};
+\node[layer, fill=cGray, draw=cGrayD, text=cGrayD, below=3mm of l1, minimum width=6cm, minimum height=0.9cm] (c) {\textbf{Capital} · presupuesto de riesgo};
+\end{tikzpicture}
+\end{center}
+
+\begin{description}
+\item[Capa 1 --- Sizing por riesgo (diario).] Como la direcci\'on no es forecastable pero
+la volatilidad s\'i, cada posici\'on (larga o corta) se dimensiona inversamente a su
+volatilidad prevista: $w_i = (\text{riesgo objetivo}/\sigma_i)/\sum_j (1/\sigma_j)$
+(risk parity). Objetivo de vol de cartera fijo; si sube la vol, el tama\~no baja solo.
+\item[Capa 2 --- L\'imites duros (intrad\'ia).] Caps de bruto y neto (el sesgo direccional
+debe estar acotado: no hay edge), concentraci\'on por activo y por sector (energ\'ia/
+metales/agr\'icolas), y drawdown/stop con de-risking autom\'atico. Riesgo de curva/roll
+si son futuros.
+\item[Capa 3 --- Overlay de r\'egimen (diario).] El clasificador de canal etiqueta el
+r\'egimen (ascendente/descendente/rango) en el dashboard. \emph{Nunca} aumenta capital;
+solo marca posiciones contra-r\'egimen para revisi\'on y dispara rec\'alculo de riesgo.
+\item[Capa 4 --- Cartera y correlaci\'on (diario).] VaR/ES, netting real de largos y cortos,
+correlaci\'on en ventana m\'ovil y ratio de diversificaci\'on: detectar cu\'ando ``posiciones
+diversificadas'' colapsan a una sola apuesta en estr\'es.
+\end{description}
+
+\section{Especificaci\'on de dashboard}
+Consume las salidas del detector (\texttt{results/models/heads.joblib} $\to$ por instrumento
+y d\'ia: \texttt{prob\_ascending\_channel}, \texttt{prob\_descending\_channel},
+\texttt{pred\_canal}, \texttt{confianza}) m\'as el libro de posiciones y estimadores de
+volatilidad/correlaci\'on. Sem\'aforo: \textcolor{cTealD}{info} · \textcolor{orange}{aviso} ·
+\textcolor{red}{brecha}.
+
+\subsection*{Panel A --- Exposici\'on y sizing (Capa 1, diaria)}
+\begin{tabularx}{\textwidth}{L L}
+\toprule \textbf{M\'etrica} & \textbf{F\'ormula / gatillo}\\ \midrule
+Vol prevista $\sigma_i$ & EWMA($\lambda=0.94$) o GARCH(1,1) de retornos\\
+Tama\~no objetivo $w_i$ & $(\text{riesgo obj.}/\sigma_i)/\sum(1/\sigma_j)$\\
+Ratio vol realizada/objetivo & aviso $>1.2$ recortar · brecha $>1.5$ de-risk 50\%\\
+\bottomrule
+\end{tabularx}
+
+\subsection*{Panel B --- L\'imites duros (Capa 2, intrad\'ia)}
+\begin{tabularx}{\textwidth}{L L}
+\toprule \textbf{M\'etrica} & \textbf{Gatillo}\\ \midrule
+Utilizaci\'on bruto & aviso $>85\%$ · brecha $\geq 100\%$ bloquea nuevas\\
+Sesgo neto & $|neto|>$l\'imite $\to$ justificar (no hay edge direccional)\\
+Concentraci\'on activo / sector & aviso $>25\%$ · brecha $>35\%$ activo; $>50\%$ sector\\
+Drawdown vs stop & aviso $-8\%$ de-risk 30\% · brecha $-12\%$ flat\\
+\bottomrule
+\end{tabularx}
+
+\subsection*{Panel C --- R\'egimen (Capa 3, alimentado por el detector, diaria)}
+\begin{tabularx}{\textwidth}{L L}
+\toprule \textbf{M\'etrica} & \textbf{F\'ormula (salidas del detector)}\\ \midrule
+R\'egimen por activo & \texttt{pred\_canal} + \texttt{confianza}\\
+\% cartera contra-r\'egimen & exposici\'on con signo opuesto al r\'egimen, ponderado por confianza / bruto\\
+Cambio de r\'egimen & \texttt{pred\_canal} cambia con confianza $>0.7$ en $\geq 2$ d\'ias\\
+\bottomrule
+\end{tabularx}
+
+\noindent\emph{Gatillos Panel C:} aviso contra-r\'egimen $>30\%$ $\to$ revisi\'on del desk;
+cambio de r\'egimen $\to$ recalcular VaR/correlaciones; confianza media $<0.5$ $\to$ no accionar.
+
+\subsection*{Panel D --- Cartera y correlaci\'on (Capa 4, diaria)}
+\begin{tabularx}{\textwidth}{L L}
+\toprule \textbf{M\'etrica} & \textbf{Gatillo}\\ \midrule
+VaR/ES 1d 99\% & aviso VaR$>$l\'imite · brecha excepciones ES$>2$ en 20d\\
+Correlaci\'on media m\'ovil (60d) & aviso $\bar\rho>0.6$ (cae la diversificaci\'on)\\
+Ratio de diversificaci\'on & brecha $<1.3$ (cartera colapsa a una apuesta)\\
+Backtest de excepciones VaR & Kupiec/Christoffersen; fallo $\to$ recalibrar\\
+\bottomrule
+\end{tabularx}
+
+\subsection*{Panel E --- Salud del modelo y recalibraci\'on (diaria)}
+\begin{tabularx}{\textwidth}{L L}
+\toprule \textbf{M\'etrica} & \textbf{Umbral / gatillo}\\ \midrule
+Edad de la cabeza & aviso $>12$ meses $\to$ recalibrar (sin decaimiento, refresco anual)\\
+Frescura del dato & brecha \'ultimo precio $>3$ d\'ias h\'abiles $\to$ congelar se\~nal\\
+Deriva de entrada (PSI de confianza) & aviso PSI $>0.2$\\
+Dos relojes & r\'egimen/patr\'on: trimestral--anual · vol/correlaci\'on: diario (EWMA)\\
+\bottomrule
+\end{tabularx}
+
+\section{Gobernanza y notas de implementaci\'on}
+\begin{itemize}
+\item \textbf{Regla de oro:} ning\'un gatillo del Panel~C \emph{aumenta} capital; solo marca
+posiciones para revisi\'on o dispara rec\'alculo de riesgo. El sizing lo manda el riesgo
+(Paneles A/B), no el patr\'on.
+\item \textbf{Uso del modelo:} herramienta de \emph{challenge}. Ante ``m\'as capital porque
+rompe un canal ascendente'', el Risk Director tiene la evidencia (DSR$=0$) para exigir que
+el sizing se justifique por riesgo, no por chartismo.
+\item \textbf{Multi-commodity:} el detector est\'a validado en Brent; para el resto de la
+cartera se entrena una cabeza por commodity (mismo enfoque solo-precio).
+\item \textbf{Flujo diario:} \texttt{channel\_detector.py predict} sobre el precio actualizado
+$\to$ Panel~C; A/B/D consumen libro + estimadores; E vigila la salud.
+\end{itemize}
+
+\end{document}

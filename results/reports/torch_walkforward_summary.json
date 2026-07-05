@@ -1,0 +1,229 @@
+{
+  "scheme": "walk_forward",
+  "n_folds": 3,
+  "embargo": 5,
+  "max_future": 5,
+  "evaluation": {
+    "n": 922,
+    "classification": {
+      "accuracy": 0.35683297180043383,
+      "balanced_accuracy": 0.20113334222683213,
+      "macro_f1": 0.1808186712967712,
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          5,
+          13,
+          0,
+          0,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          8,
+          19,
+          0,
+          0,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          97,
+          209,
+          0,
+          0,
+          0,
+          26
+        ],
+        [
+          0,
+          2,
+          100,
+          217,
+          0,
+          0,
+          0,
+          20
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          68,
+          119,
+          0,
+          0,
+          0,
+          15
+        ]
+      ],
+      "labels": [
+        "double_bottom",
+        "double_top",
+        "ascending_channel",
+        "descending_channel",
+        "high_tight_flag",
+        "head_shoulders",
+        "inverse_head_shoulders",
+        "range"
+      ],
+      "per_class": {
+        "double_bottom": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 20
+        },
+        "double_top": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 28
+        },
+        "ascending_channel": {
+          "precision": 0.3489208633093525,
+          "recall": 0.2912912912912913,
+          "f1": 0.3175122749590834,
+          "support": 333
+        },
+        "descending_channel": {
+          "precision": 0.37608318890814557,
+          "recall": 0.640117994100295,
+          "f1": 0.47379912663755464,
+          "support": 339
+        },
+        "high_tight_flag": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "head_shoulders": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "inverse_head_shoulders": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "range": {
+          "precision": 0.234375,
+          "recall": 0.07425742574257425,
+          "f1": 0.11278195488721802,
+          "support": 202
+        }
+      },
+      "n": 922
+    },
+    "regression": {
+      "mae_future_return": 0.02730823526566867,
+      "rmse_future_return": 0.06413132044032523,
+      "mae_future_low": 0.04480069242438874,
+      "rmse_future_low": 0.18587651142856662,
+      "mae_future_high": 0.03853720518034455,
+      "rmse_future_high": 0.0860922101021999,
+      "directional_accuracy": 0.5021691973969631
+    }
+  },
+  "folds": [
+    {
+      "fold_id": 0,
+      "best_valid_fine": 0.24242424242424243,
+      "train_windows": 241,
+      "valid_windows": 26
+    },
+    {
+      "fold_id": 1,
+      "best_valid_fine": 0.22507913233719687,
+      "train_windows": 505,
+      "valid_windows": 73
+    },
+    {
+      "fold_id": 2,
+      "best_valid_fine": 0.2643733286827113,
+      "train_windows": 764,
+      "valid_windows": 119
+    }
+  ],
+  "backtest": {
+    "n_oos": 922,
+    "signal": "sign",
+    "fee_bps": 0.0,
+    "strategy": {
+      "n": 922,
+      "cumulative_return": -0.2659921430937089,
+      "annualized_return": -0.03164741502346737,
+      "annualized_vol": 0.32574213715676276,
+      "sharpe_annual": -0.09715480870759167,
+      "psr_vs_zero": 0.426389106060332,
+      "max_drawdown": -0.6246779190792242,
+      "hit_rate": 0.5032608695652174
+    },
+    "buy_and_hold": {
+      "n": 922,
+      "cumulative_return": 0.517307781033209,
+      "annualized_return": 0.16720889974860137,
+      "annualized_vol": 0.32557771810625386,
+      "sharpe_annual": 0.5135759926114843,
+      "psr_vs_zero": 0.8353713113307115,
+      "max_drawdown": -0.36173526849283155,
+      "hit_rate": 0.5315217391304348
+    },
+    "deflated_sharpe": {
+      "deflated_sharpe_ratio": 0.08435651861522558,
+      "n_trials": 3,
+      "sr_trials_variance": 0.5343819556850886,
+      "expected_max_sharpe_annual": 0.623412310301679,
+      "observed_sharpe_annual": -0.09715480870759167
+    },
+    "pbo": {
+      "pbo": 0.7291375291375292,
+      "n_combinations": 12870,
+      "logit_mean": -0.2893628586129452,
+      "logit_median": 0.0
+    },
+    "sharpe_per_fold": [
+      0.28594914561781015,
+      -1.004907872544702,
+      0.23500527557334738
+    ]
+  }
+}

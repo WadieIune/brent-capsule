@@ -3,3 +3,6 @@ pandas==2.2.2
 requests==2.32.3
 openpyxl==3.1.5
 pyyaml==6.0.2
+# Requeridos por code/channel_detector.py (cabezas logísticas del detector de canal)
+scikit-learn==1.4.2
+joblib==1.4.2

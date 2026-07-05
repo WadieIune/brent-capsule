@@ -1,0 +1,161 @@
+{
+  "environment": {
+    "timestamp_utc": "2026-07-04T16:05:57+00:00",
+    "python_version": "3.12.3",
+    "platform": "Linux-6.17.0-23-generic-x86_64-with-glibc2.39",
+    "processor": "x86_64",
+    "numpy_version": "1.26.4",
+    "pandas_version": "2.2.2",
+    "git_commit": "6096495d06c00e4615b20c5b2600d1696f739043",
+    "torch_version": "2.2.2+cpu",
+    "cuda_available": false,
+    "cuda_device": null
+  },
+  "config": {
+    "data": {
+      "mode": "series_bundle",
+      "csv_path": "data/brent_market.csv",
+      "date_col": "date",
+      "target_col": "BRENT",
+      "rename_map": {},
+      "resample_rule": "B",
+      "download": {
+        "enabled": false,
+        "fred_api_key": null,
+        "brent": {
+          "provider": "fred",
+          "series_id": "DCOILBRENTEU",
+          "column_name": "brent_close"
+        },
+        "eurusd": {
+          "provider": "ecb",
+          "flow_ref": "EXR",
+          "series_key": "D.USD.EUR.SP00.A",
+          "column_name": "eurusd"
+        },
+        "inflation": {
+          "provider": "fred",
+          "series_id": "CP0000EZ19M086NEST",
+          "column_name": "inflation"
+        },
+        "start": "2000-01-01",
+        "end": null
+      },
+      "series_bundle": {
+        "dataset_dir": "/home/wadie/Escritorio/brent-capsule/data",
+        "raw_wide_path": null,
+        "zscore_path": null,
+        "means_path": null,
+        "stds_path": null,
+        "x_train_path": null,
+        "y_train_path": null,
+        "x_test_path": null,
+        "y_test_path": null,
+        "bundle_target_col": "BRENT_fwd_logret_1",
+        "bundle_price_col": "BRENT",
+        "bundle_target_is_log_return": true,
+        "use_precomputed_split": true
+      }
+    },
+    "dataset": {
+      "lookback": 32,
+      "horizon": 1,
+      "support_resistance_horizon": 5,
+      "stride": 1,
+      "image_size": 96,
+      "train_split": 0.72,
+      "valid_split": 0.08,
+      "valid_ratio_within_precomputed_train": 0.1,
+      "min_label_confidence": 0.35,
+      "keep_unclassified": false,
+      "use_synthetic_pretrain": false,
+      "synthetic_samples": 8000,
+      "synthetic_seed": 123,
+      "feature_cols": [],
+      "feature_regex_keep": [],
+      "feature_regex_drop": [],
+      "embargo": 5,
+      "drop_dead_classes": true,
+      "min_class_support": 5
+    },
+    "cv": {
+      "scheme": "walk_forward",
+      "n_splits": 3,
+      "embargo": 5,
+      "valid_fraction": 0.15,
+      "expanding": true,
+      "rolling_train_size": null,
+      "min_train_size": 96,
+      "aggregate_test_paths": true
+    },
+    "training": {
+      "epochs": 6,
+      "fine_tune_epochs": 4,
+      "batch_size": 16,
+      "learning_rate": 0.0003,
+      "fine_tune_learning_rate": 0.0001,
+      "dropout": 0.3,
+      "regression_loss_weight": 0.5,
+      "unfreeze_last_blocks": 2,
+      "patience": 4,
+      "num_workers": 2,
+      "device": "cpu",
+      "pretrained_backbone": false,
+      "seed": 42,
+      "amp": false,
+      "cudnn_benchmark": true,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "cache_images": true,
+      "grad_clip_norm": 1.0,
+      "lr_scheduler": "cosine",
+      "monitor_metric": "macro_f1",
+      "class_weight_scheme": "balanced",
+      "use_focal_loss": false,
+      "focal_gamma": 2.0,
+      "freeze_backbone_bn": true
+    },
+    "outlier": {
+      "rolling_window": 10,
+      "target_cumulative_weight": 0.99,
+      "score_threshold": 0.68,
+      "min_dominant_confidence": 0.55,
+      "metric_distance_threshold": 2.5,
+      "volatility_spike_window": 20
+    },
+    "backtest": {
+      "enabled": true,
+      "periods_per_year": 252,
+      "signal": "sign",
+      "fee_bps": 0.0,
+      "pbo_partitions": 16
+    },
+    "output": {
+      "root_dir": "/home/wadie/Escritorio/brent-capsule/results",
+      "model_dir": "/home/wadie/Escritorio/brent-capsule/results/models",
+      "report_dir": "/home/wadie/Escritorio/brent-capsule/results/reports",
+      "dataset_dir": "/home/wadie/Escritorio/brent-capsule/results/datasets",
+      "metadata_dir": "/home/wadie/Escritorio/brent-capsule/results/metadata",
+      "cache_dir": "/home/wadie/Escritorio/brent-capsule/results/cache",
+      "tf_model_name": "brent_efficientnet_b1_tf.keras",
+      "torch_model_name": "brent_efficientnet_b1_torch.pt",
+      "window_table_name": "window_table.csv",
+      "prediction_report_name": "prediction_report.csv",
+      "outlier_report_name": "outlier_report.csv",
+      "metric_template_name": "metric_templates.json",
+      "profile_name": "bundle_profile.json",
+      "validation_name": "bundle_validation.json"
+    }
+  },
+  "headline_metrics": {
+    "scheme": "walk_forward",
+    "n_folds": 3,
+    "n_oos": 922,
+    "accuracy": 0.35683297180043383,
+    "balanced_accuracy": 0.20113334222683213,
+    "macro_f1": 0.1808186712967712,
+    "sharpe_annual": -0.09715480870759167,
+    "deflated_sharpe_ratio": 0.08435651861522558,
+    "pbo": 0.7291375291375292
+  }
+}

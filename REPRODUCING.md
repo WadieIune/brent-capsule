@@ -125,8 +125,24 @@ responsabilidades:
   (`01_Configuracion`) y en `run_manifest.json`, de modo que cualquier resultado
   es trazable a la configuración exacta que lo produjo.
 
+## Detector de canal (resultado principal del proyecto)
+
+Además del run base, la cápsula incluye `code/channel_detector.py`, que empaqueta
+el mejor modelo validado (imagen solo-precio + EfficientNet-B1 congelado + cabezas
+logísticas por patrón):
+
+```bash
+# reentrenar y reproducir la evaluación out-of-time (detector_solo_precio.json):
+python code/channel_detector.py train --config code/config_codeocean.yaml --cutoff 2020-08-20
+
+# inferencia sobre cualquier CSV de precios Brent (columnas date,BRENT):
+python code/channel_detector.py predict --prices brent.csv --out preds.csv
+```
+
+El artefacto entrenado se entrega en `results/models/detector_canal_heads.joblib`.
+
 ## Referencias metodológicas
 
-Ver `code/brent_pattern_system/` y el documento `BIBLIOGRAFIA.md` del repositorio
-principal (López de Prado 2018; Bailey & López de Prado 2012/2014 para PSR/DSR;
-Bailey et al. 2014/2017 para PBO/CSCV).
+Ver `code/brent_pattern_system/` (docstrings de `metrics.py` y `cv_purged.py`) y la
+bibliografía de `docs/references.bib` (López de Prado 2018; Bailey & López de
+Prado 2012/2014 para PSR/DSR; Bailey et al. 2014/2017 para PBO/CSCV).

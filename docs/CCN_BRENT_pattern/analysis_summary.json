@@ -1,0 +1,139 @@
+{
+  "requested_counts": {
+    "yahoo_finance": 28,
+    "fred": 9,
+    "ecb_aaa": 4
+  },
+  "bundle": {
+    "rows": 7004,
+    "feature_count": 180,
+    "base_series_present": 37,
+    "missing_requested_ecb": [
+      "EUR_AAA_2Y",
+      "EUR_AAA_5Y",
+      "EUR_AAA_10Y",
+      "EUR_AAA_30Y"
+    ]
+  },
+  "splits": {
+    "precomputed_train": {
+      "n": 986,
+      "start": "2019-12-02",
+      "end": "2024-11-20"
+    },
+    "precomputed_test": {
+      "n": 247,
+      "start": "2024-11-21",
+      "end": "2026-03-04"
+    },
+    "train_labeled": {
+      "n": 887,
+      "start": "2019-12-02",
+      "end": "2024-05-21"
+    },
+    "valid_labeled": {
+      "n": 99,
+      "start": "2024-05-22",
+      "end": "2024-11-20"
+    },
+    "test_labeled": {
+      "n": 244,
+      "start": "2024-11-21",
+      "end": "2026-02-26"
+    }
+  },
+  "metrics_summary": [
+    {
+      "split": "train",
+      "n": 887,
+      "pattern_acc": 0.8500563697857948,
+      "pattern_top2": 0.9526493799323562,
+      "ret_mae_pp": 3.150719440102475,
+      "ret_rmse_pp": 4.110486045918403,
+      "ret_sign_acc": 52.19842164599775,
+      "ret_r2": -1.2705076703747502,
+      "low_mae_pp": 4.17235015530083,
+      "high_mae_pp": 3.8796784670817557
+    },
+    {
+      "split": "valid",
+      "n": 99,
+      "pattern_acc": 0.5353535353535354,
+      "pattern_top2": 0.7777777777777778,
+      "ret_mae_pp": 3.1746390777832394,
+      "ret_rmse_pp": 3.944234541724333,
+      "ret_sign_acc": 47.474747474747474,
+      "ret_r2": -4.5900304767581614,
+      "low_mae_pp": 3.5781152629991326,
+      "high_mae_pp": 3.257912485838154
+    },
+    {
+      "split": "test",
+      "n": 244,
+      "pattern_acc": 0.5327868852459017,
+      "pattern_top2": 0.8155737704918032,
+      "ret_mae_pp": 2.644963002414811,
+      "ret_rmse_pp": 3.397652762202886,
+      "ret_sign_acc": 52.459016393442624,
+      "ret_r2": -2.432246346574011,
+      "low_mae_pp": 3.511726488536803,
+      "high_mae_pp": 3.715541785121637
+    },
+    {
+      "split": "all",
+      "n": 1230,
+      "pattern_acc": 0.7617886178861789,
+      "pattern_top2": 0.9113821138211382,
+      "ret_mae_pp": 3.0523157598867066,
+      "ret_rmse_pp": 3.9656784830098673,
+      "ret_sign_acc": 51.86991869918699,
+      "ret_r2": -1.5113279880152275,
+      "low_mae_pp": 3.9934709447087227,
+      "high_mae_pp": 3.797073440625345
+    }
+  ],
+  "latest_signal": {
+    "start": 6972,
+    "end": 7004,
+    "end_date": "2026-03-06",
+    "predicted_pattern": "ascending_channel",
+    "pred_return": 0.009870411828160286,
+    "pred_low": 0.004546092823147774,
+    "pred_high": -0.029924163594841957,
+    "target_level": 86.25303557249907,
+    "support_level": 85.79828546678272,
+    "resistance_level": 82.85418073988836,
+    "prob_double_bottom": 0.0009605846717022359,
+    "prob_double_top": 0.0009577092714607716,
+    "prob_ascending_channel": 0.8420583605766296,
+    "prob_descending_channel": 0.13096250593662262,
+    "prob_high_tight_flag": 0.0001538184005767107,
+    "prob_head_shoulders": 0.0001659674890106544,
+    "prob_inverse_head_shoulders": 0.00019818484724964947,
+    "prob_range": 0.024542877450585365,
+    "trend_slope": 0.43170210809418735,
+    "residual_std": 2.836341219726491,
+    "pattern_range": 17.77000428246094,
+    "n_maxima": 4.0,
+    "n_minima": 4.0,
+    "symmetry_score": 0.8082911506706776,
+    "drawdown": -0.020845431430763228,
+    "volatility_ratio": 2.0086073139284633,
+    "compression_ratio": 6.737327384721501,
+    "breakout_strength": 0.8503095545093627,
+    "return_mean": 0.007003858859455347,
+    "return_std": 0.012244652026783816,
+    "pattern_entropy": 0.2499641199030534,
+    "metric_distance": 1.9756791866506505,
+    "decay_beta": 0.6309573444801932,
+    "volatility_spike": 1.0004231482775887,
+    "dominant_pattern_window": "ascending_channel",
+    "dominant_confidence_window": 0.399504390990828,
+    "weighted_outlier_score": 0.4958038157852698,
+    "outlier_flag": 1,
+    "current_price": 85.41000366210938,
+    "pred_return_pct": 0.9870411828160286,
+    "pred_low_pct": 0.4546092823147774,
+    "pred_high_pct": -2.9924163594841957
+  }
+}

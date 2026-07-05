@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BRENT Pattern System v3 — Detector de canales de tendencia</title>
+<style>
+  :root{
+    --burgundy:#7A1E2C; --burgundy-l:#9e3547; --charcoal:#2b2b2e; --ink:#1d1d20;
+    --paper:#faf7f2; --card:#ffffff; --blue:#2C5F7A; --gold:#B8860B; --green:#3A6B35;
+    --grey:#8a8a90; --line:#e6e0d6;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif; background:var(--paper); color:var(--ink); line-height:1.55}
+  nav{position:sticky; top:0; z-index:10; background:rgba(250,247,242,.95); backdrop-filter:blur(6px);
+      border-bottom:1px solid var(--line); display:flex; gap:.2rem; padding:.55rem 4vw; flex-wrap:wrap}
+  nav a{color:var(--charcoal); text-decoration:none; font-size:.82rem; padding:.3rem .65rem; border-radius:999px}
+  nav a:hover{background:var(--burgundy); color:#fff}
+  header{padding:9vh 6vw 7vh; background:linear-gradient(160deg, var(--charcoal) 0%, #46242b 70%, var(--burgundy) 100%); color:#f4efe8}
+  header .kicker{text-transform:uppercase; letter-spacing:.22em; font-size:.78rem; color:#d8b9be}
+  header h1{font-size:clamp(1.6rem,3.6vw,2.7rem); font-weight:650; margin:.6rem 0 .9rem; max-width:56rem}
+  header p.sub{max-width:52rem; color:#e8ddd2; font-size:1.02rem}
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1rem; margin-top:2.4rem; max-width:70rem}
+  .stat{background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15); border-radius:14px; padding:1rem 1.1rem}
+  .stat b{display:block; font-size:1.75rem; font-weight:700; color:#fff}
+  .stat span{font-size:.82rem; color:#dcccc0}
+  main{max-width:74rem; margin:0 auto; padding:0 4vw 6rem}
+  section{padding-top:4.2rem}
+  h2{font-size:1.5rem; color:var(--burgundy); margin-bottom:.4rem}
+  h2 .n{color:var(--grey); font-weight:500; margin-right:.5rem}
+  .lead{max-width:56rem; color:#43434a; margin-bottom:1.6rem}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:1rem}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1.1rem 1.2rem; box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  .card h3{font-size:.98rem; margin-bottom:.35rem; color:var(--charcoal)}
+  .card p{font-size:.86rem; color:#55555c}
+  .card .tag{display:inline-block; font-size:.7rem; letter-spacing:.08em; text-transform:uppercase; color:var(--burgundy); margin-bottom:.4rem; font-weight:600}
+  .flow{display:flex; flex-wrap:wrap; gap:.6rem; align-items:stretch; margin:1.2rem 0}
+  .flow .step{flex:1 1 150px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:.8rem .9rem; font-size:.82rem; position:relative}
+  .flow .step b{display:block; color:var(--burgundy); font-size:.85rem; margin-bottom:.25rem}
+  .barrow{display:grid; grid-template-columns:15rem 1fr 4.2rem; align-items:center; gap:.7rem; margin:.4rem 0; font-size:.86rem}
+  .barrow .track{background:#efe9df; border-radius:999px; height:1.05rem; position:relative; overflow:hidden}
+  .barrow .fill{height:100%; border-radius:999px; display:flex; align-items:center}
+  .barrow .val{font-variant-numeric:tabular-nums; font-weight:600; color:var(--charcoal)}
+  .muted{color:var(--grey); font-size:.8rem}
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:2rem}
+  @media(max-width:860px){.split{grid-template-columns:1fr}}
+  table{border-collapse:collapse; width:100%; font-size:.87rem; background:var(--card); border-radius:12px; overflow:hidden}
+  th,td{padding:.55rem .8rem; text-align:left; border-bottom:1px solid var(--line)}
+  th{background:var(--charcoal); color:#f2ede5; font-weight:600; font-size:.8rem; letter-spacing:.03em}
+  tr:last-child td{border-bottom:none}
+  td.num, th.num{text-align:right; font-variant-numeric:tabular-nums}
+  .good{color:var(--green); font-weight:700}
+  .bad{color:var(--burgundy); font-weight:700}
+  .callout{border-left:4px solid var(--burgundy); background:#f6ece9; padding:1rem 1.2rem; border-radius:0 12px 12px 0; margin:1.4rem 0; font-size:.95rem}
+  .callout b{color:var(--burgundy)}
+  .pill{display:inline-block; background:var(--charcoal); color:#fff; border-radius:999px; font-size:.72rem; padding:.18rem .6rem; margin:.15rem .2rem 0 0}
+  footer{border-top:1px solid var(--line); padding:2rem 4vw 3rem; color:var(--grey); font-size:.8rem; text-align:center}
+  code{background:#efe9df; border-radius:6px; padding:.08rem .4rem; font-size:.83em}
+  .ci{display:grid; grid-template-columns:16rem 1fr; gap:.7rem; align-items:center; margin:.5rem 0; font-size:.85rem}
+  .ci .axis{position:relative; height:1.6rem; background:linear-gradient(to right,#efe9df,#efe9df); border-radius:8px}
+  .ci .zero{position:absolute; left:12%; top:0; bottom:0; width:2px; background:var(--charcoal)}
+  .ci .seg{position:absolute; top:38%; height:24%; background:var(--burgundy); border-radius:4px}
+  .ci .dot{position:absolute; top:26%; width:.55rem; height:.55rem; background:var(--burgundy); border-radius:50%; border:2px solid #fff}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#que-es">Qué es</a>
+  <a href="#como">Cómo funciona</a>
+  <a href="#h1">Canales detectables</a>
+  <a href="#h2">Cross-asset no aporta</a>
+  <a href="#h3">Estabilidad y OOS 2026</a>
+  <a href="#h4">Sin edge de trading</a>
+  <a href="#capas">Chartismo por capas</a>
+  <a href="#repro">Reproducibilidad</a>
+</nav>
+
+<header>
+  <div class="kicker">BRENT Pattern System · v3 · chartismo cuantitativo para dirección de riesgos</div>
+  <h1>Detección de canales de tendencia en el Brent con CNN sobre imágenes de series temporales</h1>
+  <p class="sub">Cada ventana de 32 días del precio se convierte en una imagen (GASF/GADF) y una
+  EfficientNet-B1 congelada + cabezas logísticas deciden si el mercado dibuja un túnel ascendente o
+  descendente. Validado con el marco de López de Prado: CV purgada, walk-forward, DSR y PBO.</p>
+  <div class="stats">
+    <div class="stat"><b>0.973 / 0.956</b><span>AUC out-of-time (canal ascendente / descendente), test 2020–2026, n=1.974</span></div>
+    <div class="stat"><b>1.00 / 0.90</b><span>AUC en out-of-sample real abr–jun 2026 (datos nunca vistos, n=83)</span></div>
+    <div class="stat"><b>+0.026…+0.046</b><span>ΔAUC de solo-precio vs cross-asset (bootstrap B=3000, todos los IC95 &gt; 0)</span></div>
+    <div class="stat"><b>DSR ≈ 0</b><span>la detección del patrón NO se traduce en estrategia rentable (PBO 0.38)</span></div>
+  </div>
+</header>
+
+<main>
+
+<section id="que-es">
+  <h2><span class="n">01</span>Qué es el proyecto</h2>
+  <p class="lead">Una <b>primera capa de chartismo automatizado</b>: un sistema objetivo, versionado y
+  reproducible que clasifica la geometría reciente del precio del Brent. No pretende predecir el
+  mercado — el propio proyecto demuestra con rigor que eso no es posible con este esquema — sino dar a
+  la función de riesgos una lectura morfológica diaria, auditable y estable.</p>
+  <div class="cards">
+    <div class="card"><span class="tag">Activo</span><h3>Brent (FRED)</h3><p>Serie DCOILBRENTEU 2007–2026. Panel macro de 37 series y 180 variables para los experimentos cross-asset.</p></div>
+    <div class="card"><span class="tag">Etiquetas</span><h3>Supervisión débil geométrica</h3><p>Reglas sobre extremos locales, pendiente y R² definen 8 patrones chartistas; sin etiquetado manual.</p></div>
+    <div class="card"><span class="tag">Modelo</span><h3>Imagen + CNN</h3><p>GASF del nivel, GADF de retornos y mapa de la serie → EfficientNet-B1 (ImageNet, congelada) → cabeza logística por patrón.</p></div>
+    <div class="card"><span class="tag">Validación</span><h3>López de Prado</h3><p>CV purgada con embargo, walk-forward multipath, out-of-time 2020–2026, OOS real 2026, PSR/DSR/PBO.</p></div>
+  </div>
+</section>
+
+<section id="como">
+  <h2><span class="n">02</span>Cómo funciona</h2>
+  <div class="flow">
+    <div class="step"><b>1 · Ventana</b>32 días de negociación del precio del Brent (stride diario).</div>
+    <div class="step"><b>2 · Etiqueta débil</b>Reglas geométricas puntúan 8 figuras; gana la de mayor score si supera el umbral.</div>
+    <div class="step"><b>3 · Imagen 160×160</b>Canal R: GASF del nivel · Canal G: GADF de retornos · Canal B: mapa de la propia serie.</div>
+    <div class="step"><b>4 · Features CNN</b>EfficientNet-B1 preentrenada (congelada) extrae el embedding visual de la ventana.</div>
+    <div class="step"><b>5 · Detector</b>Regresión logística por patrón (balanceada) → probabilidad diaria de canal asc./desc.</div>
+    <div class="step"><b>6 · Validación</b>Purga + embargo(5) contra el solapamiento; evaluación siempre fuera de muestra.</div>
+  </div>
+  <div class="callout"><b>Por qué imágenes:</b> los campos angulares de Gram (Wang &amp; Oates 2015)
+  preservan la geometría temporal completa de la ventana — exactamente la información que define un
+  canal — y permiten reutilizar backbones de visión de última generación sin entrenar desde cero.</div>
+</section>
+
+<section id="h1">
+  <h2><span class="n">03</span>Hallazgo 1 — Los canales son detectables con fiabilidad casi clínica</h2>
+  <p class="lead">AUC out-of-time (entrenando hasta ago-2020, evaluando 2020–2026: COVID, guerra,
+  ciclos 2023–25). La sorpresa: <b>la imagen construida solo con el precio</b> supera a todas las
+  variantes con información multiactivo.</p>
+
+  <h3 style="margin-bottom:.5rem">Canal ascendente — AUC</h3>
+  <div class="barrow"><span>Solo-precio <b>(mejor)</b></span><div class="track"><div class="fill" style="width:97.3%;background:var(--burgundy)"></div></div><span class="val">0.973</span></div>
+  <div class="barrow"><span>Imagen 3-canal (macro)</span><div class="track"><div class="fill" style="width:94.7%;background:var(--burgundy-l)"></div></div><span class="val">0.947</span></div>
+  <div class="barrow"><span>Imagen + tabular cross-asset</span><div class="track"><div class="fill" style="width:93.4%;background:#b98a94"></div></div><span class="val">0.934</span></div>
+  <div class="barrow"><span>Tabular cross-asset sola</span><div class="track"><div class="fill" style="width:50.4%;background:var(--grey)"></div></div><span class="val">0.504</span></div>
+
+  <h3 style="margin:1.1rem 0 .5rem">Canal descendente — AUC</h3>
+  <div class="barrow"><span>Solo-precio <b>(mejor)</b></span><div class="track"><div class="fill" style="width:95.6%;background:var(--blue)"></div></div><span class="val">0.956</span></div>
+  <div class="barrow"><span>Imagen 3-canal (macro)</span><div class="track"><div class="fill" style="width:92.9%;background:#4d7d97"></div></div><span class="val">0.929</span></div>
+  <div class="barrow"><span>Imagen + tabular cross-asset</span><div class="track"><div class="fill" style="width:90.9%;background:#7fa0b2"></div></div><span class="val">0.909</span></div>
+  <div class="barrow"><span>Tabular cross-asset sola</span><div class="track"><div class="fill" style="width:46.8%;background:var(--grey)"></div></div><span class="val">0.468</span></div>
+  <p class="muted" style="margin-top:.5rem">La línea del azar es AUC 0.5: la rama tabular cross-asset aislada no contiene señal geométrica.</p>
+</section>
+
+<section id="h2">
+  <h2><span class="n">04</span>Hallazgo 2 — El cross-asset no aporta (y se demuestra con bootstrap)</h2>
+  <p class="lead">Sabemos que el EURUSD correlaciona históricamente ~0.5 con el Brent, y por eso se
+  probó un tercer canal con equities, índices y divisas. Pero correlación de <i>retornos</i> no es
+  información sobre la <i>forma</i> local del precio: añadirla diluye la señal morfológica.
+  ΔAUC = AUC(solo-precio) − AUC(rival), bootstrap estratificado B=3000:</p>
+
+  <div class="ci"><span>Ascendente vs imagen macro</span><div class="axis"><div class="zero"></div><div class="seg" style="left:31%;width:14%"></div><div class="dot" style="left:37.5%"></div></div></div>
+  <div class="ci"><span>Ascendente vs imagen+tabular</span><div class="axis"><div class="zero"></div><div class="seg" style="left:42%;width:18%"></div><div class="dot" style="left:50.5%"></div></div></div>
+  <div class="ci"><span>Descendente vs imagen macro</span><div class="axis"><div class="zero"></div><div class="seg" style="left:29.5%;width:17%"></div><div class="dot" style="left:37.4%"></div></div></div>
+  <div class="ci"><span>Descendente vs imagen+tabular</span><div class="axis"><div class="zero"></div><div class="seg" style="left:47.5%;width:21%"></div><div class="dot" style="left:57%"></div></div></div>
+  <p class="muted">Línea negra = ΔAUC 0. Los cuatro IC95 quedan íntegramente a la derecha del cero
+  (+0.019…+0.057); frente a la tabular sola, ΔAUC ≈ +0.47/+0.49. P(solo-precio gana) = 100%.</p>
+
+  <div class="callout"><b>Implicación de diseño:</b> el detector de producción usa únicamente el precio
+  del Brent. Menos datos, menos dependencias, mejor rendimiento — y una respuesta clara al comité sobre
+  por qué se descartó el canal cross-asset.</div>
+</section>
+
+<section id="h3">
+  <h2><span class="n">05</span>Hallazgo 3 — Estable en el tiempo y validado en OOS real de 2026</h2>
+  <div class="split">
+    <div>
+      <h3 style="margin-bottom:.6rem">AUC según la edad del modelo <span class="muted">(65 cortes rolling-origin)</span></h3>
+      <table>
+        <tr><th>Edad</th><th class="num">Ascendente</th><th class="num">Descendente</th></tr>
+        <tr><td>1–3 meses</td><td class="num">0.883</td><td class="num">0.867</td></tr>
+        <tr><td>3–6 meses</td><td class="num">0.908</td><td class="num">0.892</td></tr>
+        <tr><td>6–12 meses</td><td class="num">0.919</td><td class="num">0.908</td></tr>
+      </table>
+      <p class="muted" style="margin-top:.5rem">Sin decaimiento → la geometría del canal es invariante
+      al régimen. <b>Recalibración anual</b> es suficiente. La ventana adaptativa por régimen tampoco
+      mejora: la fija de 32 días ya es óptima.</p>
+    </div>
+    <div>
+      <h3 style="margin-bottom:.6rem">Out-of-sample genuino: abr–jun 2026 <span class="muted">(n=83, entrenado ≤ mar-2026)</span></h3>
+      <table>
+        <tr><th>Patrón</th><th class="num">AUC</th><th class="num">Acc.</th><th class="num">F1</th><th class="num">Prec.</th><th class="num">Recall</th></tr>
+        <tr><td>Ascendente</td><td class="num good">1.000</td><td class="num">0.976</td><td class="num">0.875</td><td class="num">1.000</td><td class="num">0.778</td></tr>
+        <tr><td>Descendente</td><td class="num good">0.902</td><td class="num">0.819</td><td class="num">0.851</td><td class="num">0.827</td><td class="num">0.878</td></tr>
+      </table>
+      <p class="muted" style="margin-top:.5rem">Datos descargados de FRED después de cerrar el diseño:
+      la prueba más dura contra el data snooping. Caveat: muestra de 3 meses.</p>
+    </div>
+  </div>
+</section>
+
+<section id="h4">
+  <h2><span class="n">06</span>Hallazgo 4 — Detectar el patrón no da ventaja de trading</h2>
+  <p class="lead">Estrategia larga-en-ascendente / corta-en-descendente sobre 395 sesiones OOS no
+  solapadas (2020–2026), evaluada con las correcciones de López de Prado:</p>
+  <div class="cards">
+    <div class="card"><span class="tag">Retorno acumulado</span><h3><span class="bad">+1.7%</span> vs +97.1%</h3><p>La estrategia de canal frente al buy &amp; hold del propio Brent en el mismo periodo.</p></div>
+    <div class="card"><span class="tag">Sharpe anual</span><h3><span class="bad">0.33</span> vs 1.00</h3><p>Y con dispersión enorme entre folds walk-forward (de −3.4 a +4.9).</p></div>
+    <div class="card"><span class="tag">Deflated Sharpe</span><h3 class="bad">≈ 0 (1.7·10⁻⁶)</h3><p>El máximo Sharpe esperable por azar tras 7 pruebas era 4.04: el 0.33 observado no sobrevive la deflación.</p></div>
+    <div class="card"><span class="tag">PBO (CSCV)</span><h3>0.38</h3><p>12.870 combinaciones: probabilidad relevante de que la mejor config in-sample falle out-of-sample.</p></div>
+  </div>
+  <div class="callout"><b>Coherente con el resto del proyecto:</b> ni el signo del retorno a 5/10/20
+  días (hit 0.48–0.51 vs base 0.53–0.55, corr≈0 incluso con 3× histórico) ni la volatilidad futura
+  (corr≈0 del CNN; una persistencia trivial llega a 0.45) son predecibles con este esquema.
+  <b>Reconocer la geometría ≠ anticipar el movimiento</b> — evidencia de eficiencia débil del mercado,
+  y un resultado honesto y publicable.</div>
+</section>
+
+<section id="capas">
+  <h2><span class="n">07</span>Chartismo por capas — qué figuras existen de verdad en el Brent</h2>
+  <p class="lead">Extendiendo el detector binario a las 8 figuras del etiquetador (out-of-time 2020–2026):</p>
+  <div class="barrow"><span>Canal ascendente <span class="muted">(n+ 2.109)</span></span><div class="track"><div class="fill" style="width:97.3%;background:var(--burgundy)"></div></div><span class="val">0.973</span></div>
+  <div class="barrow"><span>Canal descendente <span class="muted">(n+ 1.686)</span></span><div class="track"><div class="fill" style="width:95.6%;background:var(--burgundy-l)"></div></div><span class="val">0.956</span></div>
+  <div class="barrow"><span>Rango <span class="muted">(n+ 803)</span></span><div class="track"><div class="fill" style="width:82.5%;background:var(--gold)"></div></div><span class="val">0.825</span></div>
+  <div class="barrow"><span>Doble techo <span class="muted">(n+ 55, F1=0)</span></span><div class="track"><div class="fill" style="width:67.9%;background:var(--grey)"></div></div><span class="val">0.679</span></div>
+  <div class="barrow"><span>Doble suelo <span class="muted">(n+ 50, F1=0)</span></span><div class="track"><div class="fill" style="width:63.9%;background:var(--grey)"></div></div><span class="val">0.639</span></div>
+  <div class="barrow"><span>HCH / banderas <span class="muted">(n+ 1–6)</span></span><div class="track"><div class="fill" style="width:8%;background:#d8d3c9"></div></div><span class="val">s/d</span></div>
+  <p class="muted" style="margin-top:.5rem">El cuello de botella de las figuras de vuelta no es el modelo:
+  es su <b>frecuencia real</b> en el Brent y la cobertura del etiquetador geométrico (8 clases).
+  Triángulos, cuñas o banderines exigirían nuevas reglas de etiquetado.</p>
+</section>
+
+<section id="repro">
+  <h2><span class="n">08</span>Entregables y reproducibilidad</h2>
+  <div class="split">
+    <div>
+      <h3 style="margin-bottom:.6rem">Entregables</h3>
+      <p style="font-size:.9rem; margin-bottom:.6rem">
+        <span class="pill">results/reports/brent_canal_resultados.xlsx</span>
+        <span class="pill">8 JSON de métricas</span>
+        <span class="pill">detector_canal_heads.joblib</span>
+        <span class="pill">predicciones OOS (CSV)</span>
+        <span class="pill">docs/CCN_BRENT_canal (LaTeX)</span>
+        <span class="pill">run_manifest.json</span>
+      </p>
+      <p class="muted">El Excel consolidado (8 hojas) contiene resumen ejecutivo, comparativa
+      out-of-time, OOS 2026, recalibración, cross-asset, predicciones diarias, ventana adaptativa y el
+      argumento bootstrap — cada cifra trazable a su JSON.</p>
+    </div>
+    <div>
+      <h3 style="margin-bottom:.6rem">Reproducir</h3>
+      <p style="font-size:.88rem">Cápsula formato Code Ocean (Docker + semillas fijas). Run base:
+      <code>/code/run</code>. Detector de canal:</p>
+      <p style="font-size:.82rem; background:var(--charcoal); color:#e8e2d8; padding: .7rem .9rem; border-radius:10px; margin-top:.5rem; font-family:ui-monospace,monospace">
+      python code/channel_detector.py train \<br>&nbsp;&nbsp;--config code/config_codeocean.yaml --cutoff 2020-08-20<br>
+      python code/channel_detector.py predict \<br>&nbsp;&nbsp;--prices brent.csv --out preds.csv</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  BRENT Pattern System v3 · Cápsula reproducible (formato Code Ocean) ·
+  Metodología: Lo, Mamaysky &amp; Wang (2000) · Wang &amp; Oates (2015) · Tan &amp; Le (2019) · López de Prado (2018) ·
+  Bailey et&nbsp;al. (2012–2017)
+</footer>
+
+</body>
+</html>
