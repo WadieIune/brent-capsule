@@ -1,7 +1,7 @@
 # part2_channel_survival — Supervivencia del canal (2ª pata)
 
 Módulo **independiente** que extiende el detector estático de canal
-(`../code/channel_detector.py`) hacia el modelado **dinámico** del canal
+(`../channel_detector.py`) hacia el modelado **dinámico** del canal
 ("túnel"): una vez detectada la geometría, estimamos su **persistencia**, su
 **formación futura** y la **dirección de ruptura**.
 
@@ -19,7 +19,7 @@ tocar el resto del proyecto.
 | **Q3** | ¿Por dónde romperá? | Clasificación alcista/bajista en episodios que rompen | `P(ruptura alcista)` |
 
 Q4 (rentabilidad) queda **fuera** por coherencia con el resultado de eficiencia
-documentado en `../docs/PROJECT_LEDGER.md` (backtest chartista DSR≈0, sin edge).
+documentado en `../../docs/PROJECT_LEDGER.md` (backtest chartista DSR≈0, sin edge).
 
 ## Definición de episodio y ruptura
 
@@ -55,11 +55,11 @@ accel, n_turn, pos_in_channel`. El embedding del backbone CNN es ampliación fut
 ## Instalación y ejecución (máquina GPU)
 
 ```bash
-cd part2_channel_survival
+cd code/part2_channel_survival
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# XGBoost en GPU (Cox/RSF en CPU); dataset por defecto = ../data/brent_fred_daily.csv
+# XGBoost en GPU (Cox/RSF en CPU); dataset por defecto = <repo>/data/brent_fred_daily.csv
 python channel_survival.py --cutoff 2020-08-20 --gpu
 
 # o CPU puro:

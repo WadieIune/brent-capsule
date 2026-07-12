@@ -27,7 +27,7 @@ ruido. La duración es el nº de sesiones hasta la ruptura; los episodios aún v
 al final de la muestra quedan censurados por la derecha.
 
 Uso:
-  # dataset por defecto = ../data/brent_fred_daily.csv (fuente FRED del proyecto)
+  # dataset por defecto = <repo>/data/brent_fred_daily.csv (fuente FRED del proyecto)
   python channel_survival.py --cutoff 2020-08-20
 
   # entrenar XGBoost en GPU (RSF/Cox son CPU):
@@ -101,8 +101,14 @@ def _out_dir() -> str:
 
 
 def _default_prices_path() -> str:
-    repo_root = os.path.dirname(_module_dir())
-    return os.path.join(repo_root, "data", "brent_fred_daily.csv")
+    """Busca data/brent_fred_daily.csv subiendo directorios (robusto a la ubicación del módulo)."""
+    d = _module_dir()
+    for _ in range(5):
+        cand = os.path.join(d, "data", "brent_fred_daily.csv")
+        if os.path.exists(cand):
+            return cand
+        d = os.path.dirname(d)
+    return os.path.join(os.path.dirname(os.path.dirname(_module_dir())), "data", "brent_fred_daily.csv")
 
 
 def load_brent(path: str) -> pd.Series:
@@ -645,7 +651,7 @@ def run(prices_path: str, cutoff: Optional[str], gpu: bool = False) -> Dict[str,
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--prices", default=None, help="CSV de precios Brent (por defecto ../data/brent_fred_daily.csv)")
+    ap.add_argument("--prices", default=None, help="CSV de precios Brent (por defecto <repo>/data/brent_fred_daily.csv)")
     ap.add_argument("--cutoff", default=None, help="fecha de corte del split temporal (YYYY-MM-DD)")
     ap.add_argument("--gpu", action="store_true", help="usa GPU (CUDA) para XGBoost")
     args = ap.parse_args()
