@@ -1,0 +1,11 @@
+# part2_channel_survival — dependencias del módulo de supervivencia del canal.
+# Autocontenido: NO requiere torch ni el paquete brent_pattern_system.
+numpy==1.26.4
+pandas==2.2.2
+openpyxl==3.1.5
+scipy==1.11.4
+scikit-learn==1.4.2
+joblib==1.4.2
+lifelines==0.28.0          # Kaplan-Meier + Cox Proportional Hazards (CPU)
+scikit-survival==0.22.2    # Random Survival Forest + C-index + Integrated Brier Score (CPU)
+xgboost==2.0.3             # XGBoost-AFT (survival:aft) + clasificadores; soporta GPU (--gpu)
