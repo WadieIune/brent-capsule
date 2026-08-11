@@ -1,0 +1,215 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "portfolio_var",
+  "title": "Predicted VaR de cartera multi-commodity (canal por activo, solo-precio)",
+  "timestamp_utc": "2026-08-11T20:48:33Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": "2020-08-20",
+    "alpha": 0.99,
+    "horizon": 10
+  },
+  "seed": 42,
+  "command": "python run_all.py --cutoff 2020-08-20",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "dataset_wide_with_target.csv",
+    "assets": [
+      "BRENT",
+      "WTI",
+      "GOLD",
+      "SILVER",
+      "COPPER",
+      "NATGAS"
+    ],
+    "weights": [
+      0.1667,
+      0.1667,
+      0.1667,
+      0.1667,
+      0.1667,
+      0.1667
+    ],
+    "alpha": 0.99,
+    "var_window": 250,
+    "ewma_lambda": 0.94,
+    "tail_addon": 0.25,
+    "survival_horizon": 5,
+    "n_test": 2024,
+    "test_period": [
+      "2020-08-21",
+      "2026-03-06"
+    ],
+    "mean_portfolio_fragility": 0.312,
+    "per_asset": {
+      "BRENT": {
+        "n_episodes": 424,
+        "median_life": 9.0,
+        "survival_method": "cox",
+        "mean_fragility": 0.3364
+      },
+      "WTI": {
+        "n_episodes": 373,
+        "median_life": 10.0,
+        "survival_method": "cox",
+        "mean_fragility": 0.2812
+      },
+      "GOLD": {
+        "n_episodes": 408,
+        "median_life": 8.0,
+        "survival_method": "cox",
+        "mean_fragility": 0.3418
+      },
+      "SILVER": {
+        "n_episodes": 424,
+        "median_life": 9.0,
+        "survival_method": "cox",
+        "mean_fragility": 0.3586
+      },
+      "COPPER": {
+        "n_episodes": 400,
+        "median_life": 10.0,
+        "survival_method": "cox",
+        "mean_fragility": 0.3241
+      },
+      "NATGAS": {
+        "n_episodes": 366,
+        "median_life": 9.0,
+        "survival_method": "cox",
+        "mean_fragility": 0.2848
+      }
+    },
+    "backtests": {
+      "historical": {
+        "estimator": "historical",
+        "exception_rate": 0.01186,
+        "kupiec": {
+          "n": 2024,
+          "exceptions": 24,
+          "exception_rate": 0.01186,
+          "expected_rate": 0.01,
+          "LR_pof": 0.6659,
+          "p_value": 0.4145
+        },
+        "christoffersen": {
+          "LR_ind": 4.6228,
+          "p_value": 0.0316,
+          "transitions": {
+            "n00": 1977,
+            "n01": 22,
+            "n10": 22,
+            "n11": 2
+          }
+        },
+        "basel": {
+          "exceptions": 24,
+          "n": 2024,
+          "exceptions_per_250d": 2.96,
+          "zone": "verde"
+        },
+        "avg_var": 0.03562
+      },
+      "fhs_ewma": {
+        "estimator": "fhs_ewma",
+        "exception_rate": 0.01186,
+        "kupiec": {
+          "n": 2024,
+          "exceptions": 24,
+          "exception_rate": 0.01186,
+          "expected_rate": 0.01,
+          "LR_pof": 0.6659,
+          "p_value": 0.4145
+        },
+        "christoffersen": {
+          "LR_ind": 1.1258,
+          "p_value": 0.2887,
+          "transitions": {
+            "n00": 1976,
+            "n01": 23,
+            "n10": 23,
+            "n11": 1
+          }
+        },
+        "basel": {
+          "exceptions": 24,
+          "n": 2024,
+          "exceptions_per_250d": 2.96,
+          "zone": "verde"
+        },
+        "avg_var": 0.0385
+      },
+      "predicted": {
+        "estimator": "predicted",
+        "exception_rate": 0.01087,
+        "kupiec": {
+          "n": 2024,
+          "exceptions": 22,
+          "exception_rate": 0.01087,
+          "expected_rate": 0.01,
+          "LR_pof": 0.1503,
+          "p_value": 0.6982
+        },
+        "christoffersen": {
+          "LR_ind": 1.3931,
+          "p_value": 0.2379,
+          "transitions": {
+            "n00": 1980,
+            "n01": 21,
+            "n10": 21,
+            "n11": 1
+          }
+        },
+        "basel": {
+          "exceptions": 22,
+          "n": 2024,
+          "exceptions_per_250d": 2.72,
+          "zone": "verde"
+        },
+        "avg_var": 0.04146
+      }
+    },
+    "attribution": {
+      "target_exception_rate": 0.01,
+      "coverage": {
+        "gap_historical": 0.00186,
+        "gap_fhs_ewma": 0.00186,
+        "gap_predicted": 0.00087,
+        "gain_from_ewma_filtering": 0.0,
+        "gain_from_channel_addon": 0.00099
+      },
+      "independence_p_value": {
+        "historical": 0.0316,
+        "fhs_ewma": 0.2887,
+        "predicted": 0.2379
+      },
+      "independence_gain_from_ewma": 0.2571,
+      "avg_var_cost": {
+        "historical": 0.03562,
+        "fhs_ewma": 0.0385,
+        "predicted": 0.04146,
+        "predicted_vs_fhs_pct": 7.69
+      },
+      "best_estimator": "predicted",
+      "reading": "El filtrado EWMA corrige la AGRUPACIÓN de excepciones (Christoffersen) y el add-on de canal corrige el NIVEL de cobertura (Kupiec); son mejoras complementarias, no sustitutivas."
+    }
+  },
+  "baseline": {
+    "weak": "VaR histórico (cuantil empírico)",
+    "strong": "FHS-EWMA sin información de canal",
+    "gap_historical": 0.00186,
+    "gap_fhs_ewma": 0.00186,
+    "christoffersen_p_historical": 0.0316,
+    "christoffersen_p_fhs_ewma": 0.2887
+  },
+  "artifacts": [],
+  "decision": "accept",
+  "notes": "Cartera 6 commodities equiponderada, 2024 sesiones de test. Cobertura (objetivo 1.00%): histórico 1.186% · FHS-EWMA 1.186% · predicted 1.087% -> mejor: predicted. Independencia (Christoffersen p): histórico 0.0316 (RECHAZA: excepciones agrupadas) -> FHS-EWMA 0.2887 -> predicted 0.2379. Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y el canal ajusta el nivel. Coste: VaR medio +7.7% vs FHS-EWMA (más capital). Basilea predicted: zona verde. El régimen de cada activo se estima con su PROPIO precio: la tesis solo-precio escala a cartera sin modelo multivariante de factores.",
+  "error": null,
+  "elapsed_seconds": 20.314
+}

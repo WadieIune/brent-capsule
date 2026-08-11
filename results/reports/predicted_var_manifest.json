@@ -1,0 +1,82 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "predicted_var",
+  "title": "Predicted VaR (FHS + régimen de canal) vs VaR histórico + backtest",
+  "timestamp_utc": "2026-08-11T20:48:28Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": "2020-08-20",
+    "alpha": 0.99,
+    "horizon": 10
+  },
+  "seed": 42,
+  "command": "python run_all.py --cutoff 2020-08-20",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+    "alpha": 0.99,
+    "var_window": 250,
+    "n_test": 1527,
+    "target_exception_rate": 0.01,
+    "survival_method": "cox",
+    "survival_horizon": 5,
+    "historical": {
+      "kupiec": {
+        "n": 1527,
+        "exceptions": 21,
+        "exception_rate": 0.01375,
+        "expected_rate": 0.01,
+        "LR_pof": 1.9443,
+        "p_value": 0.1632
+      },
+      "christoffersen": {
+        "LR_ind": 4.6088,
+        "p_value": 0.0318,
+        "transitions": {
+          "n00": 1486,
+          "n01": 19,
+          "n10": 19,
+          "n11": 2
+        }
+      },
+      "avg_var": 0.07945
+    },
+    "predicted": {
+      "kupiec": {
+        "n": 1527,
+        "exceptions": 17,
+        "exception_rate": 0.01113,
+        "expected_rate": 0.01,
+        "LR_pof": 0.191,
+        "p_value": 0.6621
+      },
+      "christoffersen": {
+        "LR_ind": 0.0,
+        "p_value": 1.0,
+        "transitions": {
+          "n00": 1492,
+          "n01": 17,
+          "n10": 17,
+          "n11": 0
+        }
+      },
+      "avg_var": 0.07275
+    }
+  },
+  "baseline": {
+    "method": "VaR histórico (simulación histórica pura)",
+    "exception_rate": 0.01375,
+    "kupiec_p": 0.1632
+  },
+  "artifacts": [],
+  "decision": "accept",
+  "notes": "tasa excep. hist=1.375% vs pred=1.113% (objetivo 1.00%); Kupiec p pred=0.6621; surv=cox. Overlay FHS-EWMA con add-on de cola escalado por 1-P(T>k) del canal.",
+  "error": null,
+  "elapsed_seconds": 5.232
+}

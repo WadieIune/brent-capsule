@@ -1,0 +1,17 @@
+# Aplicaciones de Riesgo de Mercado sobre la geometría del canal (harness ARF).
+# Núcleo (imprescindible): DQ, forecast y VaR funcionan solo con esto.
+numpy>=1.23
+pandas>=1.5
+scipy>=1.9
+scikit-learn>=1.1
+
+# Supervivencia del canal como feature (P(T>k)) en channel_vol_forecast y
+# predicted_var: usa Cox de lifelines si está instalado; si no, cae a un
+# Kaplan-Meier por buckets (solo numpy, ya cubierto arriba). Para activar el
+# modo Cox instala:
+lifelines>=0.27
+# Opcional (RSF / Integrated Brier Score de part2_channel_survival):
+# scikit-survival>=0.21
+# xgboost>=1.7
+
+# La aplicación FRTB solo usa extract_episodes (numpy/pandas), no requiere extras.

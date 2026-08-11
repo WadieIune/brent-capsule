@@ -18,8 +18,31 @@ tocar el resto del proyecto.
 | **Q1** | ¿Se formará un canal en los próximos N días? | Clasificación binaria en días sin canal | `P(canal en t+1..t+N)` |
 | **Q3** | ¿Por dónde romperá? | Clasificación alcista/bajista en episodios que rompen | `P(ruptura alcista)` |
 
-Q4 (rentabilidad) queda **fuera** por coherencia con el resultado de eficiencia
-documentado en `../../docs/PROJECT_LEDGER.md` (backtest chartista DSR≈0, sin edge).
+Q4 (rentabilidad) **sí se contrasta**, en `validation.py --backtest`: es la única
+forma de comprobar que la 2ª pata no contradice el resultado de eficiencia de la
+1ª (DSR≈0). El veredicto se resume abajo.
+
+## Resultados validados (walk-forward, serie FRED 1987–2026)
+
+Ejecutar `python validation.py` reproduce esta tabla:
+
+| Bloque | Resultado | Baseline | Lectura |
+|---|---|---|---|
+| **Q2 · discriminación** | XGB-AFT C-index **0.664 ± 0.007** (RSF 0.624, Cox 0.558) | 0.500 | La vida del canal **es** ordenable: se sabe qué canales son frágiles |
+| **Q2 · calibración** | MAE: KM **0.019** < Cox 0.034 < XGB-AFT 0.042 | KM marginal | Las covariables aportan *ranking*, no mejor probabilidad absoluta |
+| **Q3 · dirección** | AUC **0.766 ± 0.050** | 0.500 | La banda de salida es predecible |
+| **Q4 · economía** | Sharpe **−0.48**, retorno **−78%** vs buy&hold +88%, **DSR 0.014**, PBO 0.35 | buy&hold | **Sin edge** |
+
+**Hallazgo central de la 2ª pata:** se acierta el **67.8%** de las direcciones de
+ruptura y aun así la estrategia **pierde dinero**. Predecir *por qué banda* sale
+el precio no es predecir el beneficio: la asimetría de pagos anula el acierto
+direccional. Es el mismo veredicto que la 1ª pata (DSR≈0) obtenido por una vía
+independiente, y por eso **refuerza** la coherencia del trabajo en lugar de
+contradecirlo.
+
+Implicación de diseño para las aplicaciones: el modelo se usa como **ordenador de
+fragilidad** (qué canal aguanta menos) y el **nivel absoluto** de `P(T>k)` se
+ancla en Kaplan-Meier, que es lo mejor calibrado.
 
 ## Definición de episodio y ruptura
 
@@ -48,9 +71,32 @@ accel, n_turn, pos_in_channel`. El embedding del backbone CNN es ampliación fut
 
 ## Evaluación
 
-- **Split temporal** (train ≤ `cutoff` < test).
-- **C-index** de Harrell + **Integrated Brier Score** (Q2).
-- **AUC/F1/precision/recall/accuracy** vs **tasa base** (Q1/Q3).
+`channel_survival.py` hace la corrida básica (split temporal único) y
+`validation.py` la **validación robusta**, que es la que sustenta las cifras del
+paper:
+
+| Bloque (`validation.py`) | Qué comprueba |
+|---|---|
+| `--sensitivity` | ¿Dependen las conclusiones de la definición de ruptura? Rejilla `band_mult × tol_atr × confirm` |
+| `--walkforward` | C-index (Cox/RSF/XGB-AFT) y AUC de Q3 en **6 orígenes temporales** expansivos |
+| `--calibration` | ¿La `P(T>k)` predicha coincide con la Kaplan-Meier observada? |
+| `--backtest` | ¿Hay valor económico? Sharpe/PSR/**DSR**/**PBO** vs buy&hold y costes |
+
+Dos decisiones metodológicas que corrigen la versión inicial:
+
+1. **Censura administrativa** (`administrative_censoring`): un episodio detectado
+   antes del corte pero que rompe después usaría información futura (su duración
+   y su dirección). Ahora se censura en el corte: solo se sabe que sobrevivió
+   hasta ahí. Sin esto hay **fuga temporal** en train.
+2. **`CONFIRM = 2`** (antes 1): con una sola sesión fuera de banda, el **23%** de
+   los episodios "rompían" el mismo día de la detección — ruido de
+   microestructura, no cambio de régimen. Con dos sesiones consecutivas
+   desaparecen (0%) y la duración mediana pasa de 5 a **10** sesiones. La tabla
+   de sensibilidad completa queda en el Excel para que el lector lo juzgue.
+
+Métricas: **C-index** de Harrell + **Integrated Brier Score** (Q2);
+**AUC/F1/precision/recall** vs **tasa base** (Q1/Q3); **Sharpe/PSR/DSR/PBO**
+(Q4), con las mismas referencias que la 1ª pata (López de Prado; Bailey et al.).
 
 ## Instalación y ejecución (máquina GPU)
 
@@ -67,6 +113,10 @@ python channel_survival.py --cutoff 2020-08-20
 
 # atajo:
 bash run_gpu.sh
+
+# validación robusta (walk-forward + calibración + backtest + sensibilidad):
+python validation.py --cutoff 2020-08-20
+python validation.py --backtest          # solo un bloque
 ```
 
 ## Salidas (`outputs/`, o `OUT_DIR`)
@@ -75,12 +125,17 @@ bash run_gpu.sh
 - `channel_survival_resultados.xlsx` — Excel multi-hoja (resumen, episodios,
   supervivencia, curvas `P(T>k)`, formación, dirección).
 - `channel_survival_episodes.csv` — tabla de episodios con features.
+- `validation.json` — **manifiesto de harness** (ARF: task/experiment id,
+  timestamp, inputs, config, seed, comando, entorno, métricas, decisión).
+- `channel_survival_validacion.xlsx` — sensibilidad, walk-forward, calibración y
+  backtest en hojas separadas.
 
 ## Caveats
 
-- La **dirección de ruptura (Q3)** puede chocar con la no-predecibilidad
-  direccional ya documentada; se reporta como hipótesis contrastada (AUC vs base),
-  no como afirmación de edge.
+- La **dirección de ruptura (Q3)** alcanza AUC 0.77 sin contradecir la
+  no-predecibilidad direccional del proyecto: el backtest muestra que ese acierto
+  **no es monetizable** (DSR 0.014). Ambas cosas conviven porque la banda de
+  salida y el beneficio no son la misma variable.
 - La geometría se congela en la detección; el re-ajuste dinámico es ampliación futura.
 - ATR es un proxy close-only (FRED da solo cierre); tolerancia aproximada pero
   consistente train/test.

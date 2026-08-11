@@ -62,7 +62,12 @@ MIN_CONF = 0.30         # umbral del etiquetador débil para confirmar canal
 BAND_MULT = 2.0         # semi-anchura de banda = BAND_MULT * desviación de residuos
 ATR_WIN = 14            # ventana del ATR (proxy close-only)
 TOL_ATR = 1.0           # tolerancia de ruptura = TOL_ATR * ATR (evita falsas rupturas)
-CONFIRM = 1             # sesiones consecutivas fuera de banda para confirmar ruptura
+# Sesiones consecutivas fuera de banda para confirmar la ruptura. Con CONFIRM=1
+# el 23% de los episodios "rompen" el mismo día de la detección: son cruces de
+# banda por ruido de microestructura, no rupturas de régimen. CONFIRM=2 los
+# elimina por completo (0%) y eleva la duración mediana de 5 a 10 sesiones.
+# Ver `validation.py --sensitivity` para la tabla de sensibilidad completa.
+CONFIRM = 2
 MIN_LIFE = 1            # descarta episodios censurados de vida < MIN_LIFE
 HORIZONS = (5, 10, 20)  # horizontes P(T > k) reportados
 FORM_HORIZON = 10       # N para Q1 (¿se formará un canal en los próximos N días?)
@@ -256,6 +261,36 @@ def extract_episodes(
     return df
 
 
+def administrative_censoring(episodes: pd.DataFrame, cutoff: pd.Timestamp) -> pd.DataFrame:
+    """Censura por la derecha en `cutoff` los episodios de entrenamiento.
+
+    Sin esto hay **fuga temporal**: un episodio que se detecta antes del corte
+    pero rompe después usaría información posterior al corte (su duración y su
+    dirección de ruptura) para entrenar. La práctica correcta en análisis de
+    supervivencia es la *censura administrativa*: en el instante del corte solo
+    se sabe que el episodio ha sobrevivido hasta ahí.
+
+    Devuelve una copia con `duration` recortada a la distancia hasta el corte y
+    `event=0` (censurado) para los episodios que rompen después del corte.
+    """
+    df = episodes.copy()
+    if df.empty:
+        return df
+    cutoff = pd.Timestamp(cutoff)
+    crosses = (df["start_date"] <= cutoff) & (df["end_date"] > cutoff)
+    if not crosses.any():
+        return df
+    # Duración observable hasta el corte, en sesiones hábiles.
+    obs = np.array([
+        max(int(np.busday_count(s.date(), cutoff.date())), 0)
+        for s in df.loc[crosses, "start_date"]
+    ])
+    df.loc[crosses, "duration"] = obs
+    df.loc[crosses, "event"] = 0
+    df.loc[crosses, "breakout_dir"] = ""
+    return df
+
+
 def is_channel_flags(
     prices: np.ndarray, lookback: int = LOOKBACK, min_conf: float = MIN_CONF
 ) -> Tuple[np.ndarray, np.ndarray, List[Dict[str, float]]]:
@@ -327,6 +362,9 @@ def run_survival(episodes: pd.DataFrame, cutoff: Optional[str], gpu: bool = Fals
 
     if cutoff:
         c = pd.Timestamp(cutoff)
+        # Censura administrativa: los episodios de train que rompen DESPUÉS del
+        # corte se marcan como censurados en el corte (sin fuga temporal).
+        episodes = administrative_censoring(episodes, c)
         tr = episodes["start_date"] <= c
     else:  # 70% temporal si no se da cutoff
         k = int(len(episodes) * 0.70)
@@ -509,6 +547,10 @@ def run_formation(
 # --- Q3: dirección de ruptura -------------------------------------------------
 def run_direction(episodes: pd.DataFrame, cutoff: Optional[str], gpu: bool = False) -> Dict[str, object]:
     """Entre los episodios que ROMPEN, ¿la ruptura es alcista (1) o bajista (0)?"""
+    # La dirección de ruptura solo se conoce en episodios que ROMPEN; los que
+    # cruzan el corte se censuran (su ruptura es posterior y no debe entrenar).
+    if cutoff:
+        episodes = administrative_censoring(episodes, pd.Timestamp(cutoff))
     br = episodes[episodes["event"] == 1].copy()
     out: Dict[str, object] = {}
     if len(br) < 30:

@@ -1,0 +1,30 @@
+# Configuración de referencia para las aplicaciones de Riesgo de Mercado.
+# Se documenta aquí; run_all.py acepta los mismos parámetros por CLI.
+project:
+  name: "brent-capsule/applications"
+  task_id: "risk_applications"
+  seed: 42
+  framework: "Agentic-Research-Framework (harness engineering)"
+
+data:
+  # Serie del proyecto (si existe). Si no, run_all --synthetic genera una de prueba.
+  prices_path: "../../data/brent_fred_daily.csv"
+  cutoff: "2020-08-20"        # split temporal sin fuga
+
+experiments:
+  dq_price_control:
+    k_sigma: 4.0              # umbral de banda ±k·σ para fuera de canal
+    tol_atr: 1.0              # tolerancia de salto = TOL_ATR·ATR
+  channel_vol_forecast:
+    horizon: 10               # días para medir expansión de volatilidad y P(T>k)
+    vol_window: 20            # ventana de volatilidad realizada
+    # feature de supervivencia P(T>horizon): Cox (lifelines) o KM por buckets
+  predicted_var:
+    alpha: 0.99               # nivel de confianza del VaR 1-día
+    var_window: 250           # ventana de simulación histórica
+    ewma_lambda: 0.94         # RiskMetrics
+    tail_addon: 0.25          # add-on de cola escalado por propensión de ruptura
+    var_surv_horizon: 5       # k del P(T>k) para la propensión de ruptura corta
+  frtb_applications:
+    stress_window: 60         # ventana de pérdida acumulada (stress period)
+    stress_top: 3             # nº de ventanas de estrés reportadas

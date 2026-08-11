@@ -41,9 +41,10 @@
 \renewcommand{\arraystretch}{1.16}
 \graphicspath{{figures/}}
 
-\title{Detección de canales de tendencia en el Brent mediante codificación de
-series en imágenes y EfficientNet-B1:\\
-del chartismo multiactivo al detector solo-precio con validación temporal robusta}
+\title{Detección, persistencia y aplicación al riesgo de los canales de tendencia
+en el Brent:\\
+del chartismo multiactivo al detector solo-precio, con análisis de supervivencia
+del régimen y VaR de cartera}
 \author{}
 \date{}
 
@@ -75,10 +76,21 @@ esquema, y la estrategia de \emph{trading} derivada del detector no supera el
 azar tras corregir por sesgo de selección (\emph{Deflated Sharpe Ratio}
 $\approx 0$): la geometría del precio es reconocible, pero no constituye una
 ventaja direccional, un resultado coherente con la eficiencia débil del mercado.
-Sobre esta base de evidencia, el documento especifica el marco de aplicación en
-riesgos: un esquema de control de capital en cuatro capas y un cuadro de mando
-en el que el detector actúa como descriptor de régimen, nunca como señal de
-inversión.
+Una segunda pata modela la \textbf{persistencia} del régimen mediante análisis de
+supervivencia sobre 590 episodios de canal: la vida del túnel es ordenable
+(C-index 0.664 con XGBoost-AFT, estable en \emph{walk-forward}) y su dirección de
+ruptura predecible (AUC 0.766), pero el \emph{backtest} de la estrategia
+resultante vuelve a fracasar (DSR 0.014) —acertar el 67.8\% de las direcciones de
+ruptura no basta, porque predecir \emph{por qué banda} sale el precio no es
+predecir el beneficio—, replicando el veredicto de la primera pata por una vía
+independiente. Una tercera pata lleva ambas señales a la medición de riesgo: en
+una cartera equiponderada de seis materias primas, con el régimen de cada activo
+estimado \emph{solo con su propio precio}, el VaR condicionado alcanza una tasa
+de excepciones del 1.087\% frente al objetivo del 1\% y supera tanto al VaR
+histórico —que el test de Christoffersen rechaza por agrupar las excepciones—
+como al filtrado EWMA sin información de canal. El documento cierra con el marco
+de aplicación en riesgos: control de capital en cuatro capas y un cuadro de mando
+donde el sistema actúa como descriptor de régimen, nunca como señal de inversión.
 \end{abstract}
 
 \tableofcontents
@@ -538,6 +550,190 @@ no equivale a anticipar el movimiento}, exactamente el patrón que cabría esper
 bajo eficiencia débil del mercado \cite{lo2000foundations,white2000reality}.
 
 % =============================================================================
+\section{Segunda pata: ¿cuánto vive el canal? Análisis de supervivencia}
+\label{sec:parte2}
+% =============================================================================
+La primera pata responde \emph{qué} geometría dibuja el precio hoy. Para una
+dirección de riesgos, la pregunta operativa inmediata es la siguiente:
+\emph{¿cuánto durará ese régimen?} Un canal detectado con AUC 0.97 es un
+descriptor útil solo si se sabe si aguantará una sesión o un trimestre —de ello
+dependen el horizonte de liquidez, la frecuencia de revisión de límites y la
+vigencia de cualquier escenario construido sobre él.
+
+\subsection{Episodios y definición de ruptura}
+Cada detección abre un \emph{episodio}: se congela la geometría (recta central
+por MCO sobre la ventana de 32 días y bandas paralelas a $\pm m\,\sigma_
+\varepsilon$, con $m=2$), se proyecta hacia delante y se declara \textbf{ruptura}
+cuando el cierre supera la banda proyectada más una tolerancia de un ATR durante
+$c$ sesiones consecutivas. La duración $T$ es el número de sesiones hasta la
+ruptura; los episodios vivos al cierre de la muestra quedan censurados por la
+derecha. Los episodios son no solapados.
+
+Dos decisiones metodológicas condicionan todo el bloque y por eso se explicitan:
+
+\begin{enumerate}
+  \item \textbf{Confirmación $c=2$.} Con $c=1$, el 23\% de los episodios
+    ``rompen'' el mismo día de la detección: son cruces de banda por ruido de
+    microestructura, no cambios de régimen. Exigir dos cierres consecutivos fuera
+    de banda los elimina por completo y eleva la duración mediana de 5 a
+    \textbf{10} sesiones. La tabla de sensibilidad completa sobre la rejilla
+    $m \times \mathrm{tol} \times c$ acompaña a los resultados.
+  \item \textbf{Censura administrativa.} Un episodio detectado antes del corte
+    temporal pero que rompe después usaría información futura —su duración y su
+    dirección de ruptura— para entrenar. En cada corte se censura el episodio en
+    la frontera: solo se sabe que sobrevivió hasta ahí. Sin esta corrección hay
+    fuga temporal en el conjunto de entrenamiento.
+\end{enumerate}
+
+\subsection{Resultados}
+Sobre 590 episodios (serie FRED 1987--2026) se ajustan Kaplan--Meier (baseline
+marginal), Cox PH, \emph{Random Survival Forest} y XGBoost-AFT, evaluados con
+\emph{walk-forward} sobre seis orígenes temporales expansivos
+(Figura~\ref{fig:parte2}).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{part2_supervivencia.pdf}
+    \caption{Segunda pata. Izquierda: curva de supervivencia del canal
+    (Kaplan--Meier); la mediana de vida es de 10 sesiones y
+    $P(T>20)\approx0.24$. Centro: C-index \emph{walk-forward} de los tres
+    modelos con covariables frente al azar. Derecha: backtest económico de la
+    estrategia implícita en la dirección de ruptura.}
+    \label{fig:parte2}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Segunda pata: discriminación, calibración y valor económico.}
+\label{tab:parte2}
+\begin{tabularx}{\textwidth}{p{3.5cm}p{4.4cm}L}
+\toprule
+\textbf{Pregunta} & \textbf{Resultado} & \textbf{Lectura} \\
+\midrule
+Q2 · discriminación & XGB-AFT C-index $\mathbf{0.664 \pm 0.007}$ (RSF 0.624; Cox 0.558; azar 0.500) &
+La vida del canal \textbf{es} ordenable: se identifica qué canales son frágiles \\
+Q2 · calibración & MAE de $P(T{>}k)$: KM \textbf{0.019} $<$ Cox 0.034 $<$ XGB-AFT 0.042 &
+Las covariables aportan \emph{ranking}, no mejor probabilidad absoluta \\
+Q3 · dirección de ruptura & AUC $\mathbf{0.766 \pm 0.050}$ &
+La banda por la que sale el precio es predecible \\
+Q4 · valor económico & Sharpe $-0.48$; retorno $-78\%$ frente a \emph{buy\&hold} $+88\%$; \textbf{DSR 0.014}; PBO 0.35 &
+\textbf{Sin ventaja explotable} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{El resultado central de esta pata}
+El modelo acierta el \textbf{67.8\%} de las direcciones de ruptura y, aun así, la
+estrategia que las opera \textbf{pierde dinero}. No hay contradicción:
+\emph{predecir por qué banda sale el precio no es predecir el beneficio}. La
+banda superior de un canal ascendente sube con la pendiente, de modo que el
+precio puede subir en términos absolutos y aun así salir por abajo; y la
+distribución de pagos es asimétrica, con pérdidas grandes en el 32\% de fallos
+que anulan las ganancias del 68\% de aciertos. El \emph{Deflated Sharpe Ratio} de
+0.014 confirma que el resultado no sobrevive a la corrección por número de
+configuraciones probadas.
+
+Este hallazgo, obtenido por una vía metodológicamente independiente (análisis de
+supervivencia sobre episodios, no clasificación de imágenes), \textbf{reproduce}
+el veredicto de la primera pata (DSR $\approx 0$) y por tanto refuerza la
+coherencia del trabajo en lugar de tensionarla.
+
+Consecuencia de diseño para las aplicaciones: el modelo se emplea como
+\textbf{ordenador de fragilidad} —qué canal aguantará menos— mientras que el
+\emph{nivel} absoluto de $P(T>k)$ se ancla en Kaplan--Meier, que es lo mejor
+calibrado.
+
+% =============================================================================
+\section{Tercera pata: aplicaciones a la medición de riesgo}
+\label{sec:parte3}
+% =============================================================================
+Si el régimen de un activo se caracteriza con su propio precio (primera pata) y
+su persistencia es estimable (segunda), la consecuencia natural es que ambas
+señales alimenten la medición de riesgo. Esta sección lo contrasta sobre el
+\emph{Value at Risk}, primero en un activo y después en cartera.
+
+\subsection{VaR predicho: diseño y atribución}
+Se comparan tres estimadores del VaR a un día al 99\%:
+
+\begin{itemize}
+  \item \textbf{Histórico} (baseline débil): cuantil empírico de los retornos en
+    ventana móvil de 250 sesiones.
+  \item \textbf{FHS-EWMA} (baseline \emph{fuerte}): simulación histórica filtrada
+    por volatilidad EWMA ($\lambda=0.94$), \textbf{sin información de canal}.
+  \item \textbf{Predicho}: FHS-EWMA más un \emph{add-on} de cola proporcional a
+    la fragilidad del régimen, $1-P(T>k)$, tomada de la segunda pata.
+\end{itemize}
+
+Incluir el baseline fuerte es deliberado: comparar únicamente contra el VaR
+histórico atribuiría al canal una mejora que el simple filtrado de volatilidad ya
+produce. La atribución honesta exige aislar ambos efectos.
+
+\subsection{Cartera multi-commodity}
+La tesis solo-precio implica que el tratamiento se replica activo por activo sin
+un modelo multivariante de factores. Se construye una cartera equiponderada de
+seis materias primas —Brent, WTI, oro, plata, cobre y gas natural— donde
+\emph{cada activo} aporta su fragilidad estimada exclusivamente con su serie de
+precios; la fragilidad de cartera es la media ponderada. El \emph{backtest} cubre
+2.024 sesiones (2020-08 a 2026-03) con Kupiec, Christoffersen y semáforo de
+Basilea (Tabla~\ref{tab:parte3}, Figura~\ref{fig:parte3}).
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{VaR 99\% de la cartera multi-commodity: cobertura, independencia y coste.}
+\label{tab:parte3}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Estimador} & \textbf{Excepciones} & \textbf{Kupiec $p$} & \textbf{Christoffersen $p$} & \textbf{VaR medio} \\
+\midrule
+Histórico & 1.186\% & 0.41 & \textbf{0.032} (rechaza) & 3.56\% \\
+FHS-EWMA (sin canal) & 1.186\% & 0.41 & 0.289 & 3.85\% \\
+\textbf{Predicho (con canal)} & \textbf{1.087\%} & \textbf{0.70} & 0.238 & 4.15\% \\
+\midrule
+\multicolumn{5}{l}{\footnotesize Objetivo: 1.00\%. Cartera equiponderada de 6 commodities, 2.024 sesiones de test.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.99\textwidth]{part3_portfolio_var.pdf}
+    \caption{Tercera pata. Izquierda: cobertura frente al objetivo del 1\%.
+    Centro: el VaR histórico agrupa las excepciones en los episodios de estrés y
+    el test de independencia lo rechaza; el filtrado EWMA lo corrige. Derecha:
+    vida mediana del canal por activo, estimada en cada caso con su propio precio.}
+    \label{fig:parte3}
+\end{figure}
+
+\subsection{Qué aporta cada componente}
+El resultado relevante no es que el VaR predicho gane, sino \emph{por qué}: cada
+componente corrige una patología distinta, y reportar solo la cobertura ocultaría
+la mitad de la historia.
+
+\begin{itemize}
+  \item El \textbf{filtrado EWMA} no mejora la cobertura (1.186\% en ambos casos)
+    pero corrige la \textbf{agrupación} de excepciones: el test de Christoffersen
+    rechaza el VaR histórico ($p=0.032$) porque concentra los fallos en los
+    episodios de estrés, y pasa a $p=0.289$ al filtrar por volatilidad.
+  \item El \textbf{\emph{add-on} de canal} corrige el \textbf{nivel}: lleva la
+    tasa de excepciones de 1.186\% a 1.087\%, la más próxima al objetivo del 1\%,
+    con Kupiec $p=0.70$.
+\end{itemize}
+
+Ambas mejoras son complementarias, no sustitutivas. El coste debe explicitarse:
+el VaR medio sube un \textbf{+7.7\%} respecto a FHS-EWMA, es decir, más consumo
+de capital a cambio de una cobertura mejor calibrada; esa disyuntiva corresponde
+al comité de riesgos, no al modelo.
+
+Las cinco aplicaciones implementadas —calidad de dato, previsión de régimen de
+volatilidad, VaR de un activo, VaR de cartera y proxies FRTB— se ejecutan bajo un
+\emph{harness} reproducible que registra por corrida un manifiesto con
+identificadores, configuración, semilla, comando, entorno, métricas, baseline y
+decisión, de acuerdo con la disciplina de \emph{harness engineering} adoptada en
+el proyecto.
+
+% =============================================================================
 \section{Discusión}
 % =============================================================================
 \paragraph{Para la función de riesgos.} El sistema entrega una capa de chartismo
@@ -715,10 +911,30 @@ un \emph{out-of-sample} genuino de 2026 usando únicamente el precio del activo.
 La evidencia \emph{bootstrap} descarta que el contexto \emph{cross-asset} aporte
 a esta tarea; la estabilidad temporal permite recalibración anual; y el
 \emph{backtest} deflactado demuestra que la detección, siendo casi perfecta, no
-constituye ventaja direccional. El valor del proyecto es doble: un componente de
-chartismo automatizado listo para integración en procesos de riesgo, y una
-demostración metodológicamente rigurosa —CV purgada, DSR, PBO— de los límites
-reales del chartismo como fuente de \emph{alpha}.
+constituye ventaja direccional.
+
+El trabajo se completa con dos patas adicionales que cierran el ciclo
+descriptivo. La \textbf{segunda} muestra que la persistencia del régimen es
+modelable —C-index 0.664 con estabilidad notable en \emph{walk-forward}
+($\pm0.007$)— y reproduce, por una vía metodológica independiente, la ausencia de
+valor económico: se acierta el 67.8\% de las direcciones de ruptura y la
+estrategia pierde dinero (DSR 0.014), porque \emph{la banda de salida y el
+beneficio no son la misma variable}. La \textbf{tercera} demuestra dónde sí
+aporta valor la señal: en la medición del riesgo. Sobre una cartera de seis
+materias primas, con el régimen de cada activo estimado solo con su propio
+precio, el VaR condicionado por la fragilidad del canal alcanza la mejor
+cobertura de los tres estimadores contrastados (1.087\% frente al objetivo del
+1\%) y corrige la patología del VaR histórico, cuyas excepciones se agrupan en
+los episodios de estrés.
+
+El valor del proyecto es, por tanto, triple: un componente de chartismo
+automatizado listo para integración en procesos de riesgo; una demostración
+metodológicamente rigurosa —CV purgada, censura administrativa, DSR, PBO— de los
+límites reales del chartismo como fuente de \emph{alpha}, sostenida ahora por dos
+metodologías independientes; y una aplicación con mejora medible allí donde la
+geometría sí es informativa, la calibración del riesgo de cola. La conclusión
+transversal es que el sistema debe usarse como \textbf{descriptor de régimen}
+—para dimensionar riesgo, horizontes y capital— y nunca como señal direccional.
 
 % =============================================================================
 \appendix

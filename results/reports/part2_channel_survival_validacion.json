@@ -1,0 +1,489 @@
+{
+  "task_id": "part2_channel_survival",
+  "experiment_id": "channel_survival_validation",
+  "timestamp_utc": "2026-08-11T20:38:10Z",
+  "inputs": [
+    "/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv"
+  ],
+  "config": {
+    "prices_path": "/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+    "cutoff": "2020-08-20",
+    "fee_bps": 5.0,
+    "blocks": {
+      "sensitivity": true,
+      "walkforward": true,
+      "calibration": true,
+      "backtest": true
+    },
+    "confirm": 2,
+    "band_mult": 2.0,
+    "tol_atr": 1.0,
+    "lookback": 32
+  },
+  "seed": 42,
+  "command": "python validation.py --cutoff 2020-08-20",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "metrics": {
+    "episodes": {
+      "n": 590,
+      "median_duration": 10.0,
+      "event_rate": 0.9983,
+      "confirm": 2,
+      "band_mult": 2.0,
+      "tol_atr": 1.0
+    },
+    "sensitivity": {
+      "grid": [
+        {
+          "band_mult": 2.0,
+          "tol_atr": 0.5,
+          "confirm": 1,
+          "n_episodes": 1022,
+          "event_rate": 0.999,
+          "median_duration": 4.0,
+          "p90_duration": 20.0,
+          "pct_duration_le_1": 0.318,
+          "pct_up_breaks": 0.4804
+        },
+        {
+          "band_mult": 2.0,
+          "tol_atr": 0.5,
+          "confirm": 2,
+          "n_episodes": 679,
+          "event_rate": 0.9985,
+          "median_duration": 8.0,
+          "p90_duration": 29.0,
+          "pct_duration_le_1": 0.0,
+          "pct_up_breaks": 0.4948
+        },
+        {
+          "band_mult": 2.0,
+          "tol_atr": 1.0,
+          "confirm": 1,
+          "n_episodes": 839,
+          "event_rate": 0.9988,
+          "median_duration": 5.0,
+          "p90_duration": 24.0,
+          "pct_duration_le_1": 0.2348,
+          "pct_up_breaks": 0.4934
+        },
+        {
+          "band_mult": 2.0,
+          "tol_atr": 1.0,
+          "confirm": 2,
+          "n_episodes": 590,
+          "event_rate": 0.9983,
+          "median_duration": 10.0,
+          "p90_duration": 33.0,
+          "pct_duration_le_1": 0.0017,
+          "pct_up_breaks": 0.4915
+        },
+        {
+          "band_mult": 2.0,
+          "tol_atr": 2.0,
+          "confirm": 1,
+          "n_episodes": 601,
+          "event_rate": 0.9983,
+          "median_duration": 10.0,
+          "p90_duration": 32.0,
+          "pct_duration_le_1": 0.0998,
+          "pct_up_breaks": 0.4775
+        },
+        {
+          "band_mult": 2.0,
+          "tol_atr": 2.0,
+          "confirm": 2,
+          "n_episodes": 453,
+          "event_rate": 0.9978,
+          "median_duration": 14.0,
+          "p90_duration": 43.80000000000001,
+          "pct_duration_le_1": 0.0,
+          "pct_up_breaks": 0.5055
+        },
+        {
+          "band_mult": 2.5,
+          "tol_atr": 0.5,
+          "confirm": 1,
+          "n_episodes": 733,
+          "event_rate": 0.9986,
+          "median_duration": 7.0,
+          "p90_duration": 29.0,
+          "pct_duration_le_1": 0.1801,
+          "pct_up_breaks": 0.4884
+        },
+        {
+          "band_mult": 2.5,
+          "tol_atr": 0.5,
+          "confirm": 2,
+          "n_episodes": 531,
+          "event_rate": 0.9981,
+          "median_duration": 11.0,
+          "p90_duration": 40.0,
+          "pct_duration_le_1": 0.0,
+          "pct_up_breaks": 0.4802
+        },
+        {
+          "band_mult": 2.5,
+          "tol_atr": 1.0,
+          "confirm": 1,
+          "n_episodes": 621,
+          "event_rate": 1.0,
+          "median_duration": 9.0,
+          "p90_duration": 33.0,
+          "pct_duration_le_1": 0.1385,
+          "pct_up_breaks": 0.4831
+        },
+        {
+          "band_mult": 2.5,
+          "tol_atr": 1.0,
+          "confirm": 2,
+          "n_episodes": 479,
+          "event_rate": 0.9979,
+          "median_duration": 13.0,
+          "p90_duration": 42.0,
+          "pct_duration_le_1": 0.0,
+          "pct_up_breaks": 0.499
+        },
+        {
+          "band_mult": 2.5,
+          "tol_atr": 2.0,
+          "confirm": 1,
+          "n_episodes": 459,
+          "event_rate": 0.9978,
+          "median_duration": 13.0,
+          "p90_duration": 47.19999999999999,
+          "pct_duration_le_1": 0.0675,
+          "pct_up_breaks": 0.4989
+        },
+        {
+          "band_mult": 2.5,
+          "tol_atr": 2.0,
+          "confirm": 2,
+          "n_episodes": 388,
+          "event_rate": 0.9974,
+          "median_duration": 18.0,
+          "p90_duration": 51.30000000000001,
+          "pct_duration_le_1": 0.0,
+          "pct_up_breaks": 0.5077
+        },
+        {
+          "band_mult": 3.0,
+          "tol_atr": 0.5,
+          "confirm": 1,
+          "n_episodes": 565,
+          "event_rate": 0.9982,
+          "median_duration": 9.0,
+          "p90_duration": 38.60000000000002,
+          "pct_duration_le_1": 0.1133,
+          "pct_up_breaks": 0.4779
+        },
+        {
+          "band_mult": 3.0,
+          "tol_atr": 0.5,
+          "confirm": 2,
+          "n_episodes": 428,
+          "event_rate": 0.9977,
+          "median_duration": 14.0,
+          "p90_duration": 48.0,
+          "pct_duration_le_1": 0.0,
+          "pct_up_breaks": 0.493
+        },
+        {
+          "band_mult": 3.0,
+          "tol_atr": 1.0,
+          "confirm": 1,
+          "n_episodes": 466,
+          "event_rate": 0.9979,
+          "median_duration": 12.0,
+          "p90_duration": 49.0,
+          "pct_duration_le_1": 0.0622,
+          "pct_up_breaks": 0.4828
+        },
+        {
+          "band_mult": 3.0,
+          "tol_atr": 1.0,
+          "confirm": 2,
+          "n_episodes": 395,
+          "event_rate": 0.9975,
+          "median_duration": 17.0,
+          "p90_duration": 50.0,
+          "pct_duration_le_1": 0.0025,
+          "pct_up_breaks": 0.5063
+        },
+        {
+          "band_mult": 3.0,
+          "tol_atr": 2.0,
+          "confirm": 1,
+          "n_episodes": 338,
+          "event_rate": 0.997,
+          "median_duration": 19.0,
+          "p90_duration": 60.30000000000001,
+          "pct_duration_le_1": 0.0266,
+          "pct_up_breaks": 0.5089
+        },
+        {
+          "band_mult": 3.0,
+          "tol_atr": 2.0,
+          "confirm": 2,
+          "n_episodes": 292,
+          "event_rate": 0.9966,
+          "median_duration": 24.0,
+          "p90_duration": 74.0,
+          "pct_duration_le_1": 0.0,
+          "pct_up_breaks": 0.5103
+        }
+      ],
+      "summary": {
+        "median_duration_range": [
+          4.0,
+          24.0
+        ],
+        "instant_breaks_confirm1": 0.1379,
+        "instant_breaks_confirm2": 0.0005,
+        "note": "confirm=1 produce rupturas el mismo día de la detección (ruido de microestructura); confirm=2 las elimina."
+      }
+    },
+    "walkforward": {
+      "folds": [
+        {
+          "origin": "2014-01-01",
+          "test_end": "2016-01-01",
+          "n_train": 405,
+          "n_test": 25,
+          "censored_train": 1,
+          "q2_cox_c_index": 0.5087,
+          "q2_rsf_c_index": 0.6367,
+          "q2_xgb_aft_c_index": 0.6609,
+          "q3_auc": 0.78,
+          "q3_n": 25
+        },
+        {
+          "origin": "2016-01-01",
+          "test_end": "2018-01-01",
+          "n_train": 430,
+          "n_test": 27,
+          "censored_train": 1,
+          "q2_cox_c_index": 0.625,
+          "q2_rsf_c_index": 0.6512,
+          "q2_xgb_aft_c_index": 0.6715,
+          "q3_auc": 0.7692,
+          "q3_n": 27
+        },
+        {
+          "origin": "2018-01-01",
+          "test_end": "2020-08-20",
+          "n_train": 457,
+          "n_test": 42,
+          "censored_train": 1,
+          "q2_cox_c_index": 0.5177,
+          "q2_rsf_c_index": 0.5797,
+          "q2_xgb_aft_c_index": 0.6557,
+          "q3_auc": 0.8261,
+          "q3_n": 42
+        },
+        {
+          "origin": "2020-08-20",
+          "test_end": "2022-01-01",
+          "n_train": 499,
+          "n_test": 21,
+          "censored_train": 1,
+          "q2_cox_c_index": 0.5323,
+          "q2_rsf_c_index": 0.592,
+          "q2_xgb_aft_c_index": 0.6567,
+          "q3_auc": 0.8,
+          "q3_n": 21
+        },
+        {
+          "origin": "2022-01-01",
+          "test_end": "2024-01-01",
+          "n_train": 520,
+          "n_test": 31,
+          "censored_train": 0,
+          "q2_cox_c_index": 0.5255,
+          "q2_rsf_c_index": 0.6142,
+          "q2_xgb_aft_c_index": 0.663,
+          "q3_auc": 0.7542,
+          "q3_n": 31
+        },
+        {
+          "origin": "2024-01-01",
+          "test_end": "fin",
+          "n_train": 551,
+          "n_test": 39,
+          "censored_train": 0,
+          "q2_cox_c_index": 0.6405,
+          "q2_rsf_c_index": 0.6677,
+          "q2_xgb_aft_c_index": 0.6752,
+          "q3_auc": 0.6667,
+          "q3_n": 38
+        }
+      ],
+      "summary": {
+        "baseline_c_index": 0.5,
+        "baseline_auc": 0.5,
+        "q2_cox": {
+          "c_index_mean": 0.5583,
+          "c_index_std": 0.0533,
+          "c_index_min": 0.5087,
+          "n_folds": 6
+        },
+        "q2_rsf": {
+          "c_index_mean": 0.6236,
+          "c_index_std": 0.0313,
+          "c_index_min": 0.5797,
+          "n_folds": 6
+        },
+        "q2_xgb_aft": {
+          "c_index_mean": 0.6638,
+          "c_index_std": 0.0072,
+          "c_index_min": 0.6557,
+          "n_folds": 6
+        },
+        "q2_best_model": "xgb_aft",
+        "q2_c_index_mean": 0.6638,
+        "q2_c_index_std": 0.0072,
+        "q2_c_index_min": 0.6557,
+        "n_folds_ok": 6,
+        "q3_auc_mean": 0.766,
+        "q3_auc_std": 0.05
+      }
+    },
+    "calibration": {
+      "horizons": [
+        5,
+        10,
+        20
+      ],
+      "by_horizon": [
+        {
+          "horizon": 5,
+          "observed_km_test": 0.7,
+          "predicted_cox": 0.7129,
+          "abs_error_cox": 0.0129,
+          "baseline_km_train": 0.6934,
+          "abs_error_baseline": 0.0066,
+          "predicted_xgb_aft": 0.7112,
+          "abs_error_xgb_aft": 0.0112
+        },
+        {
+          "horizon": 10,
+          "observed_km_test": 0.4778,
+          "predicted_cox": 0.5246,
+          "abs_error_cox": 0.0468,
+          "baseline_km_train": 0.503,
+          "abs_error_baseline": 0.0252,
+          "predicted_xgb_aft": 0.5098,
+          "abs_error_xgb_aft": 0.032
+        },
+        {
+          "horizon": 20,
+          "observed_km_test": 0.2222,
+          "predicted_cox": 0.2635,
+          "abs_error_cox": 0.0413,
+          "baseline_km_train": 0.248,
+          "abs_error_baseline": 0.0257,
+          "predicted_xgb_aft": 0.3052,
+          "abs_error_xgb_aft": 0.083
+        }
+      ],
+      "summary": {
+        "mae_cox": 0.0337,
+        "mae_baseline_km": 0.0192,
+        "n_train": 499,
+        "n_test": 91,
+        "mae_xgb_aft": 0.0421,
+        "best_calibrated": "baseline_km",
+        "note": "El baseline Kaplan-Meier marginal es difícil de batir en CALIBRACIÓN aunque tenga C-index 0.5: ordena mal pero acierta el nivel medio. Las covariables aportan discriminación (ranking), no necesariamente mejor probabilidad absoluta."
+      }
+    },
+    "backtest": {
+      "fee_bps_per_side": 5.0,
+      "n_trades": 90,
+      "period": [
+        "2020-09-10",
+        "2026-06-25"
+      ],
+      "direction_accuracy": 0.6778,
+      "trades_per_year": 15.55,
+      "strategies": {
+        "modelo_q3": {
+          "n": 90,
+          "cumulative_return": -0.780835,
+          "mean_per_trade": -0.01175,
+          "annualized_return": -0.182712,
+          "annualized_vol": 0.378442,
+          "sharpe_annual": -0.482801,
+          "psr_vs_zero": 0.111533,
+          "max_drawdown": -0.804592,
+          "hit_rate": 0.588889
+        },
+        "modelo_q3_conf60": {
+          "n": 90,
+          "cumulative_return": -0.806447,
+          "mean_per_trade": -0.013606,
+          "annualized_return": -0.211576,
+          "annualized_vol": 0.35716,
+          "sharpe_annual": -0.592384,
+          "psr_vs_zero": 0.063048,
+          "max_drawdown": -0.813229,
+          "hit_rate": 0.477778
+        },
+        "modelo_q3_conf70": {
+          "n": 90,
+          "cumulative_return": -0.678365,
+          "mean_per_trade": -0.009138,
+          "annualized_return": -0.142094,
+          "annualized_vol": 0.305662,
+          "sharpe_annual": -0.464873,
+          "psr_vs_zero": 0.106892,
+          "max_drawdown": -0.689636,
+          "hit_rate": 0.377778
+        },
+        "contra_tendencia": {
+          "n": 90,
+          "cumulative_return": -0.599341,
+          "mean_per_trade": -0.005106,
+          "annualized_return": -0.079403,
+          "annualized_vol": 0.380487,
+          "sharpe_annual": -0.208688,
+          "psr_vs_zero": 0.304533,
+          "max_drawdown": -0.629797,
+          "hit_rate": 0.555556
+        },
+        "siempre_largo": {
+          "n": 90,
+          "cumulative_return": 0.091031,
+          "mean_per_trade": 0.005562,
+          "annualized_return": 0.086491,
+          "annualized_vol": 0.379945,
+          "sharpe_annual": 0.227641,
+          "psr_vs_zero": 0.707665,
+          "max_drawdown": -0.636638,
+          "hit_rate": 0.533333
+        }
+      },
+      "deflated_sharpe": {
+        "deflated_sharpe_ratio": 0.01361,
+        "n_trials": 5,
+        "sr_trials_variance": 0.108185,
+        "expected_max_sharpe_annual": 0.392263,
+        "observed_sharpe_annual": -0.482801
+      },
+      "pbo": {
+        "pbo": 0.3531746031746032,
+        "n_combinations": 252,
+        "logit_mean": 0.516904404717994,
+        "logit_median": 0.6931471805599452
+      },
+      "buy_and_hold_return": 0.8778,
+      "verdict": "SIN EDGE: acierto direccional 67.8% pero Sharpe -0.48 y retorno acumulado -78.1% frente a buy&hold 87.8%; DSR=0.014. Predecir POR QUÉ BANDA rompe el canal no equivale a ganar dinero: la asimetría de pagos anula el acierto direccional (coherente con el DSR≈0 de la 1ª pata)."
+    }
+  },
+  "error": null,
+  "decision": "accept",
+  "notes": "Q2 C-index walk-forward 0.664 (baseline 0.5) · SIN EDGE",
+  "elapsed_seconds": 17.68
+}

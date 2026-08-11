@@ -1,0 +1,7 @@
+# Salidas de ejecución (regenerables con run_all.py); los entregables
+# consolidados del proyecto viven en /results.
+outputs/
+outputs_test/
+.venv/
+__pycache__/
+*.pyc
