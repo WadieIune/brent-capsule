@@ -47,9 +47,30 @@ problema distinto —y quedarse solo con la cobertura ocultaría el papel del EW
   las concentra en los episodios de estrés: Christoffersen lo rechaza, p=0.032);
 - el **add-on de canal** corrige el *nivel* de cobertura (1.186% → 1.087%).
 
-Coste a ponderar: el VaR medio sube **+7.7%** frente a FHS-EWMA — más consumo de
-capital a cambio de una cobertura mejor calibrada. Esa decisión es del risk
-director, no del modelo.
+#### ¿Y el capital? Las excepciones también lo consumen
+
+Bajo modelos internos el capital es proporcional a **k · VaR**, donde `k` es el
+multiplicador del semáforo de Basilea, que **sube con las excepciones** (3.00 en
+verde; 3.40–3.85 en amarilla; 4.00 en roja). Reducir excepciones sí ahorra
+capital, así que el balance hay que calcularlo completo y no quedarse en el nivel
+del VaR. Tomando el multiplicador de la **peor ventana móvil de 250 sesiones**,
+que es la que determina el recargo en un momento dado:
+
+| Estimador | Peor ventana 250d | Zona | k | VaR medio | Capital ∝ k·VaR |
+|---|---|---|---|---|---|
+| Histórico | 7 excepciones | amarilla | 3.65 | 3.56% | 13.00% |
+| FHS-EWMA | 6 excepciones | amarilla | 3.50 | 3.85% | 13.48% (+3.6%) |
+| Predicted | 6 excepciones | amarilla | 3.50 | 4.15% | **14.51% (+11.6%)** |
+
+El overlay **sí** rebaja el recargo (k de 3.65 a 3.50), pero ese ahorro **no
+compensa** el VaR más alto: en capital cuesta un **+11.6%** frente al histórico.
+La conclusión honesta es que el valor del overlay **no es la eficiencia de
+capital**, sino la **validación y gobernanza del modelo**: el VaR histórico
+*falla* el test de independencia (p=0.032), lo que es un hallazgo supervisor en
+sí mismo, y el predicho pasa ambos tests con la cobertura más próxima al
+objetivo. Si el objetivo fuese minimizar capital, la respuesta sería el VaR
+histórico —asumiendo el riesgo de que sus excepciones agrupadas provoquen una
+migración de zona en un episodio de estrés.
 
 Otras líneas (early-warning de límites, escenarios de stress *data-driven*,
 señal para libro de opciones) se apoyan en las mismas salidas y quedan como

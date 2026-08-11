@@ -66,6 +66,50 @@ def basel_traffic_light(exceptions: int, n: int) -> Dict[str, object]:
             "exceptions_per_250d": round(float(scaled), 2), "zone": zone}
 
 
+def basel_multiplier(exceptions_250d: float) -> Tuple[float, str]:
+    """Multiplicador `k` del Traffic Light Approach (BCBS) según excepciones/250d.
+
+    El capital por riesgo de mercado en modelos internos es proporcional a
+    `k · VaR`, de modo que **las excepciones sí consumen capital**: no solo
+    importa el nivel del VaR, también el recargo por fallos de backtesting.
+    """
+    e = int(round(exceptions_250d))
+    if e <= _BASEL_GREEN:
+        return 3.00, "verde"
+    if e <= _BASEL_YELLOW:
+        return {5: 3.40, 6: 3.50, 7: 3.65, 8: 3.75, 9: 3.85}[e], "amarilla"
+    return 4.00, "roja"
+
+
+def capital_analysis(exceptions: np.ndarray, avg_var: float,
+                     window: int = 250) -> Dict[str, object]:
+    """Capital regulatorio aproximado: `k(excepciones) · VaR`, en dos escenarios.
+
+    - *medio*: multiplicador según la tasa media de excepciones del test.
+    - *peor ventana*: multiplicador según la peor ventana móvil de 250 sesiones,
+      que es la que de verdad determina el recargo en un momento dado. Un VaR
+      que agrupa excepciones puede estar bien en media y aun así migrar de zona
+      en un episodio de estrés.
+    """
+    e = np.asarray(exceptions, dtype=int)
+    n = len(e)
+    avg_250 = float(e.sum()) * (250.0 / n) if n else float("nan")
+    k_avg, z_avg = basel_multiplier(avg_250)
+
+    roll = pd.Series(e).rolling(window).sum()
+    worst = int(np.nanmax(roll.to_numpy())) if n >= window else int(e.sum())
+    k_worst, z_worst = basel_multiplier(worst)
+    return {
+        "exceptions_per_250d_avg": round(avg_250, 2),
+        "multiplier_avg": k_avg, "zone_avg": z_avg,
+        "worst_250d_exceptions": worst,
+        "multiplier_worst": k_worst, "zone_worst": z_worst,
+        "avg_var": round(float(avg_var), 5),
+        "capital_avg": round(float(k_avg * avg_var), 5),
+        "capital_worst": round(float(k_worst * avg_var), 5),
+    }
+
+
 def _wide_dataset_path() -> Optional[str]:
     """Localiza `data/dataset_wide_with_target.csv` subiendo directorios."""
     d = _APP
@@ -151,13 +195,15 @@ def _historical_var(rets: np.ndarray, alpha: float, window: int) -> np.ndarray:
 def _backtest(name: str, rets: np.ndarray, var: np.ndarray, alpha: float) -> Dict[str, object]:
     exc = (rets < -var).astype(int)
     k = kupiec_pof(exc, alpha)
+    avg_var = float(np.mean(var))
     return {
         "estimator": name,
         "exception_rate": k["exception_rate"],
         "kupiec": k,
         "christoffersen": christoffersen_independence(exc),
         "basel": basel_traffic_light(int(exc.sum()), len(exc)),
-        "avg_var": round(float(np.mean(var)), 5),
+        "avg_var": round(avg_var, 5),
+        "capital": capital_analysis(exc, avg_var),
     }
 
 
@@ -252,19 +298,32 @@ class PortfolioVaRExperiment(Experiment):
             "independence_p_value": ind_p,
             "independence_gain_from_ewma": round(
                 float(ind_p["fhs_ewma"] - ind_p["historical"]), 4),
-            # Coste del conservadurismo: un VaR mayor consume más capital.
-            "avg_var_cost": {
-                "historical": res["historical"]["avg_var"],
-                "fhs_ewma": res["fhs_ewma"]["avg_var"],
-                "predicted": res["predicted"]["avg_var"],
-                "predicted_vs_fhs_pct": round(
-                    100.0 * (res["predicted"]["avg_var"] / res["fhs_ewma"]["avg_var"] - 1.0), 2),
+            # Coste en CAPITAL, no solo en nivel de VaR. Bajo modelos internos el
+            # capital es proporcional a k(excepciones)·VaR: las excepciones sí
+            # consumen capital vía el recargo del semáforo, de modo que reducirlas
+            # puede compensar un VaR más alto... o no. Se reporta el balance real.
+            "capital_cost": {
+                est: {
+                    "avg_var": res[est]["avg_var"],
+                    "multiplier_worst_250d": res[est]["capital"]["multiplier_worst"],
+                    "zone_worst_250d": res[est]["capital"]["zone_worst"],
+                    "capital_worst": res[est]["capital"]["capital_worst"],
+                } for est in ("historical", "fhs_ewma", "predicted")
             },
+            "capital_predicted_vs_historical_pct": round(
+                100.0 * (res["predicted"]["capital"]["capital_worst"]
+                         / res["historical"]["capital"]["capital_worst"] - 1.0), 2),
+            "capital_predicted_vs_fhs_pct": round(
+                100.0 * (res["predicted"]["capital"]["capital_worst"]
+                         / res["fhs_ewma"]["capital"]["capital_worst"] - 1.0), 2),
             "best_estimator": best,
             "reading": ("El filtrado EWMA corrige la AGRUPACIÓN de excepciones "
                         "(Christoffersen) y el add-on de canal corrige el NIVEL "
                         "de cobertura (Kupiec); son mejoras complementarias, no "
-                        "sustitutivas."),
+                        "sustitutivas. En CAPITAL, sin embargo, el ahorro por "
+                        "menor recargo de Basilea no compensa el VaR más alto: "
+                        "el valor del overlay es de validación y gobernanza del "
+                        "modelo, no de eficiencia de capital."),
         }
         metrics = {
             "source": source, "assets": cols, "weights": [round(x, 4) for x in w],
@@ -306,9 +365,12 @@ class PortfolioVaRExperiment(Experiment):
             f"{'(RECHAZA: excepciones agrupadas)' if ind_p['historical'] < 0.05 else ''} -> "
             f"FHS-EWMA {ind_p['fhs_ewma']:.4f} -> predicted {ind_p['predicted']:.4f}. "
             f"Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y "
-            f"el canal ajusta el nivel. Coste: VaR medio "
-            f"{attribution['avg_var_cost']['predicted_vs_fhs_pct']:+.1f}% vs FHS-EWMA "
-            f"(más capital). Basilea predicted: zona {res['predicted']['basel']['zone']}. "
+            f"el canal ajusta el nivel. CAPITAL (k·VaR con el multiplicador de la "
+            f"peor ventana de 250d): predicted {attribution['capital_predicted_vs_historical_pct']:+.1f}% "
+            f"vs histórico y {attribution['capital_predicted_vs_fhs_pct']:+.1f}% vs FHS-EWMA "
+            f"-> el menor recargo (k {res['historical']['capital']['multiplier_worst']:.2f} -> "
+            f"{res['predicted']['capital']['multiplier_worst']:.2f}) NO compensa el VaR más alto; "
+            f"el overlay se justifica por validación/gobernanza, no por ahorro de capital. "
             "El régimen de cada activo se estima con su PROPIO precio: la tesis "
             "solo-precio escala a cartera sin modelo multivariante de factores."
         )

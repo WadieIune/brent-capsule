@@ -36,7 +36,7 @@
       "id": "portfolio_var",
       "title": "Predicted VaR de cartera multi-commodity (canal por activo, solo-precio)",
       "decision": "accept",
-      "notes": "Cartera 6 commodities equiponderada, 2024 sesiones de test. Cobertura (objetivo 1.00%): histórico 1.186% · FHS-EWMA 1.186% · predicted 1.087% -> mejor: predicted. Independencia (Christoffersen p): histórico 0.0316 (RECHAZA: excepciones agrupadas) -> FHS-EWMA 0.2887 -> predicted 0.2379. Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y el canal ajusta el nivel. Coste: VaR medio +7.7% vs FHS-EWMA (más capital). Basilea predicted: zona verde. El régimen de cada activo se estima con su PROPIO precio: la tesis solo-precio escala a cartera sin modelo multivariante de factores.",
+      "notes": "Cartera 6 commodities equiponderada, 2024 sesiones de test. Cobertura (objetivo 1.00%): histórico 1.186% · FHS-EWMA 1.186% · predicted 1.087% -> mejor: predicted. Independencia (Christoffersen p): histórico 0.0316 (RECHAZA: excepciones agrupadas) -> FHS-EWMA 0.2887 -> predicted 0.2379. Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y el canal ajusta el nivel. CAPITAL (k·VaR con el multiplicador de la peor ventana de 250d): predicted +11.6% vs histórico y +7.7% vs FHS-EWMA -> el menor recargo (k 3.65 -> 3.50) NO compensa el VaR más alto; el overlay se justifica por validación/gobernanza, no por ahorro de capital. El régimen de cada activo se estima con su PROPIO precio: la tesis solo-precio escala a cartera sin modelo multivariante de factores.",
       "error": null,
       "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/portfolio_var/run_manifest.json"
     },

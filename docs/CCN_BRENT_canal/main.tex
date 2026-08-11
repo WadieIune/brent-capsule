@@ -721,10 +721,45 @@ la mitad de la historia.
     con Kupiec $p=0.70$.
 \end{itemize}
 
-Ambas mejoras son complementarias, no sustitutivas. El coste debe explicitarse:
-el VaR medio sube un \textbf{+7.7\%} respecto a FHS-EWMA, es decir, más consumo
-de capital a cambio de una cobertura mejor calibrada; esa disyuntiva corresponde
-al comité de riesgos, no al modelo.
+Ambas mejoras son complementarias, no sustitutivas.
+
+\subsection{El coste en capital: las excepciones también consumen}
+Sería incompleto medir el coste del \emph{overlay} únicamente por el nivel del
+VaR. Bajo modelos internos el capital por riesgo de mercado es proporcional a
+$k \cdot \mathrm{VaR}$, donde $k$ es el multiplicador del semáforo de Basilea,
+que \emph{crece con el número de excepciones} de \emph{backtesting} (3.00 en zona
+verde; 3.40--3.85 en amarilla; 4.00 en roja). Reducir excepciones ahorra capital,
+de modo que el balance debe calcularse completo. Tomando el multiplicador que
+correspondería a la \emph{peor ventana móvil de 250 sesiones} —la que determina
+el recargo en un momento dado— se obtiene la Tabla~\ref{tab:capital}.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Capital regulatorio aproximado ($k\cdot\mathrm{VaR}$) de los tres estimadores.}
+\label{tab:capital}
+\begin{tabular}{lrlrrr}
+\toprule
+\textbf{Estimador} & \textbf{Peor 250d} & \textbf{Zona} & \textbf{$k$} & \textbf{VaR medio} & \textbf{Capital} \\
+\midrule
+Histórico & 7 exc. & amarilla & 3.65 & 3.56\% & 13.00\% \\
+FHS-EWMA & 6 exc. & amarilla & 3.50 & 3.85\% & 13.48\% \ (+3.6\%) \\
+Predicho & 6 exc. & amarilla & 3.50 & 4.15\% & \textbf{14.51\%} \ (+11.6\%) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+El \emph{overlay} sí rebaja el recargo ($k$ de 3.65 a 3.50), pero ese ahorro
+\textbf{no compensa} el mayor nivel de VaR: en términos de capital cuesta un
+\textbf{+11.6\%} frente al histórico. La conclusión honesta es que el valor del
+VaR predicho \textbf{no está en la eficiencia de capital} sino en la
+\textbf{validación y gobernanza del modelo}: el VaR histórico \emph{falla} el
+test de independencia ($p=0.032$) —un hallazgo supervisor en sí mismo, porque
+concentra los fallos justo en los episodios de estrés— mientras que el predicho
+supera ambos contrastes con la cobertura más próxima al objetivo. Si el criterio
+fuese minimizar capital, la elección sería el VaR histórico, asumiendo el riesgo
+de que su agrupación de excepciones provoque una migración de zona en el
+siguiente episodio de tensión.
 
 Las cinco aplicaciones implementadas —calidad de dato, previsión de régimen de
 volatilidad, VaR de un activo, VaR de cartera y proxies FRTB— se ejecutan bajo un

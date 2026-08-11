@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "portfolio_var",
   "title": "Predicted VaR de cartera multi-commodity (canal por activo, solo-precio)",
-  "timestamp_utc": "2026-08-11T20:48:33Z",
+  "timestamp_utc": "2026-08-11T21:18:23Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -113,7 +113,18 @@
           "exceptions_per_250d": 2.96,
           "zone": "verde"
         },
-        "avg_var": 0.03562
+        "avg_var": 0.03562,
+        "capital": {
+          "exceptions_per_250d_avg": 2.96,
+          "multiplier_avg": 3.0,
+          "zone_avg": "verde",
+          "worst_250d_exceptions": 7,
+          "multiplier_worst": 3.65,
+          "zone_worst": "amarilla",
+          "avg_var": 0.03562,
+          "capital_avg": 0.10687,
+          "capital_worst": 0.13003
+        }
       },
       "fhs_ewma": {
         "estimator": "fhs_ewma",
@@ -142,7 +153,18 @@
           "exceptions_per_250d": 2.96,
           "zone": "verde"
         },
-        "avg_var": 0.0385
+        "avg_var": 0.0385,
+        "capital": {
+          "exceptions_per_250d_avg": 2.96,
+          "multiplier_avg": 3.0,
+          "zone_avg": "verde",
+          "worst_250d_exceptions": 6,
+          "multiplier_worst": 3.5,
+          "zone_worst": "amarilla",
+          "avg_var": 0.0385,
+          "capital_avg": 0.1155,
+          "capital_worst": 0.13475
+        }
       },
       "predicted": {
         "estimator": "predicted",
@@ -171,7 +193,18 @@
           "exceptions_per_250d": 2.72,
           "zone": "verde"
         },
-        "avg_var": 0.04146
+        "avg_var": 0.04146,
+        "capital": {
+          "exceptions_per_250d_avg": 2.72,
+          "multiplier_avg": 3.0,
+          "zone_avg": "verde",
+          "worst_250d_exceptions": 6,
+          "multiplier_worst": 3.5,
+          "zone_worst": "amarilla",
+          "avg_var": 0.04146,
+          "capital_avg": 0.12439,
+          "capital_worst": 0.14512
+        }
       }
     },
     "attribution": {
@@ -189,14 +222,30 @@
         "predicted": 0.2379
       },
       "independence_gain_from_ewma": 0.2571,
-      "avg_var_cost": {
-        "historical": 0.03562,
-        "fhs_ewma": 0.0385,
-        "predicted": 0.04146,
-        "predicted_vs_fhs_pct": 7.69
+      "capital_cost": {
+        "historical": {
+          "avg_var": 0.03562,
+          "multiplier_worst_250d": 3.65,
+          "zone_worst_250d": "amarilla",
+          "capital_worst": 0.13003
+        },
+        "fhs_ewma": {
+          "avg_var": 0.0385,
+          "multiplier_worst_250d": 3.5,
+          "zone_worst_250d": "amarilla",
+          "capital_worst": 0.13475
+        },
+        "predicted": {
+          "avg_var": 0.04146,
+          "multiplier_worst_250d": 3.5,
+          "zone_worst_250d": "amarilla",
+          "capital_worst": 0.14512
+        }
       },
+      "capital_predicted_vs_historical_pct": 11.61,
+      "capital_predicted_vs_fhs_pct": 7.7,
       "best_estimator": "predicted",
-      "reading": "El filtrado EWMA corrige la AGRUPACIÓN de excepciones (Christoffersen) y el add-on de canal corrige el NIVEL de cobertura (Kupiec); son mejoras complementarias, no sustitutivas."
+      "reading": "El filtrado EWMA corrige la AGRUPACIÓN de excepciones (Christoffersen) y el add-on de canal corrige el NIVEL de cobertura (Kupiec); son mejoras complementarias, no sustitutivas. En CAPITAL, sin embargo, el ahorro por menor recargo de Basilea no compensa el VaR más alto: el valor del overlay es de validación y gobernanza del modelo, no de eficiencia de capital."
     }
   },
   "baseline": {
@@ -209,7 +258,7 @@
   },
   "artifacts": [],
   "decision": "accept",
-  "notes": "Cartera 6 commodities equiponderada, 2024 sesiones de test. Cobertura (objetivo 1.00%): histórico 1.186% · FHS-EWMA 1.186% · predicted 1.087% -> mejor: predicted. Independencia (Christoffersen p): histórico 0.0316 (RECHAZA: excepciones agrupadas) -> FHS-EWMA 0.2887 -> predicted 0.2379. Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y el canal ajusta el nivel. Coste: VaR medio +7.7% vs FHS-EWMA (más capital). Basilea predicted: zona verde. El régimen de cada activo se estima con su PROPIO precio: la tesis solo-precio escala a cartera sin modelo multivariante de factores.",
+  "notes": "Cartera 6 commodities equiponderada, 2024 sesiones de test. Cobertura (objetivo 1.00%): histórico 1.186% · FHS-EWMA 1.186% · predicted 1.087% -> mejor: predicted. Independencia (Christoffersen p): histórico 0.0316 (RECHAZA: excepciones agrupadas) -> FHS-EWMA 0.2887 -> predicted 0.2379. Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y el canal ajusta el nivel. CAPITAL (k·VaR con el multiplicador de la peor ventana de 250d): predicted +11.6% vs histórico y +7.7% vs FHS-EWMA -> el menor recargo (k 3.65 -> 3.50) NO compensa el VaR más alto; el overlay se justifica por validación/gobernanza, no por ahorro de capital. El régimen de cada activo se estima con su PROPIO precio: la tesis solo-precio escala a cartera sin modelo multivariante de factores.",
   "error": null,
-  "elapsed_seconds": 20.314
+  "elapsed_seconds": 20.416
 }

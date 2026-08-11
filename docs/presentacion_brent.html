@@ -385,8 +385,28 @@
   <div class="callout"><b>Atribución honesta:</b> se incluye un baseline <i>fuerte</i> (FHS-EWMA sin
   canal) precisamente para no atribuir al canal la mejora que ya da el filtrado de volatilidad. El
   EWMA corrige la <b>agrupación</b> de excepciones; el canal corrige el <b>nivel</b> de cobertura.
-  Son complementarios. <b>Coste:</b> el VaR medio sube <b>+7.7%</b> — más capital a cambio de mejor
-  calibración. Esa disyuntiva es del comité de riesgos, no del modelo.</div>
+  Son complementarios.</div>
+
+  <h3 style="margin:1.4rem 0 .5rem">¿Y el capital? Las excepciones también lo consumen</h3>
+  <p class="lead">Bajo modelos internos el capital es <b>k · VaR</b>, y el multiplicador <b>k</b> del
+  semáforo de Basilea <b>sube con las excepciones</b> (3.00 verde · 3.40–3.85 amarilla · 4.00 roja).
+  Así que reducir excepciones sí ahorra capital y el balance hay que hacerlo completo, no quedarse en
+  el nivel del VaR. Con el multiplicador de la <b>peor ventana móvil de 250 sesiones</b>:</p>
+
+  <table>
+    <tr><th>Estimador</th><th class="num">Peor 250d</th><th>Zona</th><th class="num">k</th><th class="num">VaR medio</th><th class="num">Capital ∝ k·VaR</th></tr>
+    <tr><td>Histórico</td><td class="num">7 exc.</td><td>amarilla</td><td class="num">3.65</td><td class="num">3.56%</td><td class="num">13.00%</td></tr>
+    <tr><td>FHS-EWMA</td><td class="num">6 exc.</td><td>amarilla</td><td class="num">3.50</td><td class="num">3.85%</td><td class="num">13.48% <span class="muted">(+3.6%)</span></td></tr>
+    <tr><td><b>Predicted</b></td><td class="num">6 exc.</td><td>amarilla</td><td class="num">3.50</td><td class="num">4.15%</td><td class="num bad">14.51% (+11.6%)</td></tr>
+  </table>
+
+  <div class="callout"><b>Conclusión corregida y honesta:</b> el overlay <i>sí</i> rebaja el recargo
+  (k de 3.65 a 3.50), pero ese ahorro <b>no compensa</b> el VaR más alto: en capital cuesta
+  <b>+11.6%</b> frente al histórico. Por tanto el valor del VaR predicho <b>no es la eficiencia de
+  capital</b>, sino la <b>validación y gobernanza del modelo</b>: el VaR histórico <i>falla</i> el
+  test de independencia (p=0.032) —concentra los fallos justo en el estrés, lo que es un hallazgo
+  supervisor en sí mismo— y el predicho pasa ambos con la mejor cobertura. Si el criterio fuese
+  minimizar capital, la respuesta sería el histórico, asumiendo el riesgo de migración de zona.</div>
 
   <p class="muted">Las 5 aplicaciones (calidad de dato, régimen de volatilidad, VaR de un activo, VaR
   de cartera y proxies FRTB) corren bajo un <b>harness reproducible</b> que deja por ejecución un

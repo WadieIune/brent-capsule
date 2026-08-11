@@ -40,6 +40,29 @@ Para actualizarla desde el origen:
 `https://fred.stlouisfed.org/graph/fredgraph.csv?id=DCOILBRENTEU`
 (columnas `observation_date,DCOILBRENTEU` → renombrar a `date,BRENT`).
 
+## Qué dato usa cada pata del proyecto
+
+**La cápsula es autocontenida**: los tres experimentos leen exclusivamente
+ficheros de este directorio, sin descargas en tiempo de ejecución.
+
+| Pata | Código | Fichero de entrada | Series usadas |
+|---|---|---|---|
+| 1ª · Detección del canal | `code/channel_detector.py` | `dataset_wide_with_target.csv` + z-score + `.npy` | BRENT + 180 features |
+| 2ª · Supervivencia | `code/part2_channel_survival/` | `brent_fred_daily.csv` | BRENT (FRED, 1987–2026) |
+| 3ª · Aplicaciones a riesgo | `code/applications/` | `brent_fred_daily.csv` (1 activo) y **`dataset_wide_with_target.csv`** (cartera) | BRENT, WTI, GOLD, SILVER, COPPER, NATGAS |
+
+La cartera multi-commodity de `portfolio_var` **no incorpora datos nuevos**:
+toma seis columnas de precios que ya están en `dataset_wide_with_target.csv`
+(7.004 filas, 2007-01-02 → 2026-03-06; 6.795 sesiones con las seis series
+simultáneamente disponibles). Ese fichero forma parte del *bundle* original de la
+cápsula desde la primera versión, por lo que un revisor de la revista reproduce
+las tres patas sin acceso a red.
+
+**Resolución de rutas en Code Ocean.** Los módulos localizan el dato subiendo
+directorios hasta encontrar `data/`, de modo que funcionan tanto en el repositorio
+(`<repo>/data/`) como en el montaje de la cápsula (`/data`, con el código en
+`/code`). Verificado sobre un layout `/code`+`/data`+`/results`.
+
 ## Cómo cargarlos en Code Ocean
 
 1. En la cápsula, pestaña **Data** → *Add data* y sube los ficheros anteriores, o
