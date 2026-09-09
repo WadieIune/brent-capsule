@@ -19,6 +19,11 @@ results/models/*
 __pycache__/
 *.py[cod]
 
+# Entornos virtuales (se reconstruyen con environment/requirements.txt)
+.venv/
+venv/
+env/
+
 # LaTeX (compilaciones locales)
 *.aux
 *.bbl

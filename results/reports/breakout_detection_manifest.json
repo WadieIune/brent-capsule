@@ -1,0 +1,269 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "breakout_detection",
+  "title": "Detección de ruptura de canal: hazard, lead time y expansión de volatilidad",
+  "timestamp_utc": "2026-08-30T20:59:26Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": "2020-08-20",
+    "alpha": 0.99,
+    "horizon": 10
+  },
+  "seed": 42,
+  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/suite10",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+    "horizon": 5,
+    "n_rows": 8852,
+    "n_train": 7543,
+    "n_test": 1309,
+    "base_rate_test": 0.3071,
+    "models": {
+      "actuarial (solo tiempo en episodio)": {
+        "features": [
+          "time_in_episode"
+        ],
+        "n_features": 1,
+        "model": "logit",
+        "auc": 0.496,
+        "average_precision": 0.3071,
+        "precision": 0.2997,
+        "recall": 0.296,
+        "threshold": 0.5147
+      },
+      "volatilidad": {
+        "features": [
+          "vol20",
+          "atr_norm",
+          "band_width",
+          "resid_norm"
+        ],
+        "n_features": 4,
+        "model": "logit",
+        "auc": 0.4816,
+        "average_precision": 0.3031,
+        "precision": 0.2857,
+        "recall": 0.2687,
+        "threshold": 0.5073
+      },
+      "forma del canal": {
+        "features": [
+          "dir_asc",
+          "slope_norm",
+          "r2",
+          "n_turn",
+          "pos_in_channel",
+          "accel",
+          "last_ret"
+        ],
+        "n_features": 7,
+        "model": "logit",
+        "auc": 0.5183,
+        "average_precision": 0.3213,
+        "precision": 0.322,
+        "recall": 0.3284,
+        "threshold": 0.5394
+      },
+      "forma + volatilidad": {
+        "features": [
+          "dir_asc",
+          "slope_norm",
+          "r2",
+          "n_turn",
+          "pos_in_channel",
+          "accel",
+          "last_ret",
+          "vol20",
+          "atr_norm",
+          "band_width",
+          "resid_norm"
+        ],
+        "n_features": 11,
+        "model": "logit",
+        "auc": 0.5081,
+        "average_precision": 0.3107,
+        "precision": 0.3067,
+        "recall": 0.306,
+        "threshold": 0.5419
+      },
+      "completo + tiempo": {
+        "features": [
+          "dir_asc",
+          "slope_norm",
+          "r2",
+          "n_turn",
+          "pos_in_channel",
+          "accel",
+          "last_ret",
+          "vol20",
+          "atr_norm",
+          "band_width",
+          "resid_norm",
+          "time_in_episode"
+        ],
+        "n_features": 12,
+        "model": "logit",
+        "auc": 0.4992,
+        "average_precision": 0.3144,
+        "precision": 0.2895,
+        "recall": 0.301,
+        "threshold": 0.5424
+      },
+      "SOLO distancia al borde": {
+        "features": [
+          "edge_distance"
+        ],
+        "n_features": 1,
+        "model": "logit",
+        "auc": 0.6771,
+        "average_precision": 0.4714,
+        "precision": 0.4888,
+        "recall": 0.4353,
+        "threshold": 0.5791
+      },
+      "completo + borde": {
+        "features": [
+          "dir_asc",
+          "slope_norm",
+          "r2",
+          "n_turn",
+          "pos_in_channel",
+          "accel",
+          "last_ret",
+          "vol20",
+          "atr_norm",
+          "band_width",
+          "resid_norm",
+          "time_in_episode",
+          "edge_distance"
+        ],
+        "n_features": 13,
+        "model": "logit",
+        "auc": 0.6598,
+        "average_precision": 0.4333,
+        "precision": 0.4763,
+        "recall": 0.4254,
+        "threshold": 0.5788
+      },
+      "completo + tiempo (gradient boosting)": {
+        "features": [
+          "dir_asc",
+          "slope_norm",
+          "r2",
+          "n_turn",
+          "pos_in_channel",
+          "accel",
+          "last_ret",
+          "vol20",
+          "atr_norm",
+          "band_width",
+          "resid_norm",
+          "time_in_episode",
+          "edge_distance"
+        ],
+        "n_features": 13,
+        "model": "gb",
+        "auc": 0.6684,
+        "average_precision": 0.4552,
+        "precision": 0.4716,
+        "recall": 0.4552,
+        "threshold": 0.3503
+      }
+    },
+    "best_model": "SOLO distancia al borde",
+    "best_auc": 0.6771,
+    "auc_actuarial": 0.496,
+    "auc_volatility": 0.4816,
+    "auc_shape": 0.5183,
+    "gain_over_best_baseline": 0.1811,
+    "lead_time": {
+      "episodes_evaluated": 92,
+      "episodes_with_alert": 90,
+      "alert_coverage_pct": 97.8,
+      "lead_sessions_median": 6.0,
+      "lead_sessions_p25": 2.0,
+      "lead_sessions_p75": 15.0,
+      "horizon": 5
+    },
+    "breakout_vol_expansion": {
+      "n_breakouts": 588,
+      "mean_log_vol_ratio_after_breakout": -0.2261,
+      "mean_log_vol_ratio_random": -0.231,
+      "median_after_breakout": -0.1952,
+      "welch_t": 0.166,
+      "expansion_after_breakout": true,
+      "interpretation": "t>2 indicaría expansión de volatilidad tras la ruptura significativamente mayor que en una fecha cualquiera"
+    },
+    "u_shape_by_band_position": [
+      {
+        "bucket": "(-0.001, 0.0296]",
+        "breakout_rate": 0.542,
+        "n": 131
+      },
+      {
+        "bucket": "(0.0296, 0.193]",
+        "breakout_rate": 0.3435,
+        "n": 131
+      },
+      {
+        "bucket": "(0.193, 0.325]",
+        "breakout_rate": 0.2672,
+        "n": 131
+      },
+      {
+        "bucket": "(0.325, 0.416]",
+        "breakout_rate": 0.2519,
+        "n": 131
+      },
+      {
+        "bucket": "(0.416, 0.529]",
+        "breakout_rate": 0.1603,
+        "n": 131
+      },
+      {
+        "bucket": "(0.529, 0.624]",
+        "breakout_rate": 0.1154,
+        "n": 130
+      },
+      {
+        "bucket": "(0.624, 0.719]",
+        "breakout_rate": 0.2366,
+        "n": 131
+      },
+      {
+        "bucket": "(0.719, 0.819]",
+        "breakout_rate": 0.2519,
+        "n": 131
+      },
+      {
+        "bucket": "(0.819, 0.932]",
+        "breakout_rate": 0.374,
+        "n": 131
+      },
+      {
+        "bucket": "(0.932, 1.0]",
+        "breakout_rate": 0.5267,
+        "n": 131
+      }
+    ]
+  },
+  "baseline": {
+    "unconditional": 0.3071,
+    "auc_random": 0.5,
+    "actuarial_auc": 0.496,
+    "volatility_auc": 0.4816,
+    "note": "la geometría debe superar a tiempo-en-episodio y a volatilidad"
+  },
+  "artifacts": [],
+  "decision": "accept",
+  "notes": "Ruptura en <= 5 sesiones; tasa base 0.307. AUC: actuarial (solo tiempo) 0.496 · volatilidad 0.4816 · forma 0.5183 -> mejor SOLO distancia al borde 0.6771 (ganancia sobre el mejor baseline +0.1811). Lead time mediano 6.0 sesiones con cobertura del 97.8% de los episodios. Expansión de volatilidad tras la ruptura: media log-ratio -0.2261 frente a -0.231 en fecha aleatoria (Welch t=0.166).",
+  "error": null,
+  "elapsed_seconds": 5.716
+}

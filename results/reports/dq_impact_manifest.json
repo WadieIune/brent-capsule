@@ -1,0 +1,208 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "dq_impact",
+  "title": "Data Quality con impacto medido sobre el motor de riesgo",
+  "timestamp_utc": "2026-08-30T20:59:25Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": "2020-08-20",
+    "alpha": 0.99,
+    "horizon": 10
+  },
+  "seed": 42,
+  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/suite10",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "dataset_wide_with_target.csv",
+    "detection": {
+      "nonpositive_print": {
+        "dates": [
+          "2020-04-20"
+        ],
+        "asset": "WTI",
+        "geometric_detected": true,
+        "geometric_reasons": [
+          "atr_jump_reverting",
+          "out_of_band"
+        ],
+        "geometric_severity": [
+          9.01,
+          7.22
+        ],
+        "conventional_detected": true
+      },
+      "calendar_padding": {
+        "asset": "BRENT",
+        "stale_flags": 1145,
+        "of_which_weekend": 1015,
+        "weekend_share_pct": 88.6,
+        "conventional_detects_padding": false,
+        "note": "el control convencional por cuantil de |retorno| no puede ver el relleno: un retorno cero nunca es un outlier de cola"
+      }
+    },
+    "risk_view_raw": {
+      "n_returns": 6794,
+      "risk_contributions": {
+        "BRENT": 0.0026,
+        "WTI": 0.9845,
+        "GOLD": 0.0017,
+        "SILVER": 0.0035,
+        "COPPER": 0.0032,
+        "NATGAS": 0.0045
+      },
+      "max_risk_contribution": 0.9845,
+      "most_concentrated_asset": "WTI",
+      "zero_return_pct": 31.12,
+      "historical": {
+        "exception_rate": 0.01186,
+        "kupiec_p": 0.4145,
+        "christoffersen_p": 0.0316,
+        "avg_var": 0.03562,
+        "basel": {
+          "exceptions": 24,
+          "n": 2024,
+          "exceptions_per_250d": 2.96,
+          "zone": "verde"
+        }
+      },
+      "fhs_ewma": {
+        "exception_rate": 0.01186,
+        "kupiec_p": 0.4145,
+        "christoffersen_p": 0.2887,
+        "avg_var": 0.0385,
+        "basel": {
+          "exceptions": 24,
+          "n": 2024,
+          "exceptions_per_250d": 2.96,
+          "zone": "verde"
+        }
+      },
+      "n_test": 2024
+    },
+    "risk_view_clean": {
+      "n_returns": 4679,
+      "risk_contributions": {
+        "BRENT": 0.2021,
+        "WTI": 0.2405,
+        "GOLD": 0.0659,
+        "SILVER": 0.1491,
+        "COPPER": 0.1122,
+        "NATGAS": 0.2303
+      },
+      "max_risk_contribution": 0.2405,
+      "most_concentrated_asset": "WTI",
+      "zero_return_pct": 0.0,
+      "historical": {
+        "exception_rate": 0.01292,
+        "kupiec_p": 0.2943,
+        "christoffersen_p": 0.0011,
+        "avg_var": 0.04114,
+        "basel": {
+          "exceptions": 18,
+          "n": 1393,
+          "exceptions_per_250d": 3.23,
+          "zone": "verde"
+        }
+      },
+      "fhs_ewma": {
+        "exception_rate": 0.01005,
+        "kupiec_p": 0.985,
+        "christoffersen_p": 0.1284,
+        "avg_var": 0.0421,
+        "basel": {
+          "exceptions": 14,
+          "n": 1393,
+          "exceptions_per_250d": 2.51,
+          "zone": "verde"
+        }
+      },
+      "n_test": 1393
+    },
+    "impact": {
+      "risk_concentration": {
+        "asset": "WTI",
+        "raw": 0.9845,
+        "clean": 0.2405,
+        "distortion_pp": 74.4
+      },
+      "zero_return_pct": {
+        "raw": 31.12,
+        "clean": 0.0
+      },
+      "observations": {
+        "raw": 6794,
+        "clean": 4679
+      },
+      "historical": {
+        "exception_rate": {
+          "raw": 0.01186,
+          "clean": 0.01292
+        },
+        "christoffersen_p": {
+          "raw": 0.0316,
+          "clean": 0.0011
+        },
+        "basel_exceptions_per_250d": {
+          "raw": 2.96,
+          "clean": 3.23
+        },
+        "avg_var": {
+          "raw": 0.03562,
+          "clean": 0.04114
+        }
+      },
+      "fhs_ewma": {
+        "exception_rate": {
+          "raw": 0.01186,
+          "clean": 0.01005
+        },
+        "christoffersen_p": {
+          "raw": 0.2887,
+          "clean": 0.1284
+        },
+        "basel_exceptions_per_250d": {
+          "raw": 2.96,
+          "clean": 2.51
+        },
+        "avg_var": {
+          "raw": 0.0385,
+          "clean": 0.0421
+        }
+      }
+    },
+    "sanitization": {
+      "nonpositive_dropped": 1,
+      "detail": [
+        {
+          "date": "2020-04-20",
+          "prices": {
+            "WTI": -37.630001068115234
+          }
+        }
+      ]
+    },
+    "calendar": {
+      "rows_calendar": 6794,
+      "rows_trading": 4680,
+      "dropped_weekend": 1940,
+      "dropped_holiday_ffill": 174,
+      "obs_per_year": 251.6
+    }
+  },
+  "baseline": {
+    "method": "control convencional de outliers por cuantil de |retorno| (q=0.999)",
+    "detects_nonpositive_print": true,
+    "detects_calendar_padding": false
+  },
+  "artifacts": [],
+  "decision": "accept",
+  "notes": "Los dos defectos reales del panel se detectan y su impacto se mide. (1) Print no positivo (WTI, ['2020-04-20']): el control geométrico lo marca por ['atr_jump_reverting', 'out_of_band'] con severidad [9.01, 7.22]; el convencional también lo marca (True), pero sin atribución ni severidad frente al canal proyectado. (2) Relleno de calendario: 1145 marcas 'stale' (88.6% en fin de semana), defecto que el control convencional NO puede ver porque un retorno cero nunca es outlier de cola. IMPACTO: la concentración de riesgo en WTI pasa de 0.9845 (cruda) a 0.2405 (depurada), una distorsión de 74.4 puntos porcentuales; los retornos cero pasan del 31.12% al 0.0%. El valor del control se expresa en unidades de riesgo, no en recuento de alertas.",
+  "error": null,
+  "elapsed_seconds": 1.242
+}

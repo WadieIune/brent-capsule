@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "predicted_var",
   "title": "Predicted VaR (FHS + régimen de canal) vs VaR histórico + backtest",
-  "timestamp_utc": "2026-08-11T20:48:28Z",
+  "timestamp_utc": "2026-08-30T19:46:08Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20",
+  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/final_all",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -20,63 +20,206 @@
   "preflight_issues": [],
   "metrics": {
     "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+    "calendar": {
+      "rows_in": 10204,
+      "rows_out": 9728,
+      "dropped_ffill": 476,
+      "ffill_filter": true
+    },
     "alpha": 0.99,
     "var_window": 250,
-    "n_test": 1527,
+    "n_test": 1472,
     "target_exception_rate": 0.01,
     "survival_method": "cox",
     "survival_horizon": 5,
-    "historical": {
-      "kupiec": {
-        "n": 1527,
-        "exceptions": 21,
-        "exception_rate": 0.01375,
-        "expected_rate": 0.01,
-        "LR_pof": 1.9443,
-        "p_value": 0.1632
+    "backtests": {
+      "historical": {
+        "estimator": "historical",
+        "kupiec": {
+          "n": 1472,
+          "exceptions": 20,
+          "exception_rate": 0.01359,
+          "expected_rate": 0.01,
+          "LR_pof": 1.7202,
+          "p_value": 0.1897
+        },
+        "christoffersen": {
+          "LR_ind": 4.8394,
+          "p_value": 0.0278,
+          "transitions": {
+            "n00": 1433,
+            "n01": 18,
+            "n10": 18,
+            "n11": 2
+          }
+        },
+        "lr_cc": {
+          "LR_cc": 6.5596,
+          "p_value": 0.0376
+        },
+        "dq_engle_manganelli": {
+          "DQ_stat": 23.791,
+          "p_value": 0.0006,
+          "lags": 4,
+          "df": 6
+        },
+        "avg_var": 0.08105,
+        "exceptions": 20
       },
-      "christoffersen": {
-        "LR_ind": 4.6088,
-        "p_value": 0.0318,
-        "transitions": {
-          "n00": 1486,
-          "n01": 19,
-          "n10": 19,
-          "n11": 2
-        }
+      "fhs_ewma": {
+        "estimator": "fhs_ewma",
+        "kupiec": {
+          "n": 1472,
+          "exceptions": 18,
+          "exception_rate": 0.01223,
+          "expected_rate": 0.01,
+          "LR_pof": 0.6893,
+          "p_value": 0.4064
+        },
+        "christoffersen": {
+          "LR_ind": 1.5363,
+          "p_value": 0.2152,
+          "transitions": {
+            "n00": 1436,
+            "n01": 17,
+            "n10": 17,
+            "n11": 1
+          }
+        },
+        "lr_cc": {
+          "LR_cc": 2.2256,
+          "p_value": 0.3286
+        },
+        "dq_engle_manganelli": {
+          "DQ_stat": 15.4953,
+          "p_value": 0.0167,
+          "lags": 4,
+          "df": 6
+        },
+        "avg_var": 0.06904,
+        "exceptions": 18
       },
-      "avg_var": 0.07945
+      "predicted": {
+        "estimator": "predicted",
+        "kupiec": {
+          "n": 1472,
+          "exceptions": 15,
+          "exception_rate": 0.01019,
+          "expected_rate": 0.01,
+          "LR_pof": 0.0053,
+          "p_value": 0.9417
+        },
+        "christoffersen": {
+          "LR_ind": 0.0,
+          "p_value": 1.0,
+          "transitions": {
+            "n00": 1441,
+            "n01": 15,
+            "n10": 15,
+            "n11": 0
+          }
+        },
+        "lr_cc": {
+          "LR_cc": 0.0053,
+          "p_value": 0.9974
+        },
+        "dq_engle_manganelli": {
+          "DQ_stat": 10.5692,
+          "p_value": 0.1026,
+          "lags": 4,
+          "df": 6
+        },
+        "avg_var": 0.07405,
+        "exceptions": 15
+      },
+      "constant_equivalent": {
+        "estimator": "constant_equivalent",
+        "kupiec": {
+          "n": 1472,
+          "exceptions": 15,
+          "exception_rate": 0.01019,
+          "expected_rate": 0.01,
+          "LR_pof": 0.0053,
+          "p_value": 0.9417
+        },
+        "christoffersen": {
+          "LR_ind": 0.0,
+          "p_value": 1.0,
+          "transitions": {
+            "n00": 1441,
+            "n01": 15,
+            "n10": 15,
+            "n11": 0
+          }
+        },
+        "lr_cc": {
+          "LR_cc": 0.0053,
+          "p_value": 0.9974
+        },
+        "dq_engle_manganelli": {
+          "DQ_stat": 10.685,
+          "p_value": 0.0986,
+          "lags": 4,
+          "df": 6
+        },
+        "avg_var": 0.07405,
+        "exceptions": 15
+      }
     },
-    "predicted": {
-      "kupiec": {
-        "n": 1527,
-        "exceptions": 17,
-        "exception_rate": 0.01113,
-        "expected_rate": 0.01,
-        "LR_pof": 0.191,
-        "p_value": 0.6621
+    "attribution": {
+      "target_exception_rate": 0.01,
+      "coverage_gap": {
+        "historical": 0.00359,
+        "fhs_ewma": 0.00223,
+        "predicted": 0.00019,
+        "constant_equivalent": 0.00019
       },
-      "christoffersen": {
-        "LR_ind": 0.0,
-        "p_value": 1.0,
-        "transitions": {
-          "n00": 1492,
-          "n01": 17,
-          "n10": 17,
-          "n11": 0
+      "gain_from_ewma_filtering": 0.00136,
+      "gain_from_channel_addon": 0.00204,
+      "constant_equivalent_multiplier": 1.0725,
+      "channel_beats_constant": false,
+      "regime_lift_test": [
+        {
+          "quantile": 0.7,
+          "alert_days_pct": 30.03,
+          "exc_rate_alert": 0.01357,
+          "exc_rate_rest": 0.01359,
+          "lift": 0.999
+        },
+        {
+          "quantile": 0.8,
+          "alert_days_pct": 20.04,
+          "exc_rate_alert": 0.01356,
+          "exc_rate_rest": 0.01359,
+          "lift": 0.997
+        },
+        {
+          "quantile": 0.9,
+          "alert_days_pct": 10.05,
+          "exc_rate_alert": 0.01351,
+          "exc_rate_rest": 0.0136,
+          "lift": 0.994
+        },
+        {
+          "quantile": 0.95,
+          "alert_days_pct": 5.03,
+          "exc_rate_alert": 0.0,
+          "exc_rate_rest": 0.01431,
+          "lift": 0.0
         }
-      },
-      "avg_var": 0.07275
+      ]
     }
   },
   "baseline": {
-    "method": "VaR histórico (simulación histórica pura)",
-    "exception_rate": 0.01375,
-    "kupiec_p": 0.1632
+    "weak": "VaR histórico (simulación histórica pura)",
+    "strong": "FHS-EWMA sin información de canal",
+    "exception_rate_historical": 0.01359,
+    "exception_rate_fhs_ewma": 0.01223,
+    "kupiec_p_fhs_ewma": 0.4064
   },
   "artifacts": [],
-  "decision": "accept",
-  "notes": "tasa excep. hist=1.375% vs pred=1.113% (objetivo 1.00%); Kupiec p pred=0.6621; surv=cox. Overlay FHS-EWMA con add-on de cola escalado por 1-P(T>k) del canal.",
+  "decision": "review",
+  "notes": "Cobertura (objetivo 1.00%): histórico 1.359% · FHS-EWMA 1.223% · predicted 1.019% · constante equivalente (x1.072) 1.019%. La ganancia del filtrado EWMA es +0.00136 y la del add-on de canal +0.00204. ¿Bate el canal a una constante del mismo nivel medio? False. Timing: lift de la señal de régimen @q80 = 0.997 (>1 indicaría que concentra excepciones). DQ (Engle-Manganelli) p: histórico 0.0006 · FHS 0.0167 · predicted 0.1026. surv=cox.",
   "error": null,
-  "elapsed_seconds": 5.232
+  "elapsed_seconds": 4.988
 }

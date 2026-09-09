@@ -1,0 +1,169 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "frtb_capital",
+  "title": "FRTB IMA exportable: ES 97.5%, LH, ES estresado, IMCC y cambio de modelo",
+  "timestamp_utc": "2026-08-30T19:46:41Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": "2020-08-20",
+    "alpha": 0.99,
+    "horizon": 10
+  },
+  "seed": 42,
+  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/final_all",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "dataset_wide_with_target.csv",
+    "data_quality": {
+      "sanitization": {
+        "nonpositive_dropped": 1,
+        "detail": [
+          {
+            "date": "2020-04-20",
+            "prices": {
+              "WTI": -37.630001068115234
+            }
+          }
+        ]
+      },
+      "calendar": {
+        "rows_calendar": 6794,
+        "rows_trading": 4680,
+        "dropped_weekend": 1940,
+        "dropped_holiday_ffill": 174,
+        "obs_per_year": 251.6
+      }
+    },
+    "assets": [
+      "BRENT",
+      "WTI",
+      "GOLD",
+      "SILVER",
+      "COPPER",
+      "NATGAS"
+    ],
+    "n_test": 1393,
+    "test_period": [
+      "2020-08-21",
+      "2026-03-05"
+    ],
+    "liquidity_horizon": {
+      "per_asset": {
+        "BRENT": 20,
+        "WTI": 20,
+        "GOLD": 20,
+        "SILVER": 20,
+        "COPPER": 20,
+        "NATGAS": 20
+      },
+      "portfolio_lh": 20,
+      "rule": "MAR33.12; se aplica el LH más largo entre los factores de la cartera"
+    },
+    "channel_median_life_supporting_evidence": 11.0,
+    "expected_shortfall": {
+      "es_1d": 0.042322,
+      "es_10d": 0.133834,
+      "es_liquidity_adjusted": 0.18927,
+      "es_stressed_liquidity_adjusted": 0.271855
+    },
+    "stress_period": {
+      "start_date": "2008-03-13",
+      "end_date": "2009-03-11",
+      "cum_log_return": -0.7149,
+      "window_sessions": 250
+    },
+    "imcc": {
+      "value": 0.271855,
+      "note": "ratio ES_FC/ES_RC = 1 (no hay conjunto reducido de factores)"
+    },
+    "backtesting": {
+      "exceptions_99": 14,
+      "exceptions_975": 36,
+      "n_test": 1393,
+      "exceptions_99_per_250d": 3,
+      "addon": 0.0,
+      "zone": "verde",
+      "m_c": 1.5
+    },
+    "kupiec_99": {
+      "n": 1393,
+      "exceptions": 14,
+      "exception_rate": 0.01005,
+      "expected_rate": 0.01,
+      "LR_pof": 0.0004,
+      "p_value": 0.985
+    },
+    "capital": {
+      "basis": "homogénea: ambos lados a 10 sesiones y con componente estresado",
+      "current_basel25": 0.94981,
+      "current_var99_10d": 0.133146,
+      "current_svar99_10d": 0.183458,
+      "current_multiplier": 3.0,
+      "current_zone": "verde",
+      "frtb_ima_modellable": 0.407782,
+      "delta_pct": -57.07,
+      "coverage": "PARCIAL — solo componente modelizable",
+      "excludes": [
+        "SES (NMRF)",
+        "DRC",
+        "residual risk add-on"
+      ],
+      "warning": "El delta NO es el impacto final de capital: el lado FRTB omite SES, DRC y RRAO, que son precisamente los componentes que elevan el cargo IMA. La caída refleja sobre todo que Basilea 2.5 suma VaR y sVaR con k=3, duplicidad que FRTB sustituye por un único ES estresado con m_c=1.5."
+    },
+    "nmrf": {
+      "candidates": [],
+      "rfet_proxy": {
+        "BRENT": {
+          "min_real_moves_per_year": 42,
+          "max_gap_sessions": 12,
+          "modellable_proxy": true
+        },
+        "WTI": {
+          "min_real_moves_per_year": 43,
+          "max_gap_sessions": 1,
+          "modellable_proxy": true
+        },
+        "GOLD": {
+          "min_real_moves_per_year": 43,
+          "max_gap_sessions": 1,
+          "modellable_proxy": true
+        },
+        "SILVER": {
+          "min_real_moves_per_year": 43,
+          "max_gap_sessions": 1,
+          "modellable_proxy": true
+        },
+        "COPPER": {
+          "min_real_moves_per_year": 43,
+          "max_gap_sessions": 1,
+          "modellable_proxy": true
+        },
+        "NATGAS": {
+          "min_real_moves_per_year": 43,
+          "max_gap_sessions": 1,
+          "modellable_proxy": true
+        }
+      }
+    }
+  },
+  "baseline": {
+    "method": "Basilea 2.5: k(semáforo)·(VaR 99% 10d + sVaR 99% 10d)",
+    "capital": 0.94981,
+    "multiplier": 3.0,
+    "zone": "verde"
+  },
+  "artifacts": [
+    "/tmp/final_all/frtb_capital/frtb_export.json",
+    "/tmp/final_all/frtb_capital/frtb_daily_series.csv"
+  ],
+  "decision": "review",
+  "notes": "ES 97.5% 1d=0.04232 -> 10d=0.13383 -> LH=20 sesiones (MAR33.12, prescrito; vida mediana del canal 11.0 solo como evidencia de apoyo) = 0.18927. Periodo de estrés 2008-03-13..2009-03-11 (retorno acumulado -0.7149) -> ES estresado 0.27185. Backtesting FRTB: 14 excepciones al 99% (3/250d, zona verde) -> m_c=1.5. CAMBIO DE MODELO: capital actual Basilea 2.5 k·(VaR10d+sVaR10d)=0.94981 (k=3.0) vs FRTB m_c·IMCC=0.40778 -> -57.1%. Excluye SES/DRC/RRAO y el PLA test, que requieren datos por factor y P&L de mesa. NMRF candidatos (proxy): ninguno. Paquete exportable LISTO en frtb_export.json (schema frtb-ima-export/v1). AVISO: el delta de capital es PARCIAL — el lado FRTB omite SES/DRC/RRAO; la caída refleja sobre todo que Basilea 2.5 suma VaR+sVaR con k=3 frente a un único ES estresado con m_c=1.5.",
+  "error": null,
+  "elapsed_seconds": 0.511
+}

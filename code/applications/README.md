@@ -18,59 +18,99 @@ sin evidencia reproducible.
 
 ## Aplicaciones
 
-| Id | Aplicación | Qué hace | Baseline | Resultado (test 2020-08 → 2026) |
-|----|-----------|----------|----------|--------|
-| `dq_price_control` | **Data Quality** | Marca precios fuera de la banda ±k·σ del canal, saltos ATR que revierten y *stale prices* | Outliers por cuantil de \|retorno\| | 10.9% de candidatos, Jaccard **0.01** con el baseline → regla **complementaria** |
-| `channel_vol_forecast` | **Forecast de vol** | ¿La compresión del canal + `P(T>k)` anticipan expansión de vol? | AUC 0.5 y geometría sin supervivencia | AUC **0.716** con geometría; la supervivencia **no** añade (Δ=−0.002) |
-| `predicted_var` | **Predicted VaR** (1 activo) | VaR FHS-EWMA + add-on de cola escalado por `1−P(T>k)` | VaR histórico | Excepciones **1.113%** vs 1.375% (objetivo 1%), Kupiec p=0.66 |
-| `portfolio_var` | **Predicted VaR de cartera** | Réplica solo-precio en 6 commodities + agregación por pesos; Kupiec, Christoffersen y semáforo de Basilea | VaR histórico **y** FHS-EWMA sin canal | Cobertura **1.087%** (mejor de tres); el histórico **falla independencia** (p=0.032) |
-| `frtb_applications` | **FRTB** | Stress period, liquidity horizon (vida del canal), observabilidad NMRF/RFET | — | Proxy / scaffolding |
+Once experimentos agrupados en cuatro bloques. La columna *decisión* es la del
+harness: `accept` cuando el experimento bate a su baseline, `reject` cuando no lo
+hace —y se publica igualmente— y `review` cuando la comparación no es concluyente.
 
-### El resultado de cartera, en detalle
+**Bloque A · Calidad de dato**
 
-`portfolio_var` lleva la tesis central del paper —*con el propio precio de cada
-activo basta para caracterizar su régimen*— a una cartera equiponderada de
-**BRENT, WTI, GOLD, SILVER, COPPER y NATGAS** (2.024 sesiones de test). Cada
-activo aporta su fragilidad `1−P(T>k)` estimada **solo con su serie de precios**;
-no hay modelo multivariante de factores.
+| Id | Qué hace | Baseline | Resultado | Dec. |
+|----|----------|----------|-----------|------|
+| `dq_price_control` | Marca precios fuera de la banda ±k·σ del canal, saltos ATR reversibles y *stale* | Outliers por cuantil de \|retorno\| | 10.9% de candidatos, Jaccard **0.01** con el baseline → regla complementaria | `reject` |
+| `dq_impact` | Mide el control **en unidades de riesgo**, no en recuento de alertas | Control convencional de cola | Depurar corrige **74.4 pp** de distorsión: la concentración en WTI cae de 0.985 a 0.240; los retornos cero, del 31.1% al 0% | `accept` |
+| `dq_daily_monitor` | Monitor operativo diario sobre 6 activos | Control convencional | 459 alertas / 28.086 obs (**1.63%** de carga); el convencional emite 30 y es **ciego** a precio congelado y relleno de calendario | `accept` |
 
-| Estimador | Excepciones (obj. 1%) | Kupiec p | Christoffersen p | VaR medio |
+**Bloque B · Régimen y ruptura**
+
+| Id | Qué hace | Baseline | Resultado | Dec. |
+|----|----------|----------|-----------|------|
+| `channel_vol_forecast` | ¿Compresión del canal + `P(T>k)` anticipan expansión de vol? | AUC 0.5 | AUC **0.716** con geometría; la supervivencia **no** añade (Δ=−0.002) | `accept` |
+| `breakout_detection` | ¿Se anticipa la ruptura a ≤5 sesiones? | Actuarial (solo tiempo) 0.496; vol 0.482; forma 0.518 | Solo la **distancia al borde** informa: AUC **0.677** (+0.181 sobre el mejor baseline); *lead time* mediano 6 sesiones | `accept` |
+| `regime_markov` | Cadena de Markov de 4 estados (asc/desc × borde/centro) | Modelo i.i.d. | Markov bate al i.i.d. (**+0.61** log-verosimilitud por obs.); hazard heterogéneo por edad (p=0.020) → conviene semi-Markov | `accept` |
+
+**Bloque C · VaR y capital**
+
+| Id | Qué hace | Baseline | Resultado | Dec. |
+|----|----------|----------|-----------|------|
+| `predicted_var` | VaR FHS-EWMA + add-on por `1−P(T>k)` (1 activo) | Histórico, FHS-EWMA y **constante equivalente** | Cobertura 1.019%, pero **no bate a una constante** del mismo nivel medio | `review` |
+| `portfolio_var` | Réplica solo-precio en 6 commodities + agregación | Íd. + semáforo de Basilea | **FHS-EWMA gana** (1.005%); el canal no aporta *timing* | `reject` |
+| `portfolio_var_alert` | Ablación del *timing*: ¿concentra el canal las excepciones? | Vol EWMA y constante | Canal *lift* **0.00** vs EWMA **3.19** → el canal **no** anticipa la cola | `reject` |
+| `frtb_capital` | ES estresado, IMCC e impacto en capital del cambio de modelo | Basilea 2.5 | FRTB IMA **−57.1%** de capital (parcial: omite SES/DRC/RRAO) | `review` |
+
+**Bloque D · FRTB (proxies)**
+
+| Id | Qué hace | Estado |
+|----|----------|--------|
+| `frtb_applications` | Stress period, *liquidity horizon*, observabilidad NMRF/RFET | Proxy / scaffolding |
+
+### El resultado de VaR, corregido
+
+> **Este bloque sustituye a la versión anterior.** Una revisión posterior encontró
+> tres defectos que invalidaban la conclusión publicada; se documentan aquí porque
+> el error y su corrección forman parte del resultado.
+
+**Los tres defectos**
+
+1. **Precio negativo del WTI.** El 2020-04-20 el WTI liquidó a −37.63 USD.
+   `log_returns` acotaba a `1e-9`, generando dos log-retornos artificiales de
+   |r|≈23 (±2300%) que dominaban la covarianza: WTI aparecía con el **98.4%** del
+   riesgo de cartera en lugar del 24%, e inflaba la vol EWMA durante meses.
+2. **Calendario en vez de días hábiles.** `dataset_wide_with_target.csv` es de
+   calendario con *forward-fill*: 365 obs/año y **~32% de retornos exactamente
+   cero**. Eso sesga el cuantil empírico, contamina el test de independencia (un
+   día de retorno cero nunca puede ser excepción) y desescala el semáforo de
+   Basilea, que cuenta 250 sesiones de negociación. Corregido: 4.680 sesiones a
+   251.6 obs/año.
+3. **Faltaba el control de nivel.** Sin comparar contra una **constante con el
+   mismo VaR medio** no se puede distinguir si el overlay mejora por *timing*
+   (reacciona al régimen) o simplemente por *nivel* (es más conservador).
+
+**El resultado tras corregir** (cartera, 1.393 sesiones de test):
+
+| Estimador | Cobertura (obj. 1%) | Kupiec p | Christoffersen p | Capital vs histórico |
 |---|---|---|---|---|
-| Histórico | 1.186% | 0.41 | **0.032 → rechaza** | 3.56% |
-| FHS-EWMA (sin canal) | 1.186% | 0.41 | 0.289 | 3.85% |
-| **Predicted (con canal)** | **1.087%** | **0.70** | 0.238 | 4.15% |
+| Histórico | 1.292% | — | **0.0011 → rechaza** | — |
+| **FHS-EWMA (sin canal)** | **1.005%** | **0.985** | 0.1284 | **−1.8%** |
+| Predicted (con canal) | 0.933% | — | 0.1080 | +5.3% |
+| Constante ×1.073 (control) | ≈ predicted | — | — | ≈ predicted |
 
-La atribución se reporta en **dos dimensiones** porque cada componente arregla un
-problema distinto —y quedarse solo con la cobertura ocultaría el papel del EWMA:
+**El canal no aporta *timing* de cola.** La ablación lo demuestra por tres vías
+independientes:
 
-- el **filtrado EWMA** corrige la *agrupación* de excepciones (el VaR histórico
-  las concentra en los episodios de estrés: Christoffersen lo rechaza, p=0.032);
-- el **add-on de canal** corrige el *nivel* de cobertura (1.186% → 1.087%).
+- **Lift**: en los días de mayor fragilidad de canal se concentran *cero*
+  excepciones (lift@q80 = **0.00** en cartera, 0.997 en activo único), mientras la
+  vol EWMA da lift **3.19**.
+- **Correlación**: corr(fragilidad, vol) = **−0.12** — el canal se comprime cuando
+  hay calma, y las excepciones ocurren en volatilidad alta. La señal apunta en
+  sentido contrario al que necesita un VaR.
+- **Ablación**: una **constante ×1.071** con el mismo VaR medio iguala al overlay,
+  luego su mejora aparente era efecto de **nivel**, no de régimen.
 
-#### ¿Y el capital? Las excepciones también lo consumen
+**Quien sí cumple el objetivo es FHS-EWMA**: cobertura 1.005% (Kupiec p=0.985),
+corrige el agrupamiento de excepciones del histórico (p de 0.0011 a 0.1284) y
+**ahorra un 1.8% de capital**. La capa de alertas discretas sobre VaR histórico
+tampoco lo consigue (+0.2%): el fallo del histórico es de *agrupamiento*, y eso se
+corrige con escalado **continuo** de volatilidad, no con saltos discretos.
 
-Bajo modelos internos el capital es proporcional a **k · VaR**, donde `k` es el
-multiplicador del semáforo de Basilea, que **sube con las excepciones** (3.00 en
-verde; 3.40–3.85 en amarilla; 4.00 en roja). Reducir excepciones sí ahorra
-capital, así que el balance hay que calcularlo completo y no quedarse en el nivel
-del VaR. Tomando el multiplicador de la **peor ventana móvil de 250 sesiones**,
-que es la que determina el recargo en un momento dado:
+*Caveat* que se reporta igualmente: el test **DQ de Engle–Manganelli** rechaza a
+**todos** los estimadores, incluido el mejor. Ninguno captura por completo la
+dinámica de la cola.
 
-| Estimador | Peor ventana 250d | Zona | k | VaR medio | Capital ∝ k·VaR |
-|---|---|---|---|---|---|
-| Histórico | 7 excepciones | amarilla | 3.65 | 3.56% | 13.00% |
-| FHS-EWMA | 6 excepciones | amarilla | 3.50 | 3.85% | 13.48% (+3.6%) |
-| Predicted | 6 excepciones | amarilla | 3.50 | 4.15% | **14.51% (+11.6%)** |
-
-El overlay **sí** rebaja el recargo (k de 3.65 a 3.50), pero ese ahorro **no
-compensa** el VaR más alto: en capital cuesta un **+11.6%** frente al histórico.
-La conclusión honesta es que el valor del overlay **no es la eficiencia de
-capital**, sino la **validación y gobernanza del modelo**: el VaR histórico
-*falla* el test de independencia (p=0.032), lo que es un hallazgo supervisor en
-sí mismo, y el predicho pasa ambos tests con la cobertura más próxima al
-objetivo. Si el objetivo fuese minimizar capital, la respuesta sería el VaR
-histórico —asumiendo el riesgo de que sus excepciones agrupadas provoquen una
-migración de zona en un episodio de estrés.
+Este resultado es coherente con las otras dos patas: la geometría del canal
+**describe el régimen**, pero no anticipa ni la dirección (1ª pata), ni el
+beneficio (2ª), ni la cola (3ª). Donde sí aporta valor medible es en **calidad de
+dato** (`dq_impact`: 74.4 pp de distorsión corregida) y como **descriptor
+interpretable** de régimen (`regime_markov`, `breakout_detection`).
 
 Otras líneas (early-warning de límites, escenarios de stress *data-driven*,
 señal para libro de opciones) se apoyan en las mismas salidas y quedan como
@@ -87,11 +127,17 @@ applications/
 ├── common.py              # reutiliza la geometría de part2_channel_survival (sin duplicarla)
 ├── run_all.py             # orquestador de todos los experimentos
 ├── experiments/
-│   ├── dq_price_control.py
-│   ├── channel_vol_forecast.py
-│   ├── predicted_var.py
-│   ├── portfolio_var.py      # cartera multi-commodity (solo-precio por activo)
-│   └── frtb_applications.py
+│   ├── dq_price_control.py       # A · control geométrico de precio
+│   ├── dq_impact.py              # A · impacto del control en unidades de riesgo
+│   ├── dq_daily_monitor.py       # A · monitor operativo diario
+│   ├── channel_vol_forecast.py   # B · compresión -> expansión de vol
+│   ├── breakout_detection.py     # B · anticipación de la ruptura
+│   ├── regime_markov.py          # B · cadena de Markov de régimen
+│   ├── predicted_var.py          # C · VaR de un activo
+│   ├── portfolio_var.py          # C · VaR de cartera multi-commodity
+│   ├── portfolio_var_alert.py    # C · ablación del timing (¿aporta el canal?)
+│   ├── frtb_capital.py           # C · ES estresado, IMCC y cambio de modelo
+│   └── frtb_applications.py      # D · proxies FRTB
 └── test/
     └── test_smoke.py
 ```

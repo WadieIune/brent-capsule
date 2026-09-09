@@ -48,7 +48,9 @@ import common  # noqa: E402
 from harness import Experiment, ExperimentResult, RunContext  # noqa: E402
 from experiments.predicted_var import (  # noqa: E402
     christoffersen_independence,
+    dq_engle_manganelli,
     kupiec_pof,
+    lr_conditional_coverage,
 )
 
 DEFAULT_ASSETS = ("BRENT", "WTI", "GOLD", "SILVER", "COPPER", "NATGAS")
@@ -201,6 +203,8 @@ def _backtest(name: str, rets: np.ndarray, var: np.ndarray, alpha: float) -> Dic
         "exception_rate": k["exception_rate"],
         "kupiec": k,
         "christoffersen": christoffersen_independence(exc),
+        "lr_cc": lr_conditional_coverage(exc, alpha),
+        "dq_engle_manganelli": dq_engle_manganelli(exc, var, alpha),
         "basel": basel_traffic_light(int(exc.sum()), len(exc)),
         "avg_var": round(avg_var, 5),
         "capital": capital_analysis(exc, avg_var),
@@ -231,6 +235,22 @@ class PortfolioVaRExperiment(Experiment):
         cutoff = cfg.get("cutoff")
 
         px, source = load_commodities(assets)
+        # Saneamiento y calendario: ver `portfolio_var_alert.py` para el detalle.
+        # Sin esto, el print negativo del WTI (2020-04-20) genera log-retornos de
+        # ±2300% que dominan la covarianza y la vol EWMA, y el relleno a días
+        # naturales desescala el cuantil y el semáforo de Basilea.
+        from experiments.portfolio_var_alert import drop_nonpositive, to_trading_days
+        data_diag: Dict[str, object] = {}
+        if bool(cfg.get("sanitize_prices", True)):
+            px, san = drop_nonpositive(px)
+            data_diag["sanitization"] = san
+            if san["nonpositive_dropped"]:
+                ctx.log(f"  saneado: {san['nonpositive_dropped']} print no positivo -> {san['detail']}")
+        if bool(cfg.get("trading_days", True)):
+            px, cal = to_trading_days(px)
+            data_diag["calendar"] = cal
+            ctx.log(f"  calendario: {cal['rows_calendar']} -> {cal['rows_trading']} sesiones "
+                    f"({cal['obs_per_year']} obs/año)")
         cols = list(px.columns)
         dates = pd.DatetimeIndex(px.index)
         ctx.log(f"cartera: {len(cols)} activos {cols} · {len(px)} sesiones · fuente={source}")
@@ -271,11 +291,16 @@ class PortfolioVaRExperiment(Experiment):
             return ExperimentResult(metrics={"source": source, "n_test": int(valid.sum())},
                                     decision="review", notes="test insuficiente")
 
+        # Control de NIVEL: constante con el mismo VaR medio que el overlay.
+        k_const = float(np.mean(var_pred[valid]) / np.mean(var_fhs[valid]))
+        var_const = var_fhs * k_const
+
         r_te = port[valid]
         res = {
             "historical": _backtest("historical", r_te, var_hist[valid], alpha),
             "fhs_ewma": _backtest("fhs_ewma", r_te, var_fhs[valid], alpha),
             "predicted": _backtest("predicted", r_te, var_pred[valid], alpha),
+            "constant_equivalent": _backtest("constant_equivalent", r_te, var_const[valid], alpha),
         }
         target = 1.0 - alpha
         dist = {k: abs(v["exception_rate"] - target) for k, v in res.items()}
@@ -317,16 +342,21 @@ class PortfolioVaRExperiment(Experiment):
                 100.0 * (res["predicted"]["capital"]["capital_worst"]
                          / res["fhs_ewma"]["capital"]["capital_worst"] - 1.0), 2),
             "best_estimator": best,
+            # Control decisivo: ¿bate el overlay a una constante con su mismo
+            # nivel medio de VaR? Si no, la mejora no viene del régimen.
+            "constant_equivalent_multiplier": round(k_const, 4),
+            "channel_beats_constant": bool(dist["predicted"] < dist["constant_equivalent"]),
             "reading": ("El filtrado EWMA corrige la AGRUPACIÓN de excepciones "
-                        "(Christoffersen) y el add-on de canal corrige el NIVEL "
-                        "de cobertura (Kupiec); son mejoras complementarias, no "
-                        "sustitutivas. En CAPITAL, sin embargo, el ahorro por "
-                        "menor recargo de Basilea no compensa el VaR más alto: "
-                        "el valor del overlay es de validación y gobernanza del "
-                        "modelo, no de eficiencia de capital."),
+                        "(Christoffersen). El add-on de canal desplaza el NIVEL, "
+                        "pero el control `constant_equivalent` muestra que una "
+                        "constante del mismo VaR medio logra lo mismo: la señal "
+                        "de canal no aporta timing de cola. En CAPITAL el overlay "
+                        "es además más caro, porque el menor recargo de Basilea no "
+                        "compensa el VaR más alto."),
         }
         metrics = {
-            "source": source, "assets": cols, "weights": [round(x, 4) for x in w],
+            "source": source, "data_quality": data_diag,
+            "assets": cols, "weights": [round(x, 4) for x in w],
             "alpha": alpha, "var_window": window, "ewma_lambda": lam,
             "tail_addon": addon, "survival_horizon": horizon,
             "n_test": int(valid.sum()),
@@ -348,14 +378,16 @@ class PortfolioVaRExperiment(Experiment):
         pred_ok = (res["predicted"]["kupiec"]["p_value"] >= 0.05
                    and res["predicted"]["christoffersen"]["p_value"] >= 0.05)
         beats_strong = attribution["coverage"]["gain_from_channel_addon"] > 0
-        if pred_ok and beats_strong:
+        beats_const = attribution["channel_beats_constant"]
+        if pred_ok and beats_strong and beats_const:
             decision = "accept"
-        elif pred_ok:
+        elif pred_ok and (beats_strong or beats_const):
             decision = "review"
         else:
             decision = "reject"
 
         notes = (
+            f"[datos corregidos: saneado de precios no positivos + días hábiles] "
             f"Cartera {len(cols)} commodities equiponderada, {int(valid.sum())} "
             f"sesiones de test. Cobertura (objetivo {target:.2%}): histórico "
             f"{res['historical']['exception_rate']:.3%} · FHS-EWMA "
@@ -365,7 +397,9 @@ class PortfolioVaRExperiment(Experiment):
             f"{'(RECHAZA: excepciones agrupadas)' if ind_p['historical'] < 0.05 else ''} -> "
             f"FHS-EWMA {ind_p['fhs_ewma']:.4f} -> predicted {ind_p['predicted']:.4f}. "
             f"Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y "
-            f"el canal ajusta el nivel. CAPITAL (k·VaR con el multiplicador de la "
+            f"el canal ajusta el nivel, pero una CONSTANTE x{k_const:.3f} del mismo "
+            f"VaR medio iguala al overlay (bate_a_constante={beats_const}), luego el "
+            f"canal no aporta timing de cola. CAPITAL (k·VaR con el multiplicador de la "
             f"peor ventana de 250d): predicted {attribution['capital_predicted_vs_historical_pct']:+.1f}% "
             f"vs histórico y {attribution['capital_predicted_vs_fhs_pct']:+.1f}% vs FHS-EWMA "
             f"-> el menor recargo (k {res['historical']['capital']['multiplier_worst']:.2f} -> "

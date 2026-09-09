@@ -281,3 +281,203 @@ significativamente mejor -> el macro/cross-asset degrada la detección de canal.
   con entrada "Azar"), oos_2026 (leyenda bajo el panel de probabilidades),
   multipatron (soporte n+ dentro de las etiquetas del eje), backtest_canal
   (4 paneles con escalas separadas — antes el Sharpe quedaba aplastado por el %).
+
+## Corrección de la pata de VaR (revisión de `code/applications`)
+
+Tres correcciones sobre los resultados previamente publicados:
+
+1. **Bug de dato — WTI negativo.** El 2020-04-20 el WTI liquidó a −37,63 USD.
+   `common.log_returns` acota a 1e-9, generando dos log-retornos artificiales de
+   |r|≈23 (±2300%) que dominaban la covarianza (WTI aparecía con el **98,4%** del
+   riesgo de cartera en vez del 24%) e inflaban la vol EWMA durante meses.
+   Fix: `drop_nonpositive()` en `portfolio_var_alert.py`, aplicado también en
+   `portfolio_var.py`.
+2. **Calendario vs días hábiles.** `dataset_wide_with_target.csv` es de calendario
+   con forward-fill: 365 obs/año y ~32% de retornos exactamente cero. Sesga el
+   cuantil empírico, contamina el test de independencia (en un día de retorno cero
+   no puede haber excepción) y desescala el semáforo de Basilea, que cuenta 250
+   sesiones de negociación. Fix: `to_trading_days()` → 251,6 obs/año.
+   La serie de un activo (`brent_fred_daily.csv`) ya era de hábiles; se le eliminan
+   los 476 rellenos por ffill.
+3. **Faltaba el control de nivel.** Se añade `constant_equivalent`: una constante
+   con el MISMO VaR medio que el overlay. Y la batería de backtesting se completa
+   con **LR_cc** y el **DQ de Engle–Manganelli** (el «DQ» de la literatura de VaR;
+   no confundir con `dq_price_control`, que es calidad de dato).
+
+### Resultado corregido — el overlay de canal no aporta timing
+La fragilidad de canal **no concentra excepciones**: lift ≈ 1,00 a todos los
+cuantiles en el activo único y **0,00** en cartera (en los días de alerta ocurren
+CERO excepciones), mientras la vol EWMA da lift 3,19. corr(fragilidad, vol) = −0,12:
+el canal se comprime cuando hay calma y las excepciones ocurren en volatilidad alta.
+
+Brent (n=1472): `predicted` y `constant_equivalent` son indistinguibles —15
+excepciones, 1,019%, Kupiec 0,942, Christoffersen 1,0000, mismo VaR medio—.
+Cartera (n=1393): histórico 1,292% · FHS-EWMA **1,005%** · predicted 0,933%;
+Christoffersen 0,0011 → **0,1284** → 0,1080; capital del overlay **+5,3%** vs
+histórico. `portfolio_var` pasa de `accept` a **`reject`**.
+
+**Conclusión:** el objetivo (menos excepciones y menos capital) SÍ se alcanza, pero
+con **FHS-EWMA** —cobertura 1,005%, arregla el agrupamiento y ahorra **−1,8%** de
+capital—, no con el canal. La capa de alertas discreta sobre VaR histórico tampoco
+lo logra (+0,2%): el fallo del histórico es de agrupamiento y eso se corrige con
+escalado continuo de volatilidad, no con saltos discretos.
+Nota: el test DQ rechaza a todos los estimadores de cartera.
+
+## FRTB como aplicación exportable (`frtb_capital.py`)
+
+Nueva aplicación 7: deja preparada la migración de *modelos internos Basilea 2.5*
+(`k·VaR 99%`) a **FRTB IMA**, para que un cambio de modelo de riesgo sea una
+decisión cuantificada y no una reimplementación.
+
+**Calculado:** ES 97,5% 1-día por FHS-EWMA (0,04232) → 10 días (0,13383) →
+horizonte de liquidez (0,18927); periodo de estrés identificado
+**2008-03-13 .. 2009-03-11** (retorno acumulado −0,7149) → ES estresado 0,27185;
+IMCC (MAR33.6, ratio reducido/completo = 1); backtesting FRTB (14 excepciones al
+99% = 3/250d, **zona verde**, m_c = 1,5); proxy RFET/NMRF.
+
+**Horizontes de liquidez:** los fija la norma (MAR33.12) — 20 sesiones para
+energía, metales preciosos y no férreos; 60 para otras materias primas. La vida
+mediana del canal (11 sesiones) se reporta **solo como evidencia empírica de
+apoyo** al cubo prescrito; presentarla como estimación propia invalidaría el
+cálculo regulatorio.
+
+**Impacto del cambio de modelo (comparación homogénea):** ambos lados a 10
+sesiones y con componente estresado —
+Basilea 2.5 `k·(VaR10d + sVaR10d)` = 0,94981 (k=3,0) vs FRTB `m_c·IMCC` = 0,40778
+→ **−57,1%**. *Aviso:* el delta es **PARCIAL**; el lado FRTB omite SES (NMRF), DRC
+y RRAO, que son los componentes que elevan el cargo IMA. La caída refleja sobre
+todo la duplicidad VaR+sVaR con k=3 de Basilea 2.5 frente a un único ES estresado
+con m_c=1,5. Por eso la decisión del experimento se mantiene en `review`.
+
+**No calculable con los datos actuales:** PLA test (exige P&L hipotético y
+risk-theoretical por mesa), SES (escenarios por factor no modelizable) y DRC.
+
+**Exportable:** `results/frtb_export/frtb_export.json` (schema `frtb-ima-export/v1`)
++ `frtb_daily_series.csv` con la serie diaria de ES 97,5%, VaR 97,5% y VaR 99%.
+
+### Estado de la suite tras la revisión
+`dq_price_control` reject · `channel_vol_forecast` accept · `predicted_var` review ·
+`portfolio_var` **reject** (antes accept) · `portfolio_var_alert` reject ·
+`frtb_applications` review · `frtb_capital` review. Smoke tests: 5/5 OK.
+
+## Reorientación: DQ con impacto, ruptura como tarea propia y capa de régimen
+
+FRTB queda fuera del alcance del paper: bajo el **método estándar** el cargo es
+formulaico (sensibilidades × ponderaciones y correlaciones prescritas), de modo
+que ningún modelo puede alterarlo; buscar mejora ahí es estéril. `frtb_capital.py`
+(IMA) queda documentado y congelado, sin más inversión.
+
+### Aplicación 8 — `dq_impact.py`: Data Quality con impacto medido (accept)
+El control geométrico se evalúa por lo que cambia en el motor de riesgo, no por
+recuento de alertas:
+- **Print no positivo** (WTI, 2020-04-20): detectado por dos reglas
+  (`atr_jump_reverting`, `out_of_band`) con severidad frente al canal proyectado.
+  El control convencional también lo marca, pero sin atribución ni severidad.
+- **Relleno de calendario**: 1.145 marcas `stale`, **88,6% en fin de semana**.
+  El control convencional **no puede** verlo: un retorno cero nunca es outlier de cola.
+- **Impacto**: la concentración de riesgo en WTI pasa de **0,9845** (datos crudos)
+  a **0,2405** (depurados) — **74,4 puntos porcentuales** de distorsión; los
+  retornos cero, del 31,12% al 0%.
+
+### Aplicación 9 — `breakout_detection.py`: la ruptura como tarea propia (accept)
+Nunca se había medido. Con 8.852 filas de hazard (ruptura en ≤5 sesiones, tasa
+base 0,307), escalera de baselines:
+| modelo | AUC |
+|---|---|
+| actuarial (solo tiempo en episodio) | 0,496 |
+| volatilidad | 0,482 |
+| forma del canal | 0,518 |
+| gradient boosting (todo) | 0,668 |
+| **solo distancia al borde `\|pos−0,5\|`** | **0,677** |
+
+**Hallazgo:** la tasa de ruptura por posición en la banda es una **U** —0,542 en el
+borde inferior, 0,115 en el centro, 0,527 en el superior—. Al ser **no monótona**,
+ningún modelo lineal puede capturarla: eso explica por qué todos los overlays
+lineales previos (incluido el add-on de VaR) no veían nada. Una única variable
+interpretable supera al gradient boosting con todas las features.
+Operativamente: **lead time mediano de 6 sesiones** con cobertura del 97,8% de los
+episodios, precisión 0,489 y recall 0,435.
+
+*Caveat necesario:* la potencia procede en buena medida de la **proximidad
+geométrica al borde de la banda**, que está cerca de la propia definición del
+evento (romper = salir de la banda). Es un indicador de alerta temprana válido y
+auditable, pero debe presentarse como tal y no como un descubrimiento profundo.
+
+**Lo que NO ocurre:** la ruptura **no expande la volatilidad** — log-ratio −0,226
+tras ruptura frente a −0,231 en fecha aleatoria, Welch **t=0,166**. La vía directa
+«ruptura → pico de vol → mejor VaR» queda cerrada por los datos.
+
+### Aplicación 10 — `regime_markov.py`: capa de régimen (accept)
+Paso previo e interpretable para GARCH/XGBoost. Estados = dirección × zona de banda.
+- **Matriz de transición**: fuerte persistencia (diagonal 0,69–0,73), cambios de
+  dirección muy raros (~0,02), permanencia esperada 3,2–3,7 sesiones por estado.
+- **Markov vs i.i.d.** en test: −987 frente a −1.785 de log-verosimilitud
+  (**+0,61 por observación**): la estructura de estados aporta.
+- **Homogeneidad del hazard por edad**: chi²=13,34 (gl=5), **p=0,0204**. Hay
+  heterogeneidad marginal pero **no monótona** (el hazard oscila 0,23–0,37 sin
+  tendencia), lo que explica que el modelo actuarial quede en AUC 0,50.
+- **Red bayesiana** `P(ruptura≤5d | estado, vol)`: AUC 0,627 y **Brier 0,2031
+  frente a 0,2130** del prior constante → mejora la calibración. Las CPT son
+  legibles: `asc_borde` 0,39–0,42 · `desc_borde` 0,32–0,35 · `asc_centro` 0,22–0,26
+  · `desc_centro` 0,16 (prior 0,29). La volatilidad apenas mueve la probabilidad;
+  manda la geometría.
+
+### Estado de la suite (10 experimentos)
+accept: `channel_vol_forecast`, `dq_impact`, `breakout_detection`, `regime_markov` ·
+review: `predicted_var`, `frtb_applications`, `frtb_capital` ·
+reject: `dq_price_control`, `portfolio_var`, `portfolio_var_alert`. Smoke tests 5/5.
+
+## Reorientación final: DQ operativo + límites de la capa de régimen
+
+### El fin de régimen NO anticipa cambios de correlación (test negativo)
+Tercer mecanismo contrastado y descartado, tras expansión de volatilidad y saltos
+extremos. Sobre el panel depurado, comparando la matriz de correlación 60 sesiones
+antes y después del evento frente a fechas aleatorias:
+
+| Evento | \|Δcorrelación\| tras evento | fecha aleatoria | t |
+|---|---|---|---|
+| ≥1 activo rompe (n=1.229) | 0,1530 | 0,1545 | −0,68 |
+| ≥2 activos rompen (n=249) | 0,1549 | 0,1573 | −0,52 |
+| ≥3 activos rompen (n=33) | 0,1573 | 0,1572 | 0,01 |
+
+La alerta de fin de régimen **no sirve como disparador anticipatorio** de recálculo
+de correlaciones: un calendario aleatorio avisaría igual de bien.
+
+### La ruptura tampoco señala cambio de tendencia
+- P(el canal siguiente cambia de dirección) = **0,351** → la tendencia **continúa**
+  el 65% de las veces.
+- Canal ascendente rompe hacia abajo el **66,3%**; descendente hacia arriba el
+  **70,3%** → la ruptura es típicamente un retroceso *contra* la tendencia, no un giro.
+- La dirección de la ruptura **no anticipa el retorno posterior**: acierto
+  direccional 0,477 / 0,520 / 0,514 / 0,549 a 1/5/10/20 sesiones; el único t=2,12
+  (20d) no sobrevive a corrección por contrastes múltiples ni es fuera de muestra.
+- *Nota de método*: predecir la dirección de ruptura con las features de la última
+  sesión del episodio da AUC 1,000 — **fuga de datos**, no resultado. Con antelación
+  real: 0,778 (3 sesiones) y 0,743 (5), con n=73 y 64, y todavía con proximidad
+  geométrica al borde. Reportable solo con esos caveats.
+
+### Aplicación 11 — `dq_daily_monitor.py`: monitor DQ diario (accept)
+Sistema operativo que responde a «¿por dónde deberían ir los rendimientos hoy?»:
+proyecta el canal un paso adelante (sin fuga) y publica centro esperado, banda
+admisible y **rango de rendimiento esperado**, marcando lo que se sale.
+- Umbrales **calibrados a carga objetivo** (1%), no por convención: k=5,0σ y
+  tol_atr=2,5. Un control sin calibrar satura o no dispara nunca.
+- **Modo operativo** (sesiones de negociación): 459 alertas sobre 28.086
+  observaciones = **1,63% de carga**; cobertura de la banda 98,99%.
+- **Modo auditoría** (`dq_audit_mode`, panel crudo): 25,86%, porque detecta el
+  relleno de calendario — hallazgo de auditoría del histórico, no alerta diaria.
+- El control convencional emite 30 marcas y es **ciego** al precio congelado y al
+  relleno. Valor cuantificado en `dq_impact`: 74,4 pp de distorsión evitada.
+
+### Arquitectura resultante (quién hace qué, según la evidencia)
+| Capa | Herramienta | Estatus |
+|---|---|---|
+| Higiene del dato | control geométrico / CNN | **demostrado** (74,4 pp) |
+| Cuantificación de riesgo | EWMA / GARCH (FHS) | **demostrado** (18→14 excepciones, −1,8% capital; AUC 0,81 en saltos) |
+| Etiqueta de régimen | CNN-canal | **descriptivo**: no anticipa vol, ni saltos, ni correlaciones |
+
+### Suite (11 experimentos)
+accept: `channel_vol_forecast`, `dq_impact`, `breakout_detection`, `regime_markov`,
+`dq_daily_monitor` · review: `predicted_var`, `frtb_applications`, `frtb_capital` ·
+reject: `dq_price_control`, `portfolio_var`, `portfolio_var_alert`. Smoke tests 5/5.
+FRTB queda fuera del paper (SA formulaico; IMA documentado y congelado).

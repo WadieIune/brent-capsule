@@ -1,0 +1,133 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "dq_daily_monitor",
+  "title": "Monitor DQ diario: banda esperada de rendimientos y cola de alertas",
+  "timestamp_utc": "2026-08-30T21:33:49Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": "2020-08-20",
+    "alpha": 0.99,
+    "horizon": 10
+  },
+  "seed": 42,
+  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/final11",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "dataset_wide_with_target.csv",
+    "assets": [
+      "BRENT",
+      "WTI",
+      "GOLD",
+      "SILVER",
+      "COPPER",
+      "NATGAS"
+    ],
+    "mode": "operativo",
+    "calendar": {
+      "rows_calendar": 6795,
+      "rows_trading": 4681,
+      "dropped_weekend": 1940,
+      "dropped_holiday_ffill": 174,
+      "obs_per_year": 251.7,
+      "trading_days_filter": true
+    },
+    "target_alert_rate": 0.01,
+    "k_sigma": 5.0,
+    "tol_atr": 2.5,
+    "observations": 28086,
+    "alerts": 459,
+    "alert_rate_pct": 1.634,
+    "by_rule": {
+      "fuera_de_banda": 274,
+      "salto_reversible": 165,
+      "precio_congelado": 19,
+      "no_positivo": 1
+    },
+    "per_asset": {
+      "BRENT": {
+        "fuera_de_banda": 47,
+        "salto_reversible": 28,
+        "precio_congelado": 19
+      },
+      "WTI": {
+        "fuera_de_banda": 55,
+        "salto_reversible": 26,
+        "no_positivo": 1
+      },
+      "GOLD": {
+        "fuera_de_banda": 47,
+        "salto_reversible": 24
+      },
+      "SILVER": {
+        "fuera_de_banda": 55,
+        "salto_reversible": 25
+      },
+      "COPPER": {
+        "fuera_de_banda": 35,
+        "salto_reversible": 35
+      },
+      "NATGAS": {
+        "fuera_de_banda": 35,
+        "salto_reversible": 27
+      }
+    },
+    "conventional_flags": 30,
+    "expected_band_coverage_pct": 98.99,
+    "last_session": "2026-03-05",
+    "alerts_last_session": 1,
+    "top_severity_sample": [
+      {
+        "date": "2022-03-02",
+        "asset": "BRENT",
+        "rule": "fuera_de_banda",
+        "severity_sigma": 9.93
+      },
+      {
+        "date": "2017-03-08",
+        "asset": "BRENT",
+        "rule": "fuera_de_banda",
+        "severity_sigma": 9.66
+      },
+      {
+        "date": "2015-07-06",
+        "asset": "BRENT",
+        "rule": "fuera_de_banda",
+        "severity_sigma": 8.62
+      },
+      {
+        "date": "2020-09-08",
+        "asset": "BRENT",
+        "rule": "fuera_de_banda",
+        "severity_sigma": 8.32
+      },
+      {
+        "date": "2021-07-19",
+        "asset": "BRENT",
+        "rule": "fuera_de_banda",
+        "severity_sigma": 8.15
+      }
+    ]
+  },
+  "baseline": {
+    "method": "control convencional de outliers por cuantil de |retorno|",
+    "flags": 30,
+    "blind_to": [
+      "precio_congelado / relleno por forward-fill",
+      "desviación respecto al canal proyectado (sin severidad)"
+    ]
+  },
+  "artifacts": [
+    "/tmp/final11/dq_daily_monitor/dq_alerts.csv",
+    "/tmp/final11/dq_daily_monitor/expected_band_BRENT.csv"
+  ],
+  "decision": "accept",
+  "notes": "Monitor diario sobre 6 activos y 28086 observaciones: 459 alertas (1.63% de carga operativa), desglose {'fuera_de_banda': 274, 'salto_reversible': 165, 'precio_congelado': 19, 'no_positivo': 1}. La banda esperada a k=5.0σ contiene el 98.99% de los precios observados en BRENT, de modo que el control acota el rendimiento admisible del día siguiente y marca lo que se sale. El control convencional emite 30 marcas y es CIEGO al precio congelado y al relleno de calendario. Última sesión (2026-03-05): 1 alertas. El valor está cuantificado en dq_impact: depurar estos defectos corrige 74,4 puntos porcentuales de distorsión en la contribución al riesgo.",
+  "error": null,
+  "elapsed_seconds": 2.066
+}

@@ -83,12 +83,19 @@ ruptura predecible (AUC 0.766), pero el \emph{backtest} de la estrategia
 resultante vuelve a fracasar (DSR 0.014) —acertar el 67.8\% de las direcciones de
 ruptura no basta, porque predecir \emph{por qué banda} sale el precio no es
 predecir el beneficio—, replicando el veredicto de la primera pata por una vía
-independiente. Una tercera pata lleva ambas señales a la medición de riesgo: en
-una cartera equiponderada de seis materias primas, con el régimen de cada activo
-estimado \emph{solo con su propio precio}, el VaR condicionado alcanza una tasa
-de excepciones del 1.087\% frente al objetivo del 1\% y supera tanto al VaR
-histórico —que el test de Christoffersen rechaza por agrupar las excepciones—
-como al filtrado EWMA sin información de canal. El documento cierra con el marco
+independiente. Una tercera pata lleva ambas señales a la medición de riesgo sobre
+una cartera de seis materias primas y arroja un resultado igualmente negativo,
+documentado junto con los tres defectos de datos que invalidaron una conclusión
+previa: la fragilidad del canal \emph{no} anticipa la cola —en los días de mayor
+fragilidad ocurren cero excepciones, frente a un \emph{lift} de 3.19 de la
+volatilidad EWMA, con correlación $-0.12$ entre ambas señales— y una constante
+del mismo nivel medio iguala al \emph{overlay}. Quien sí mejora el VaR es el
+filtrado de volatilidad: cobertura del 1.005\%, corrige el agrupamiento de
+excepciones del VaR histórico y ahorra un 1.8\% de capital. La geometría del
+canal sí aporta valor medible en otros dos ámbitos: la calidad de dato, donde
+detecta defectos invisibles a un control convencional de cola y corrige 74.4
+puntos porcentuales de distorsión en la contribución al riesgo, y la descripción
+interpretable del régimen. El documento cierra con el marco
 de aplicación en riesgos: control de capital en cuatro capas y un cuadro de mando
 donde el sistema actúa como descriptor de régimen, nunca como señal de inversión.
 \end{abstract}
@@ -669,29 +676,57 @@ Incluir el baseline fuerte es deliberado: comparar únicamente contra el VaR
 histórico atribuiría al canal una mejora que el simple filtrado de volatilidad ya
 produce. La atribución honesta exige aislar ambos efectos.
 
-\subsection{Cartera multi-commodity}
+\subsection{Tres defectos de datos que invalidaron una conclusión previa}
+\label{sec:defectos}
+Una versión anterior de este análisis concluía que el \emph{add-on} de canal
+mejoraba la cobertura del VaR. Una revisión posterior identificó tres defectos
+que invalidaban esa conclusión. Se documentan porque el error, y el modo en que se
+detecta, forman parte del resultado metodológico.
+
+\begin{enumerate}
+  \item \textbf{Precio negativo del WTI.} El 20 de abril de 2020 el WTI liquidó a
+    $-37{,}63$ USD. La rutina de log-retornos acotaba el precio a $10^{-9}$,
+    generando dos retornos artificiales de $|r|\approx 23$ ($\pm2300\%$) que
+    dominaban la matriz de covarianzas: el WTI aparecía con el \textbf{98{,}4\%}
+    de la contribución al riesgo de la cartera en lugar del 24\% que le
+    corresponde, e inflaba la volatilidad EWMA durante meses.
+  \item \textbf{Calendario en lugar de días hábiles.} La matriz \emph{wide} está
+    en frecuencia de calendario con \emph{forward-fill}: 365 observaciones al año
+    y aproximadamente un \textbf{32\% de retornos exactamente nulos}. Esto sesga
+    el cuantil empírico, contamina el test de independencia —un día de retorno
+    nulo no puede ser excepción— y desescala el semáforo de Basilea, que cuenta
+    250 \emph{sesiones de negociación}. Corregido: 4.680 sesiones a 251{,}6
+    observaciones anuales.
+  \item \textbf{Ausencia de control de nivel.} Sin comparar contra una
+    \emph{constante} con el mismo VaR medio es imposible separar si el
+    \emph{overlay} mejora por \emph{timing} —reacciona al régimen— o simplemente
+    por \emph{nivel}, por ser más conservador.
+\end{enumerate}
+
+\subsection{Cartera multi-commodity: resultado corregido}
 La tesis solo-precio implica que el tratamiento se replica activo por activo sin
 un modelo multivariante de factores. Se construye una cartera equiponderada de
 seis materias primas —Brent, WTI, oro, plata, cobre y gas natural— donde
 \emph{cada activo} aporta su fragilidad estimada exclusivamente con su serie de
-precios; la fragilidad de cartera es la media ponderada. El \emph{backtest} cubre
-2.024 sesiones (2020-08 a 2026-03) con Kupiec, Christoffersen y semáforo de
-Basilea (Tabla~\ref{tab:parte3}, Figura~\ref{fig:parte3}).
+precios. El \emph{backtest} cubre 1.393 sesiones hábiles (2020-08 a 2026-03) con
+Kupiec, Christoffersen, semáforo de Basilea y el contraste DQ de
+Engle--Manganelli (Tabla~\ref{tab:parte3}, Figura~\ref{fig:parte3}).
 
 \begin{table}[H]
 \centering
 \footnotesize
-\caption{VaR 99\% de la cartera multi-commodity: cobertura, independencia y coste.}
+\caption{VaR 99\% de la cartera multi-commodity (datos corregidos).}
 \label{tab:parte3}
 \begin{tabular}{lrrrr}
 \toprule
-\textbf{Estimador} & \textbf{Excepciones} & \textbf{Kupiec $p$} & \textbf{Christoffersen $p$} & \textbf{VaR medio} \\
+\textbf{Estimador} & \textbf{Cobertura} & \textbf{Kupiec $p$} & \textbf{Christoffersen $p$} & \textbf{Capital} \\
 \midrule
-Histórico & 1.186\% & 0.41 & \textbf{0.032} (rechaza) & 3.56\% \\
-FHS-EWMA (sin canal) & 1.186\% & 0.41 & 0.289 & 3.85\% \\
-\textbf{Predicho (con canal)} & \textbf{1.087\%} & \textbf{0.70} & 0.238 & 4.15\% \\
+Histórico & 1.292\% & 0.29 & \textbf{0.0011} (rechaza) & 15.01\% \\
+\textbf{FHS-EWMA (sin canal)} & \textbf{1.005\%} & \textbf{0.985} & 0.128 & \textbf{14.74\%} $(-1{,}8\%)$ \\
+Predicho (con canal) & 0.933\% & 0.800 & 0.108 & 15.81\% $(+5{,}3\%)$ \\
+Constante $\times1{,}073$ (control) & 1.005\% & 0.985 & 0.128 & 15.81\% \\
 \midrule
-\multicolumn{5}{l}{\footnotesize Objetivo: 1.00\%. Cartera equiponderada de 6 commodities, 2.024 sesiones de test.} \\
+\multicolumn{5}{l}{\footnotesize Objetivo: 1.00\%. Capital $= k\cdot\mathrm{VaR}$ con el multiplicador de la peor ventana de 250 sesiones.} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -699,74 +734,89 @@ FHS-EWMA (sin canal) & 1.186\% & 0.41 & 0.289 & 3.85\% \\
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.99\textwidth]{part3_portfolio_var.pdf}
-    \caption{Tercera pata. Izquierda: cobertura frente al objetivo del 1\%.
-    Centro: el VaR histórico agrupa las excepciones en los episodios de estrés y
-    el test de independencia lo rechaza; el filtrado EWMA lo corrige. Derecha:
-    vida mediana del canal por activo, estimada en cada caso con su propio precio.}
+    \caption{Tercera pata, resultado corregido. El VaR histórico agrupa las
+    excepciones y el test de independencia lo rechaza; el filtrado de volatilidad
+    lo corrige. El tercer panel es el contraste decisivo: en los días de mayor
+    fragilidad de canal ocurren \emph{cero} excepciones, mientras la volatilidad
+    EWMA las concentra con un \emph{lift} de 3{,}19.}
     \label{fig:parte3}
 \end{figure}
 
-\subsection{Qué aporta cada componente}
-El resultado relevante no es que el VaR predicho gane, sino \emph{por qué}: cada
-componente corrige una patología distinta, y reportar solo la cobertura ocultaría
-la mitad de la historia.
+\subsection{El canal no anticipa la cola}
+La ablación lo demuestra por tres vías independientes:
 
 \begin{itemize}
-  \item El \textbf{filtrado EWMA} no mejora la cobertura (1.186\% en ambos casos)
-    pero corrige la \textbf{agrupación} de excepciones: el test de Christoffersen
-    rechaza el VaR histórico ($p=0.032$) porque concentra los fallos en los
-    episodios de estrés, y pasa a $p=0.289$ al filtrar por volatilidad.
-  \item El \textbf{\emph{add-on} de canal} corrige el \textbf{nivel}: lleva la
-    tasa de excepciones de 1.186\% a 1.087\%, la más próxima al objetivo del 1\%,
-    con Kupiec $p=0.70$.
+  \item \textbf{\emph{Lift}}: en el quintil de mayor fragilidad de canal se
+    concentran \emph{cero} excepciones ($\mathrm{lift}@q_{80}=\mathbf{0{,}00}$ en
+    cartera; $0{,}997$ en el activo aislado), frente a un \emph{lift} de
+    $\mathbf{3{,}19}$ de la volatilidad EWMA.
+  \item \textbf{Correlación}: $\mathrm{corr}(\text{fragilidad},\sigma)=-0{,}12$.
+    El canal se comprime cuando hay calma y las excepciones ocurren en
+    volatilidad alta: la señal apunta en sentido \emph{contrario} al que
+    necesitaría un estimador de cola.
+  \item \textbf{Control de nivel}: una constante $\times1{,}071$ con idéntico VaR
+    medio iguala al \emph{overlay} en todas las métricas, luego su mejora
+    aparente era un efecto de \textbf{nivel}, no de régimen.
 \end{itemize}
 
-Ambas mejoras son complementarias, no sustitutivas.
+Quien sí cumple el objetivo —menos excepciones \emph{y} menos capital— es el
+\textbf{FHS-EWMA}: cobertura 1{,}005\% (Kupiec $p=0{,}985$), corrige el
+agrupamiento del histórico ($p$ de $0{,}0011$ a $0{,}128$) y ahorra un
+$\mathbf{1{,}8\%}$ de capital. Una capa de alertas \emph{discretas} sobre el VaR
+histórico tampoco lo consigue ($+0{,}2\%$): la patología del histórico es de
+agrupamiento y se corrige con escalado \emph{continuo} de volatilidad, no con
+saltos discretos.
 
-\subsection{El coste en capital: las excepciones también consumen}
-Sería incompleto medir el coste del \emph{overlay} únicamente por el nivel del
-VaR. Bajo modelos internos el capital por riesgo de mercado es proporcional a
-$k \cdot \mathrm{VaR}$, donde $k$ es el multiplicador del semáforo de Basilea,
-que \emph{crece con el número de excepciones} de \emph{backtesting} (3.00 en zona
-verde; 3.40--3.85 en amarilla; 4.00 en roja). Reducir excepciones ahorra capital,
-de modo que el balance debe calcularse completo. Tomando el multiplicador que
-correspondería a la \emph{peor ventana móvil de 250 sesiones} —la que determina
-el recargo en un momento dado— se obtiene la Tabla~\ref{tab:capital}.
+Se reporta igualmente un \emph{caveat}: el contraste DQ de Engle--Manganelli
+rechaza a \textbf{todos} los estimadores, incluido el mejor. Ninguno captura por
+completo la dinámica de la cola.
 
-\begin{table}[H]
-\centering
-\footnotesize
-\caption{Capital regulatorio aproximado ($k\cdot\mathrm{VaR}$) de los tres estimadores.}
-\label{tab:capital}
-\begin{tabular}{lrlrrr}
-\toprule
-\textbf{Estimador} & \textbf{Peor 250d} & \textbf{Zona} & \textbf{$k$} & \textbf{VaR medio} & \textbf{Capital} \\
-\midrule
-Histórico & 7 exc. & amarilla & 3.65 & 3.56\% & 13.00\% \\
-FHS-EWMA & 6 exc. & amarilla & 3.50 & 3.85\% & 13.48\% \ (+3.6\%) \\
-Predicho & 6 exc. & amarilla & 3.50 & 4.15\% & \textbf{14.51\%} \ (+11.6\%) \\
-\bottomrule
-\end{tabular}
-\end{table}
+Este resultado es coherente con las otras dos patas y completa el argumento
+central del trabajo: la geometría del canal \textbf{describe el régimen} pero no
+anticipa la dirección (primera pata), ni el beneficio (segunda), ni la cola
+(tercera).
 
-El \emph{overlay} sí rebaja el recargo ($k$ de 3.65 a 3.50), pero ese ahorro
-\textbf{no compensa} el mayor nivel de VaR: en términos de capital cuesta un
-\textbf{+11.6\%} frente al histórico. La conclusión honesta es que el valor del
-VaR predicho \textbf{no está en la eficiencia de capital} sino en la
-\textbf{validación y gobernanza del modelo}: el VaR histórico \emph{falla} el
-test de independencia ($p=0.032$) —un hallazgo supervisor en sí mismo, porque
-concentra los fallos justo en los episodios de estrés— mientras que el predicho
-supera ambos contrastes con la cobertura más próxima al objetivo. Si el criterio
-fuese minimizar capital, la elección sería el VaR histórico, asumiendo el riesgo
-de que su agrupación de excepciones provoque una migración de zona en el
-siguiente episodio de tensión.
+\subsection{Dónde sí aporta valor la geometría}
+El mismo conjunto de experimentos identifica dos ámbitos con mejora medible.
 
-Las cinco aplicaciones implementadas —calidad de dato, previsión de régimen de
-volatilidad, VaR de un activo, VaR de cartera y proxies FRTB— se ejecutan bajo un
-\emph{harness} reproducible que registra por corrida un manifiesto con
-identificadores, configuración, semilla, comando, entorno, métricas, baseline y
-decisión, de acuerdo con la disciplina de \emph{harness engineering} adoptada en
-el proyecto.
+\paragraph{Calidad de dato.} El control geométrico detecta defectos que un
+control convencional de cola \emph{no puede ver}, y su valor se expresa en
+unidades de riesgo en lugar de en recuento de alertas. Los dos defectos reales
+del panel —el precio negativo del WTI y el relleno de calendario, con 1.145
+marcas \emph{stale} de las que el 88{,}6\% caen en fin de semana— pasan
+inadvertidos para el detector convencional, porque un retorno nulo nunca es un
+valor atípico de cola. Depurarlos corrige \textbf{74{,}4 puntos porcentuales} de
+distorsión en la contribución al riesgo (la del WTI baja de $0{,}985$ a
+$0{,}240$) y elimina el 31{,}1\% de retornos nulos. El monitor diario emite 459
+alertas sobre 28.086 observaciones (1{,}63\% de carga operativa) frente a las 30
+del control convencional.
+
+\paragraph{Descripción interpretable del régimen.} Una cadena de Markov de cuatro
+estados (ascendente/descendente $\times$ borde/centro) supera al modelo i.i.d. en
+$+0{,}61$ de log-verosimilitud por observación, con permanencias esperadas de
+$3{,}2$ a $3{,}7$ sesiones; el contraste de homogeneidad del \emph{hazard} por
+edad se rechaza ($\chi^2=13{,}34$, $p=0{,}020$), lo que indica dependencia
+temporal y recomienda un modelo semi-Markov. Sobre la anticipación de la ruptura
+a cinco sesiones, de todos los predictores contrastados solo la \textbf{distancia
+al borde} del canal aporta información (AUC $0{,}677$ frente a $0{,}496$ del
+modelo actuarial y $0{,}482$ de la volatilidad), con un \emph{lead time} mediano
+de seis sesiones.
+
+\paragraph{Capital bajo FRTB.} El módulo de capital calcula el \emph{Expected
+Shortfall} al 97{,}5\% escalado al horizonte de liquidez prescrito (MAR33.12) y
+el IMCC, con un periodo de estrés identificado en 2008-03 a 2009-03. La
+comparación del cambio de modelo arroja una caída de capital del $57{,}1\%$
+frente a Basilea 2.5, si bien el cálculo es \textbf{parcial} —omite SES, DRC y
+RRAO, y la caída refleja sobre todo que Basilea 2.5 suma VaR y sVaR con $k=3$
+frente a un único ES estresado con $m_c=1{,}5$—. La vida mediana del canal
+(11 sesiones) se emplea únicamente como evidencia de apoyo del horizonte, nunca
+en sustitución del valor prescrito.
+
+Las once aplicaciones se ejecutan bajo un \emph{harness} reproducible que registra
+por corrida un manifiesto con identificadores, configuración, semilla, comando,
+entorno, métricas, baseline y decisión, de acuerdo con la disciplina de
+\emph{harness engineering} adoptada en el proyecto. Las decisiones negativas
+(\texttt{reject}) se publican con el mismo detalle que las positivas.
 
 % =============================================================================
 \section{Discusión}
@@ -954,22 +1004,34 @@ modelable —C-index 0.664 con estabilidad notable en \emph{walk-forward}
 ($\pm0.007$)— y reproduce, por una vía metodológica independiente, la ausencia de
 valor económico: se acierta el 67.8\% de las direcciones de ruptura y la
 estrategia pierde dinero (DSR 0.014), porque \emph{la banda de salida y el
-beneficio no son la misma variable}. La \textbf{tercera} demuestra dónde sí
-aporta valor la señal: en la medición del riesgo. Sobre una cartera de seis
-materias primas, con el régimen de cada activo estimado solo con su propio
-precio, el VaR condicionado por la fragilidad del canal alcanza la mejor
-cobertura de los tres estimadores contrastados (1.087\% frente al objetivo del
-1\%) y corrige la patología del VaR histórico, cuyas excepciones se agrupan en
-los episodios de estrés.
+beneficio no son la misma variable}. La \textbf{tercera} traslada ambas señales a
+la medición del riesgo y delimita con precisión dónde aportan y dónde no. Sobre
+una cartera de seis materias primas, la fragilidad del canal \emph{no} anticipa
+la cola —en el quintil de mayor fragilidad ocurren cero excepciones, frente a un
+\emph{lift} de 3.19 de la volatilidad EWMA— y una constante del mismo nivel medio
+iguala al \emph{overlay}; quien mejora el VaR es el filtrado de volatilidad, con
+una cobertura del 1.005\% y un ahorro de capital del 1.8\%. La geometría sí
+demuestra valor medible en dos ámbitos distintos del que se le presuponía: la
+\textbf{calidad de dato}, donde detecta defectos estructuralmente invisibles a un
+control convencional de cola —un precio de liquidación negativo y un relleno de
+calendario que juntos distorsionaban 74.4 puntos porcentuales la contribución al
+riesgo— y la \textbf{descripción interpretable del régimen}, mediante una cadena
+de Markov que supera al modelo i.i.d. y una señal de proximidad al borde que
+anticipa la ruptura con seis sesiones de antelación.
 
-El valor del proyecto es, por tanto, triple: un componente de chartismo
-automatizado listo para integración en procesos de riesgo; una demostración
-metodológicamente rigurosa —CV purgada, censura administrativa, DSR, PBO— de los
-límites reales del chartismo como fuente de \emph{alpha}, sostenida ahora por dos
-metodologías independientes; y una aplicación con mejora medible allí donde la
-geometría sí es informativa, la calibración del riesgo de cola. La conclusión
-transversal es que el sistema debe usarse como \textbf{descriptor de régimen}
-—para dimensionar riesgo, horizontes y capital— y nunca como señal direccional.
+El valor del proyecto es, por tanto, triple. Primero, un componente de chartismo
+automatizado listo para integrarse en procesos de riesgo como descriptor de
+régimen y como control de calidad de dato. Segundo, una demostración
+metodológicamente rigurosa —validación cruzada purgada, censura administrativa,
+DSR, PBO, controles de nivel y ablaciones— de los límites reales del chartismo,
+sostenida por tres vías independientes que convergen en el mismo veredicto.
+Tercero, y no menor, un ejemplo documentado de \emph{cómo} se detecta y corrige
+una conclusión errónea: los tres defectos de datos de la
+Sección~\ref{sec:defectos} habían producido un resultado positivo que no
+resistió el escrutinio, y su corrección forma parte del aporte metodológico. La
+conclusión transversal es que el sistema debe usarse como \textbf{descriptor de
+régimen} —para dimensionar riesgo, horizontes y capital, y para auditar el dato
+que los alimenta— y nunca como señal direccional ni como predictor de la cola.
 
 % =============================================================================
 \appendix
