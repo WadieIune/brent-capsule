@@ -47,6 +47,7 @@ if _APP not in sys.path:
 import common  # noqa: E402
 from harness import Experiment, ExperimentResult, RunContext  # noqa: E402
 from experiments.breakout_detection import build_hazard_dataset  # noqa: E402
+from experiments import regime_operational_policy as operational  # noqa: E402
 from sklearn.metrics import brier_score_loss, roc_auc_score  # noqa: E402
 
 
@@ -160,8 +161,7 @@ class RegimeMarkovExperiment(Experiment):
         cfg = ctx.config
         horizon = int(cfg.get("breakout_horizon", 5))
         cutoff = cfg.get("cutoff")
-        s, source = common.load_prices(cfg.get("prices_path"),
-                                       cfg.get("synthetic", False), ctx.seed)
+        s, source = operational.load_observed_prices(cfg, ctx.seed)
         prices = s.to_numpy()
         dates = pd.DatetimeIndex(s.index)
         df, y, ds, ep = build_hazard_dataset(prices, dates, horizon)
@@ -228,11 +228,13 @@ class RegimeMarkovExperiment(Experiment):
         baseline = {"iid_states": round(ll_iid, 2),
                     "brier_constant_prior": round(brier_base, 4),
                     "auc_random": 0.5}
-        good = (metrics["markov_vs_iid"]["markov_better"] and auc > 0.6
-                and brier < brier_base)
-        decision = "accept" if good else ("review" if auc > 0.55 else "reject")
+        diagnostic_good = (metrics["markov_vs_iid"]["markov_better"] and auc > 0.6
+                           and brier < brier_base)
+        diagnostic_decision = (
+            "accept" if diagnostic_good else ("review" if auc > 0.55 else "reject")
+        )
         soj = metrics["expected_sojourn_sessions"]
-        notes = (
+        diagnostic_notes = (
             f"Estados {labels}. La cadena de Markov supera al i.i.d. en test "
             f"({ll_markov:.0f} vs {ll_iid:.0f}, {metrics['markov_vs_iid']['delta_per_obs']:+.4f} "
             f"por observación). Permanencia esperada por estado: {soj}. "
@@ -247,5 +249,24 @@ class RegimeMarkovExperiment(Experiment):
             "Las probabilidades por estado son la entrada interpretable para los "
             "modelos de volatilidad aguas abajo."
         )
-        return ExperimentResult(metrics=metrics, baseline=baseline,
-                                decision=decision, notes=notes)
+        policy_cutoff = (
+            str(cutoff)
+            if cutoff
+            else str(pd.Timestamp(dates[int(len(dates) * 0.70)]).date())
+        )
+        policy_metrics, policy_baseline, policy_decision, policy_notes, artifacts = (
+            operational.evaluate(
+                prices, dates, policy_cutoff, ctx.seed, ctx.experiment_dir()
+            )
+        )
+        metrics["diagnostic_decision_before_wp2b"] = diagnostic_decision
+        metrics["operational_policy_wp2b"] = policy_metrics
+        baseline["operational_policy_wp2b"] = policy_baseline
+        notes = f"{diagnostic_notes} {policy_notes}"
+        return ExperimentResult(
+            metrics=metrics,
+            baseline=baseline,
+            decision=policy_decision,
+            notes=notes,
+            artifacts=artifacts,
+        )

@@ -167,7 +167,7 @@ fecha, motivo y efecto sobre la interpretación. No se edita el texto original.)
 
 | Fecha | Track | Desviación | Motivo | Efecto |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| 2026-09-10 | B | Colisión de worktree: se observó accidentalmente solo el veredicto final de Track A antes del run real. | Ambos agentes compartían worktree y el cambio de rama de B hizo que el commit de A aterrizara temporalmente en `track-b`. | El diseño y código de B estaban fijados antes; no se vieron métricas de A ni se cambiaron umbrales, modelos o interpretación. Los worktrees quedaron separados antes de ejecutar B. |
 
 ---
 
