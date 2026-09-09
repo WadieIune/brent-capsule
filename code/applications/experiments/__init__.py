@@ -10,6 +10,7 @@ from .dq_impact import DQImpactExperiment
 from .breakout_detection import BreakoutDetectionExperiment
 from .regime_markov import RegimeMarkovExperiment
 from .dq_daily_monitor import DQDailyMonitorExperiment
+from .dq_synthetic_validation import DQSyntheticValidationExperiment
 
 ALL_EXPERIMENTS = [
     DQPriceControlExperiment,
@@ -23,6 +24,7 @@ ALL_EXPERIMENTS = [
     BreakoutDetectionExperiment,
     RegimeMarkovExperiment,
     DQDailyMonitorExperiment,
+    DQSyntheticValidationExperiment,
 ]
 
 __all__ = [c.__name__ for c in ALL_EXPERIMENTS] + ["ALL_EXPERIMENTS"]
