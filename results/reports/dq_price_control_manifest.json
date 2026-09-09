@@ -1,0 +1,47 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "dq_price_control",
+  "title": "Data Quality — control de precios (canal ±k·σ, saltos ATR, stale)",
+  "timestamp_utc": "2026-09-09T21:34:40Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": "2020-08-20",
+    "alpha": 0.99,
+    "horizon": 10
+  },
+  "seed": 42,
+  "command": "python run_all.py --cutoff 2020-08-20",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+    "n_obs": 10204,
+    "n_flags": 1116,
+    "flag_rate": 0.10937,
+    "by_reason": {
+      "atr_jump_reverting": 759,
+      "out_of_band": 279,
+      "stale": 78
+    },
+    "k_sigma": 4.0,
+    "tol_atr": 1.0
+  },
+  "baseline": {
+    "method": "outliers por cuantil |retorno| (q=0.999)",
+    "n_naive_outliers": 11,
+    "jaccard_with_out_of_band": 0.014,
+    "note": "el detector de canal añade contexto geométrico (banda ±k·σ) que el cuantil de retorno no captura"
+  },
+  "artifacts": [
+    "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/dq_price_control/dq_flags.csv"
+  ],
+  "decision": "reject",
+  "notes": "1116 candidatos (10.94%); solape con baseline Jaccard=0.01. Salida pensada como regla adicional del Control de Cambios DQ.",
+  "error": null,
+  "elapsed_seconds": 0.631
+}

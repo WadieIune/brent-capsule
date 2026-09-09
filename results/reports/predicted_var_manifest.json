@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "predicted_var",
   "title": "Predicted VaR (FHS + régimen de canal) vs VaR histórico + backtest",
-  "timestamp_utc": "2026-08-30T19:46:08Z",
+  "timestamp_utc": "2026-09-09T21:34:46Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/final_all",
+  "command": "python run_all.py --cutoff 2020-08-20",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -221,5 +221,5 @@
   "decision": "review",
   "notes": "Cobertura (objetivo 1.00%): histórico 1.359% · FHS-EWMA 1.223% · predicted 1.019% · constante equivalente (x1.072) 1.019%. La ganancia del filtrado EWMA es +0.00136 y la del add-on de canal +0.00204. ¿Bate el canal a una constante del mismo nivel medio? False. Timing: lift de la señal de régimen @q80 = 0.997 (>1 indicaría que concentra excepciones). DQ (Engle-Manganelli) p: histórico 0.0006 · FHS 0.0167 · predicted 0.1026. surv=cox.",
   "error": null,
-  "elapsed_seconds": 4.988
+  "elapsed_seconds": 4.938
 }

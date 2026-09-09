@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "breakout_detection",
   "title": "Detección de ruptura de canal: hazard, lead time y expansión de volatilidad",
-  "timestamp_utc": "2026-08-30T20:59:26Z",
+  "timestamp_utc": "2026-09-09T21:35:20Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/suite10",
+  "command": "python run_all.py --cutoff 2020-08-20",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -265,5 +265,5 @@
   "decision": "accept",
   "notes": "Ruptura en <= 5 sesiones; tasa base 0.307. AUC: actuarial (solo tiempo) 0.496 · volatilidad 0.4816 · forma 0.5183 -> mejor SOLO distancia al borde 0.6771 (ganancia sobre el mejor baseline +0.1811). Lead time mediano 6.0 sesiones con cobertura del 97.8% de los episodios. Expansión de volatilidad tras la ruptura: media log-ratio -0.2261 frente a -0.231 en fecha aleatoria (Welch t=0.166).",
   "error": null,
-  "elapsed_seconds": 5.716
+  "elapsed_seconds": 5.634
 }

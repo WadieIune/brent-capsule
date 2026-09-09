@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "portfolio_var_alert",
   "title": "VaR histórico + capa de alertas en paralelo (días hábiles, calibrado en train)",
-  "timestamp_utc": "2026-08-30T19:46:26Z",
+  "timestamp_utc": "2026-09-09T21:35:04Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/final_all",
+  "command": "python run_all.py --cutoff 2020-08-20",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -652,5 +652,5 @@
   "decision": "reject",
   "notes": "Datos corregidos: días hábiles (4680 sesiones, 251.6 obs/año, frente a 6794 de calendario) y 1 print no positivo excluido (WTI 2020-04-20). TIMING: la fragilidad de canal NO concentra excepciones (lift@q80=0.0) mientras la vol EWMA sí (lift@q80=3.194); corr(fragilidad, vol)=-0.122. ABLACIÓN: el overlay de canal (constant_equivalent de control) iguala a una CONSTANTE x1.071 con el mismo VaR medio (canal 0.933% / capital 0.15782 vs constante 1.005% / 0.15782), luego su mejora es efecto de NIVEL, no de régimen. RANKING: FHS-EWMA domina — cobertura 1.005% (Kupiec p=0.985), independencia p=0.1284 frente a 0.0011 del histórico, y capital -1.8% vs histórico. La capa de alertas sobre VaR histórico no alcanza el objetivo (capital +0.2%). Nota: el test DQ rechaza a TODOS los estimadores, incluido el mejor.",
   "error": null,
-  "elapsed_seconds": 13.609
+  "elapsed_seconds": 13.331
 }

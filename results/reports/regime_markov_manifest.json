@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "regime_markov",
   "title": "Capa de régimen: cadena de Markov y red bayesiana (paso previo a GARCH/XGBoost)",
-  "timestamp_utc": "2026-08-30T20:59:32Z",
+  "timestamp_utc": "2026-09-09T21:35:25Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/suite10",
+  "command": "python run_all.py --cutoff 2020-08-20",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -173,5 +173,5 @@
   "decision": "accept",
   "notes": "Estados ['asc_borde', 'asc_centro', 'desc_borde', 'desc_centro']. La cadena de Markov supera al i.i.d. en test (-987 vs -1785, +0.6099 por observación). Permanencia esperada por estado: {'asc_borde': 3.21, 'asc_centro': 3.42, 'desc_borde': 3.46, 'desc_centro': 3.68}. Homogeneidad del hazard por edad: chi2=13.339 (gl=5), p=0.0204 -> heterogéneo -> hay dependencia de la edad: conviene un modelo semi-Markov. Red bayesiana P(ruptura<=5d | estado, vol): AUC=0.6272, Brier=0.2031 frente a 0.2130 del prior constante -> mejora la calibración. Las probabilidades por estado son la entrada interpretable para los modelos de volatilidad aguas abajo.",
   "error": null,
-  "elapsed_seconds": 4.939
+  "elapsed_seconds": 4.932
 }

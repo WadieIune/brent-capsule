@@ -133,6 +133,7 @@ Resolver los 4 puntos de deuda técnica de §1. Criterio: `git status` limpio,
 **Dueño:** Agente A · **Momento:** antes de WP2 · **Bloquea:** WP2-A, WP2-B
 
 Redactar `docs/PREREGISTRO.md` con la plantilla de §7, una ficha por track.
+**HECHO** — ver [`PREREGISTRO.md`](PREREGISTRO.md), congelado.
 Criterio: cada track tiene hipótesis falsable, métrica primaria única, baseline
 fuerte nombrado, umbral numérico y regla de parada.
 

@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "dq_daily_monitor",
   "title": "Monitor DQ diario: banda esperada de rendimientos y cola de alertas",
-  "timestamp_utc": "2026-08-30T21:33:49Z",
+  "timestamp_utc": "2026-09-09T21:35:30Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/final11",
+  "command": "python run_all.py --cutoff 2020-08-20",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -123,11 +123,11 @@
     ]
   },
   "artifacts": [
-    "/tmp/final11/dq_daily_monitor/dq_alerts.csv",
-    "/tmp/final11/dq_daily_monitor/expected_band_BRENT.csv"
+    "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/dq_daily_monitor/dq_alerts.csv",
+    "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/dq_daily_monitor/expected_band_BRENT.csv"
   ],
   "decision": "accept",
   "notes": "Monitor diario sobre 6 activos y 28086 observaciones: 459 alertas (1.63% de carga operativa), desglose {'fuera_de_banda': 274, 'salto_reversible': 165, 'precio_congelado': 19, 'no_positivo': 1}. La banda esperada a k=5.0σ contiene el 98.99% de los precios observados en BRENT, de modo que el control acota el rendimiento admisible del día siguiente y marca lo que se sale. El control convencional emite 30 marcas y es CIEGO al precio congelado y al relleno de calendario. Última sesión (2026-03-05): 1 alertas. El valor está cuantificado en dq_impact: depurar estos defectos corrige 74,4 puntos porcentuales de distorsión en la contribución al riesgo.",
   "error": null,
-  "elapsed_seconds": 2.066
+  "elapsed_seconds": 1.958
 }

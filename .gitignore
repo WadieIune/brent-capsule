@@ -34,3 +34,4 @@ env/
 docs/**/*.log
 docs/**/*.out
 docs/**/*.toc
+.pytest_cache/

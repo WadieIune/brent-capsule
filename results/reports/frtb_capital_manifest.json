@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "frtb_capital",
   "title": "FRTB IMA exportable: ES 97.5%, LH, ES estresado, IMCC y cambio de modelo",
-  "timestamp_utc": "2026-08-30T19:46:41Z",
+  "timestamp_utc": "2026-09-09T21:35:18Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/final_all",
+  "command": "python run_all.py --cutoff 2020-08-20",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -159,11 +159,11 @@
     "zone": "verde"
   },
   "artifacts": [
-    "/tmp/final_all/frtb_capital/frtb_export.json",
-    "/tmp/final_all/frtb_capital/frtb_daily_series.csv"
+    "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/frtb_capital/frtb_export.json",
+    "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/frtb_capital/frtb_daily_series.csv"
   ],
   "decision": "review",
   "notes": "ES 97.5% 1d=0.04232 -> 10d=0.13383 -> LH=20 sesiones (MAR33.12, prescrito; vida mediana del canal 11.0 solo como evidencia de apoyo) = 0.18927. Periodo de estrés 2008-03-13..2009-03-11 (retorno acumulado -0.7149) -> ES estresado 0.27185. Backtesting FRTB: 14 excepciones al 99% (3/250d, zona verde) -> m_c=1.5. CAMBIO DE MODELO: capital actual Basilea 2.5 k·(VaR10d+sVaR10d)=0.94981 (k=3.0) vs FRTB m_c·IMCC=0.40778 -> -57.1%. Excluye SES/DRC/RRAO y el PLA test, que requieren datos por factor y P&L de mesa. NMRF candidatos (proxy): ninguno. Paquete exportable LISTO en frtb_export.json (schema frtb-ima-export/v1). AVISO: el delta de capital es PARCIAL — el lado FRTB omite SES/DRC/RRAO; la caída refleja sobre todo que Basilea 2.5 suma VaR+sVaR con k=3 frente a un único ES estresado con m_c=1.5.",
   "error": null,
-  "elapsed_seconds": 0.511
+  "elapsed_seconds": 0.489
 }

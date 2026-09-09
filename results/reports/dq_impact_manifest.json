@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "dq_impact",
   "title": "Data Quality con impacto medido sobre el motor de riesgo",
-  "timestamp_utc": "2026-08-30T20:59:25Z",
+  "timestamp_utc": "2026-09-09T21:35:18Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/suite10",
+  "command": "python run_all.py --cutoff 2020-08-20",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -204,5 +204,5 @@
   "decision": "accept",
   "notes": "Los dos defectos reales del panel se detectan y su impacto se mide. (1) Print no positivo (WTI, ['2020-04-20']): el control geométrico lo marca por ['atr_jump_reverting', 'out_of_band'] con severidad [9.01, 7.22]; el convencional también lo marca (True), pero sin atribución ni severidad frente al canal proyectado. (2) Relleno de calendario: 1145 marcas 'stale' (88.6% en fin de semana), defecto que el control convencional NO puede ver porque un retorno cero nunca es outlier de cola. IMPACTO: la concentración de riesgo en WTI pasa de 0.9845 (cruda) a 0.2405 (depurada), una distorsión de 74.4 puntos porcentuales; los retornos cero pasan del 31.12% al 0.0%. El valor del control se expresa en unidades de riesgo, no en recuento de alertas.",
   "error": null,
-  "elapsed_seconds": 1.242
+  "elapsed_seconds": 1.219
 }

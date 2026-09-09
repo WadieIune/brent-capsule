@@ -1,0 +1,64 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "frtb_applications",
+  "title": "FRTB — stress period, liquidity horizon y observabilidad (proxies)",
+  "timestamp_utc": "2026-09-09T21:35:17Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": "2020-08-20",
+    "alpha": 0.99,
+    "horizon": 10
+  },
+  "seed": 42,
+  "command": "python run_all.py --cutoff 2020-08-20",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+    "n_episodes": 590,
+    "n_breakouts": 589,
+    "median_channel_life_sessions": 10.0,
+    "stress_period_candidates": [
+      {
+        "start_date": "2020-01-28",
+        "end_date": "2020-04-21",
+        "cum_return": -0.8464,
+        "window_days": 60
+      },
+      {
+        "start_date": "2020-01-07",
+        "end_date": "2020-03-31",
+        "cum_return": -0.784,
+        "window_days": 60
+      },
+      {
+        "start_date": "2020-01-08",
+        "end_date": "2020-04-01",
+        "cum_return": -0.7776,
+        "window_days": 60
+      }
+    ],
+    "liquidity_horizon_bucket": 10,
+    "observability_proxy": {
+      "min_real_moves_per_quarter": 25,
+      "max_gap_sessions": 3,
+      "rfet_modellable_proxy": true,
+      "note": "proxy simplificado de RFET; el criterio oficial usa observaciones verificables y huecos <= 1 mes por factor de riesgo"
+    }
+  },
+  "baseline": {
+    "method": "sin baseline (insumos regulatorios descriptivos)"
+  },
+  "artifacts": [
+    "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/frtb_applications/frtb_episodes.csv"
+  ],
+  "decision": "review",
+  "notes": "590 episodios (589 rupturas); vida mediana 10.0 → LH=10. Proxies para alimentar el motor FRTB; no son cálculos oficiales.",
+  "error": null,
+  "elapsed_seconds": 0.535
+}

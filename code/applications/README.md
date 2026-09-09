@@ -171,11 +171,12 @@ CSVs de detalle (flags de DQ, episodios FRTB) y `summary.json` consolidado.
 python -m pytest test -q           # o: python test/test_smoke.py
 ```
 
-Los smoke tests corren los cuatro experimentos sobre serie sintética y
-comprueban que el harness produce manifest y métricas sin excepciones. **No**
-validan poder predictivo: eso depende del dato real y se reporta tal cual
-(incluidos resultados negativos), en coherencia con el ledger del proyecto
-(backtest chartista sin *edge*).
+Los smoke tests iteran sobre `ALL_EXPERIMENTS`, de modo que cubren los **once**
+experimentos sobre serie sintética y comprueban que el harness produce manifiesto
+y métricas sin excepciones. **No** validan poder predictivo: eso depende del dato
+real y se reporta tal cual —incluidos los resultados negativos: **3 de los 11 son
+`reject`**— en coherencia con el ledger del proyecto (backtest chartista sin
+*edge*).
 
 ## Notas y límites
 

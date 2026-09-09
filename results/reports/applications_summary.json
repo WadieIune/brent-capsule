@@ -14,7 +14,7 @@
       "decision": "reject",
       "notes": "1116 candidatos (10.94%); solape con baseline Jaccard=0.01. Salida pensada como regla adicional del Control de Cambios DQ.",
       "error": null,
-      "manifest": "/tmp/final11/dq_price_control/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/dq_price_control/run_manifest.json"
     },
     {
       "id": "channel_vol_forecast",
@@ -22,7 +22,7 @@
       "decision": "accept",
       "notes": "AUC geom=0.716 → geom+surv=0.714 (Δ=-0.0022, surv=cox); lift compresión=1.018. Régimen de vol para vega/gamma.",
       "error": null,
-      "manifest": "/tmp/final11/channel_vol_forecast/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/channel_vol_forecast/run_manifest.json"
     },
     {
       "id": "predicted_var",
@@ -30,7 +30,7 @@
       "decision": "review",
       "notes": "Cobertura (objetivo 1.00%): histórico 1.359% · FHS-EWMA 1.223% · predicted 1.019% · constante equivalente (x1.072) 1.019%. La ganancia del filtrado EWMA es +0.00136 y la del add-on de canal +0.00204. ¿Bate el canal a una constante del mismo nivel medio? False. Timing: lift de la señal de régimen @q80 = 0.997 (>1 indicaría que concentra excepciones). DQ (Engle-Manganelli) p: histórico 0.0006 · FHS 0.0167 · predicted 0.1026. surv=cox.",
       "error": null,
-      "manifest": "/tmp/final11/predicted_var/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/predicted_var/run_manifest.json"
     },
     {
       "id": "portfolio_var",
@@ -38,7 +38,7 @@
       "decision": "reject",
       "notes": "[datos corregidos: saneado de precios no positivos + días hábiles] Cartera 6 commodities equiponderada, 1393 sesiones de test. Cobertura (objetivo 1.00%): histórico 1.292% · FHS-EWMA 1.005% · predicted 0.933% -> mejor: fhs_ewma. Independencia (Christoffersen p): histórico 0.0011 (RECHAZA: excepciones agrupadas) -> FHS-EWMA 0.1284 -> predicted 0.1080. Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y el canal ajusta el nivel, pero una CONSTANTE x1.073 del mismo VaR medio iguala al overlay (bate_a_constante=False), luego el canal no aporta timing de cola. CAPITAL (k·VaR con el multiplicador de la peor ventana de 250d): predicted +5.3% vs histórico y +7.3% vs FHS-EWMA -> el menor recargo (k 3.65 -> 3.50) NO compensa el VaR más alto; el overlay se justifica por validación/gobernanza, no por ahorro de capital. El régimen de cada activo se estima con su PROPIO precio: la tesis solo-precio escala a cartera sin modelo multivariante de factores.",
       "error": null,
-      "manifest": "/tmp/final11/portfolio_var/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/portfolio_var/run_manifest.json"
     },
     {
       "id": "portfolio_var_alert",
@@ -46,7 +46,7 @@
       "decision": "reject",
       "notes": "Datos corregidos: días hábiles (4680 sesiones, 251.6 obs/año, frente a 6794 de calendario) y 1 print no positivo excluido (WTI 2020-04-20). TIMING: la fragilidad de canal NO concentra excepciones (lift@q80=0.0) mientras la vol EWMA sí (lift@q80=3.194); corr(fragilidad, vol)=-0.122. ABLACIÓN: el overlay de canal (constant_equivalent de control) iguala a una CONSTANTE x1.071 con el mismo VaR medio (canal 0.933% / capital 0.15782 vs constante 1.005% / 0.15782), luego su mejora es efecto de NIVEL, no de régimen. RANKING: FHS-EWMA domina — cobertura 1.005% (Kupiec p=0.985), independencia p=0.1284 frente a 0.0011 del histórico, y capital -1.8% vs histórico. La capa de alertas sobre VaR histórico no alcanza el objetivo (capital +0.2%). Nota: el test DQ rechaza a TODOS los estimadores, incluido el mejor.",
       "error": null,
-      "manifest": "/tmp/final11/portfolio_var_alert/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/portfolio_var_alert/run_manifest.json"
     },
     {
       "id": "frtb_applications",
@@ -54,7 +54,7 @@
       "decision": "review",
       "notes": "590 episodios (589 rupturas); vida mediana 10.0 → LH=10. Proxies para alimentar el motor FRTB; no son cálculos oficiales.",
       "error": null,
-      "manifest": "/tmp/final11/frtb_applications/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/frtb_applications/run_manifest.json"
     },
     {
       "id": "frtb_capital",
@@ -62,7 +62,7 @@
       "decision": "review",
       "notes": "ES 97.5% 1d=0.04232 -> 10d=0.13383 -> LH=20 sesiones (MAR33.12, prescrito; vida mediana del canal 11.0 solo como evidencia de apoyo) = 0.18927. Periodo de estrés 2008-03-13..2009-03-11 (retorno acumulado -0.7149) -> ES estresado 0.27185. Backtesting FRTB: 14 excepciones al 99% (3/250d, zona verde) -> m_c=1.5. CAMBIO DE MODELO: capital actual Basilea 2.5 k·(VaR10d+sVaR10d)=0.94981 (k=3.0) vs FRTB m_c·IMCC=0.40778 -> -57.1%. Excluye SES/DRC/RRAO y el PLA test, que requieren datos por factor y P&L de mesa. NMRF candidatos (proxy): ninguno. Paquete exportable LISTO en frtb_export.json (schema frtb-ima-export/v1). AVISO: el delta de capital es PARCIAL — el lado FRTB omite SES/DRC/RRAO; la caída refleja sobre todo que Basilea 2.5 suma VaR+sVaR con k=3 frente a un único ES estresado con m_c=1.5.",
       "error": null,
-      "manifest": "/tmp/final11/frtb_capital/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/frtb_capital/run_manifest.json"
     },
     {
       "id": "dq_impact",
@@ -70,7 +70,7 @@
       "decision": "accept",
       "notes": "Los dos defectos reales del panel se detectan y su impacto se mide. (1) Print no positivo (WTI, ['2020-04-20']): el control geométrico lo marca por ['atr_jump_reverting', 'out_of_band'] con severidad [9.01, 7.22]; el convencional también lo marca (True), pero sin atribución ni severidad frente al canal proyectado. (2) Relleno de calendario: 1145 marcas 'stale' (88.6% en fin de semana), defecto que el control convencional NO puede ver porque un retorno cero nunca es outlier de cola. IMPACTO: la concentración de riesgo en WTI pasa de 0.9845 (cruda) a 0.2405 (depurada), una distorsión de 74.4 puntos porcentuales; los retornos cero pasan del 31.12% al 0.0%. El valor del control se expresa en unidades de riesgo, no en recuento de alertas.",
       "error": null,
-      "manifest": "/tmp/final11/dq_impact/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/dq_impact/run_manifest.json"
     },
     {
       "id": "breakout_detection",
@@ -78,7 +78,7 @@
       "decision": "accept",
       "notes": "Ruptura en <= 5 sesiones; tasa base 0.307. AUC: actuarial (solo tiempo) 0.496 · volatilidad 0.4816 · forma 0.5183 -> mejor SOLO distancia al borde 0.6771 (ganancia sobre el mejor baseline +0.1811). Lead time mediano 6.0 sesiones con cobertura del 97.8% de los episodios. Expansión de volatilidad tras la ruptura: media log-ratio -0.2261 frente a -0.231 en fecha aleatoria (Welch t=0.166).",
       "error": null,
-      "manifest": "/tmp/final11/breakout_detection/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/breakout_detection/run_manifest.json"
     },
     {
       "id": "regime_markov",
@@ -86,7 +86,7 @@
       "decision": "accept",
       "notes": "Estados ['asc_borde', 'asc_centro', 'desc_borde', 'desc_centro']. La cadena de Markov supera al i.i.d. en test (-987 vs -1785, +0.6099 por observación). Permanencia esperada por estado: {'asc_borde': 3.21, 'asc_centro': 3.42, 'desc_borde': 3.46, 'desc_centro': 3.68}. Homogeneidad del hazard por edad: chi2=13.339 (gl=5), p=0.0204 -> heterogéneo -> hay dependencia de la edad: conviene un modelo semi-Markov. Red bayesiana P(ruptura<=5d | estado, vol): AUC=0.6272, Brier=0.2031 frente a 0.2130 del prior constante -> mejora la calibración. Las probabilidades por estado son la entrada interpretable para los modelos de volatilidad aguas abajo.",
       "error": null,
-      "manifest": "/tmp/final11/regime_markov/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/regime_markov/run_manifest.json"
     },
     {
       "id": "dq_daily_monitor",
@@ -94,7 +94,7 @@
       "decision": "accept",
       "notes": "Monitor diario sobre 6 activos y 28086 observaciones: 459 alertas (1.63% de carga operativa), desglose {'fuera_de_banda': 274, 'salto_reversible': 165, 'precio_congelado': 19, 'no_positivo': 1}. La banda esperada a k=5.0σ contiene el 98.99% de los precios observados en BRENT, de modo que el control acota el rendimiento admisible del día siguiente y marca lo que se sale. El control convencional emite 30 marcas y es CIEGO al precio congelado y al relleno de calendario. Última sesión (2026-03-05): 1 alertas. El valor está cuantificado en dq_impact: depurar estos defectos corrige 74,4 puntos porcentuales de distorsión en la contribución al riesgo.",
       "error": null,
-      "manifest": "/tmp/final11/dq_daily_monitor/run_manifest.json"
+      "manifest": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs/dq_daily_monitor/run_manifest.json"
     }
   ]
 }

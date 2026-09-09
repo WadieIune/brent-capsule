@@ -2,7 +2,7 @@
   "task_id": "risk_applications",
   "experiment_id": "portfolio_var",
   "title": "Predicted VaR de cartera multi-commodity (canal por activo, solo-precio)",
-  "timestamp_utc": "2026-08-30T19:46:13Z",
+  "timestamp_utc": "2026-09-09T21:34:51Z",
   "inputs": [],
   "config": {
     "prices_path": null,
@@ -12,7 +12,7 @@
     "horizon": 10
   },
   "seed": 42,
-  "command": "python run_all.py --cutoff 2020-08-20 --out /tmp/final_all",
+  "command": "python run_all.py --cutoff 2020-08-20",
   "environment": {
     "python": "3.12.3",
     "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
@@ -363,5 +363,5 @@
   "decision": "reject",
   "notes": "[datos corregidos: saneado de precios no positivos + días hábiles] Cartera 6 commodities equiponderada, 1393 sesiones de test. Cobertura (objetivo 1.00%): histórico 1.292% · FHS-EWMA 1.005% · predicted 0.933% -> mejor: fhs_ewma. Independencia (Christoffersen p): histórico 0.0011 (RECHAZA: excepciones agrupadas) -> FHS-EWMA 0.1284 -> predicted 0.1080. Cada pieza arregla algo distinto: el EWMA desagrupa las excepciones y el canal ajusta el nivel, pero una CONSTANTE x1.073 del mismo VaR medio iguala al overlay (bate_a_constante=False), luego el canal no aporta timing de cola. CAPITAL (k·VaR con el multiplicador de la peor ventana de 250d): predicted +5.3% vs histórico y +7.3% vs FHS-EWMA -> el menor recargo (k 3.65 -> 3.50) NO compensa el VaR más alto; el overlay se justifica por validación/gobernanza, no por ahorro de capital. El régimen de cada activo se estima con su PROPIO precio: la tesis solo-precio escala a cartera sin modelo multivariante de factores.",
   "error": null,
-  "elapsed_seconds": 13.408
+  "elapsed_seconds": 13.154
 }
