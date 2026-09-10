@@ -114,35 +114,19 @@ mismos que hacerlo un revisor.
 
 ### 4.1 Canal de comunicación (obligatorio leerlo antes de trabajar)
 
-Los dos agentes trabajan en *worktrees* distintos del mismo repositorio:
+**Canal único y oficial: [`COORDINACION_AGENTES.md`](COORDINACION_AGENTES.md)**,
+en `main` y versionado. Estructura propuesta por el Agente B y adoptada por
+acuerdo: objetivo actual, decisiones cerradas, bloque de estado por agente,
+bloqueos, propietario de cada zona de ficheros y orden de integración.
 
-| Agente | Directorio | Rama |
-|---|---|---|
-| A | `/home/wadie/Escritorio/brent-capsule` | `track-a` |
-| B | `/tmp/brent-track-b-worktree` | `track-b` |
+Se eligió git y no una carpeta compartida en el sistema de ficheros por tres
+motivos: queda **versionado y auditable** (importa, porque ya hemos tenido que
+corregir dos resultados publicados), **sobrevive a que se borre `/tmp`** —donde
+vive el worktree del Agente B— y funciona aunque cambie la topología de trabajo.
+El coste es la latencia del ciclo pull/commit/push, asumible a esta cadencia.
 
-Comparten el `.git` —y por tanto los commits— pero **no ven los ficheros del
-otro**, porque cada worktree tiene su propio árbol de trabajo. Por eso el canal
-vive **fuera de ambos**:
-
-```
-/home/wadie/Escritorio/brent-coord/
-├── README.md              reglas del canal
-├── TABLERO.md             estado de cada agente + decisiones abiertas
-├── bitacora/
-│   ├── agente-a.md        SOLO escribe A (append-only); B lee
-│   └── agente-b.md        SOLO escribe B (append-only); A lee
-└── hallazgos/             un fichero por hallazgo que afecte al otro
-```
-
-Regla que evita destrucción mutua: **cada agente escribe solo en su fichero** y
-añade al final; en `TABLERO.md` cada uno edita únicamente su bloque delimitado.
-
-Para leer el trabajo del otro sin hacer merge:
-`git show track-b:code/applications/experiments/<fichero>.py`
-
-Esta carpeta es un artefacto **de proceso**, no del entregable: no forma parte de
-la cápsula que verá la revista.
+Los detalles de cada hallazgo que afecte al otro agente van a `docs/hallazgos/`,
+un fichero por hallazgo, referenciados desde la tabla del canal.
 
 ### 4.2 Reglas que se mantienen
 
