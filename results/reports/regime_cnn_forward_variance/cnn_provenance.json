@@ -1,0 +1,189 @@
+{
+  "source_sha256": "f6f80761627e99b897325bbe7485e6f2463d8d6dd429df4ec5cec7c30f328ef9",
+  "window_length": 32,
+  "image_size": 160,
+  "calendar": "observed_no_fill",
+  "n": 6722,
+  "threshold": 0.3,
+  "images_sha256": "cfb45ee2228bde16b95e216ad6d58b619c24dd922faaf22db78df57338a4b4cf",
+  "windows_sha256": "01be5d1819e922fb5a05e3f6f0a4432f300f36bd27a65b2bfa939c65a352ce62",
+  "transform_sha256": {
+    "image_encoding.py": "697d9e21bff34b0641f302b242823bc3e4541b43ff61dbf493ae97cf67b4de10",
+    "feature_engineering.py": "9c9dcaa230ed102800231c22d1f17deadae8917aa8c082061534d201c62662d2",
+    "patterns.py": "4406ad9e1faf2bf6b0754253d7cd7867b018ca729d2e3dcfdb4c85b3bd3cc067"
+  },
+  "weights_sha256": "c27df63ce6eb17ef8bcea58922fd3a254cba910c720f41ee89d64d99fb7a4ddf",
+  "weights_file": "efficientnet_b1-c27df63c.pth",
+  "architecture": "torchvision.efficientnet_b1",
+  "backbone_frozen": true,
+  "weight_origin": "local ImageNet checkpoint; retrospective fixed representation",
+  "torch": "2.11.0.dev20260125+cu128",
+  "torchvision": "0.25.0.dev20260125+cu128",
+  "device": "cuda",
+  "embeddings_sha256": "727ae21f736bd28a8ad5f21608a5a73e0c1707ab6fa35eb37f4803aaafcb5756",
+  "prediction_sha256": "f3c699d07563acf228fbd9545d51a165c799c8d37b130d446470ad30a8c5a60f",
+  "head_folds": [
+    {
+      "year": 2005,
+      "train_n": 1253,
+      "predict_n": 257,
+      "train_end": "2004-11-18 00:00:00",
+      "head_sha256": "3b776849090196fde924da325d436f55389972c30a0764393f72ab724706382d"
+    },
+    {
+      "year": 2006,
+      "train_n": 1510,
+      "predict_n": 255,
+      "train_end": "2005-11-16 00:00:00",
+      "head_sha256": "d8102578bc64fa927f692e600db458691e128735d17c26c00cbbe219ce03d0b9"
+    },
+    {
+      "year": 2007,
+      "train_n": 1765,
+      "predict_n": 250,
+      "train_end": "2006-11-14 00:00:00",
+      "head_sha256": "0f4f4e59bf2ebbf91682b2cbe8f3c8560e91567202eee8afadbff27fcc4fc2dc"
+    },
+    {
+      "year": 2008,
+      "train_n": 2015,
+      "predict_n": 253,
+      "train_end": "2007-11-13 00:00:00",
+      "head_sha256": "4b2a609bcfa4c8022b96f9eefa54e29f46fb86204189cdaa6909b354611fab7d"
+    },
+    {
+      "year": 2009,
+      "train_n": 2268,
+      "predict_n": 252,
+      "train_end": "2008-11-14 00:00:00",
+      "head_sha256": "7f6f93ddee5b0b9f4890f3775f1d9b6432f9eeb4d2a46baa273b0c81c5be3f7f"
+    },
+    {
+      "year": 2010,
+      "train_n": 2520,
+      "predict_n": 252,
+      "train_end": "2009-11-16 00:00:00",
+      "head_sha256": "f918adcc6516deb8c7f17ba7e10dd11eab3eaa163d13e5026c8817857060af38"
+    },
+    {
+      "year": 2011,
+      "train_n": 2772,
+      "predict_n": 248,
+      "train_end": "2010-11-16 00:00:00",
+      "head_sha256": "4ba329203edb1aa8daffb7f1cbd2d891f4225a2b34f1bab4d2e8df06c66fd5d6"
+    },
+    {
+      "year": 2012,
+      "train_n": 3020,
+      "predict_n": 249,
+      "train_end": "2011-11-14 00:00:00",
+      "head_sha256": "80f02a9b1de26cadf3e83f0589bca9f0e9e19ca62b546b00cb683444900b9d11"
+    },
+    {
+      "year": 2013,
+      "train_n": 3269,
+      "predict_n": 252,
+      "train_end": "2012-11-14 00:00:00",
+      "head_sha256": "e496446082ed42c45eb11689a0684a5444e5ba3e2f0407c72093a8cad7eefa5c"
+    },
+    {
+      "year": 2014,
+      "train_n": 3521,
+      "predict_n": 254,
+      "train_end": "2013-11-14 00:00:00",
+      "head_sha256": "5035fda35b6d3f620a95a330516aec07438a35cff2a1cacf7a0a6b507e36ae61"
+    },
+    {
+      "year": 2015,
+      "train_n": 3775,
+      "predict_n": 255,
+      "train_end": "2014-11-14 00:00:00",
+      "head_sha256": "5ec014371d249d3292ccbb4160decfd31f9ca245e38bd6af68ba3e4869632a6c"
+    },
+    {
+      "year": 2016,
+      "train_n": 4030,
+      "predict_n": 255,
+      "train_end": "2015-11-17 00:00:00",
+      "head_sha256": "ce320e53fd8f2edabc91ec7c958cfaf22d38476c7c07fddfd24c3e5ecb6e3c7b"
+    },
+    {
+      "year": 2017,
+      "train_n": 4285,
+      "predict_n": 256,
+      "train_end": "2016-11-15 00:00:00",
+      "head_sha256": "d1501fd4fb97ff423a97d918eae1fc0649dd63eed812e944236ce840fb1e236b"
+    },
+    {
+      "year": 2018,
+      "train_n": 4541,
+      "predict_n": 252,
+      "train_end": "2017-11-14 00:00:00",
+      "head_sha256": "0993d1fb5d3bd9bc40142e4a58c14cdae38b114d18d93a19988c29c66620f4f3"
+    },
+    {
+      "year": 2019,
+      "train_n": 4793,
+      "predict_n": 257,
+      "train_end": "2018-11-12 00:00:00",
+      "head_sha256": "bdf761c73e12cabdbe930a3541d0755105693f92f153a873ff255d0eaf015e8d"
+    },
+    {
+      "year": 2020,
+      "train_n": 5050,
+      "predict_n": 255,
+      "train_end": "2019-11-15 00:00:00",
+      "head_sha256": "02f065b716761c812b2643845de6b8a9de3ad464cd64a2e4a4181aae8480299d"
+    },
+    {
+      "year": 2021,
+      "train_n": 5305,
+      "predict_n": 253,
+      "train_end": "2020-11-17 00:00:00",
+      "head_sha256": "000f112b7575631b04472ca02ece6b943a24855030c9bdd17a4a309aa05c3a7f"
+    },
+    {
+      "year": 2022,
+      "train_n": 5558,
+      "predict_n": 252,
+      "train_end": "2021-11-16 00:00:00",
+      "head_sha256": "9f4364a70895c1ef1ea05d90d632a070166e99ba108536dc08293ce03fd06f12"
+    },
+    {
+      "year": 2023,
+      "train_n": 5810,
+      "predict_n": 251,
+      "train_end": "2022-11-15 00:00:00",
+      "head_sha256": "d13e79b1c1dbf3ac4835f5a6933922550b4759a1132e4d072ab7a6c9a19b7107"
+    },
+    {
+      "year": 2024,
+      "train_n": 6061,
+      "predict_n": 254,
+      "train_end": "2023-11-14 00:00:00",
+      "head_sha256": "00ba43dd154d69aaa22c918953e58982960217b838111c57e78bff5698e0ebb1"
+    },
+    {
+      "year": 2025,
+      "train_n": 6315,
+      "predict_n": 253,
+      "train_end": "2024-11-14 00:00:00",
+      "head_sha256": "b90fac6599498811f1b49dbc09a897c62c1d5e9868d0588e9b155ad1c299201e"
+    },
+    {
+      "year": 2026,
+      "train_n": 6568,
+      "predict_n": 123,
+      "train_end": "2025-11-14 00:00:00",
+      "head_sha256": "6edbe88008b32255392109efcda33658f5198c88eda839d8ca005e80e44657e6"
+    }
+  ],
+  "sklearn": "1.9.0",
+  "crossfit": "annual_expanding_disjoint_windows",
+  "code_sha256": "b909f412b97d336161f530e875121a01af88d64bfbe353a6a123d6631f3896d8",
+  "historical_deployability": false,
+  "limitations": [
+    "Historical representation chosen retrospectively.",
+    "Weak geometric labels; scores are not calibrated event probabilities."
+  ]
+}

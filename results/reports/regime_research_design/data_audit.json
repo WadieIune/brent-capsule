@@ -1,0 +1,57 @@
+{
+  "panel_rows": 7004,
+  "panel_columns": 181,
+  "raw_variables": 37,
+  "weekend_rows": 2000,
+  "date_duplicates": 0,
+  "panel_start": "2007-01-02 00:00:00",
+  "panel_end": "2026-03-06 00:00:00",
+  "brent_fred_end": "2026-06-29 00:00:00",
+  "brent_common_dates": 4706,
+  "brent_median_absolute_source_difference": 0.9000024414062509,
+  "brent_match_fraction_atol_001": 0.007224819379515512,
+  "asof_ready": false,
+  "missing_priority_information": [
+    "EIA inventories and release calendar",
+    "GPR vintages",
+    "OVX",
+    "CPI vintages",
+    "industrial production vintages"
+  ],
+  "notes": [
+    "Unchanged values do not prove invalidity; distinguish market closures and low-frequency series.",
+    "Brent source difference detected, exact instruments/providers not identified by this audit.",
+    "Negative interest rates and negative WTI are not to be clipped or log-transformed blindly.",
+    "Existing normalized features require training-period provenance; no full-sample leakage proven here."
+  ],
+  "sha256": {
+    "dataset_wide_with_target.csv": "6a43eb0d1bb6757a29de819777cedcce2f999ea9ee06c1f17bdfd5ddd6dad5e1",
+    "brent_fred_daily.csv": "f6f80761627e99b897325bbe7485e6f2463d8d6dd429df4ec5cec7c30f328ef9"
+  },
+  "volatility_recheck": {
+    "observed_no_fill": {
+      "return_acf_lag1": 0.008923306413646257,
+      "abs_return_acf_lag1": 0.26473244439060206,
+      "abs_return_acf_lag5": 0.21154771580549633,
+      "abs_return_acf_lag20": 0.15576551694999588,
+      "2026_max_annualized_vol": 1.1242102397297729,
+      "2026_max_date": "2026-04-17 00:00:00",
+      "2026_observations_in_top400": 44,
+      "2026_observations": 123,
+      "estimator": "std(log returns, window=20, ddof=1)*sqrt(252)",
+      "event_attribution": "not established by this descriptive calculation"
+    },
+    "business_ffill": {
+      "return_acf_lag1": 0.010124749631354119,
+      "abs_return_acf_lag1": 0.25352999468478826,
+      "abs_return_acf_lag5": 0.2005087393288644,
+      "abs_return_acf_lag20": 0.13175332810873538,
+      "2026_max_annualized_vol": 1.0762452683482733,
+      "2026_max_date": "2026-04-17 00:00:00",
+      "2026_observations_in_top400": 46,
+      "2026_observations": 128,
+      "estimator": "std(log returns, window=20, ddof=1)*sqrt(252)",
+      "event_attribution": "not established by this descriptive calculation"
+    }
+  }
+}

@@ -1,0 +1,222 @@
+{
+  "status": "provisional_exploratory",
+  "diagnostic_gate": "not_met",
+  "n": 2651,
+  "first_date": "2016-01-04 00:00:00",
+  "last_date": "2026-06-15 00:00:00",
+  "comparisons": {
+    "cnn_over_base": {
+      "mean_delta_qlike": 0.007189225692085798,
+      "ci_97_5": {
+        "10": [
+          -0.00038719400040463774,
+          0.01560128659049609
+        ],
+        "20": [
+          -0.000687660497936469,
+          0.01569597872925248
+        ],
+        "60": [
+          -0.0008513694847262984,
+          0.015540045900440265
+        ]
+      }
+    },
+    "cnn_over_geometry": {
+      "mean_delta_qlike": -0.0014809095323761476,
+      "ci_97_5": {
+        "10": [
+          -0.00843261241665808,
+          0.004937102775037693
+        ],
+        "20": [
+          -0.009432238792361694,
+          0.005296953019158257
+        ],
+        "60": [
+          -0.008941732087647295,
+          0.003767516144464134
+        ]
+      }
+    },
+    "geometry_over_base": {
+      "mean_delta_qlike": 0.0075863248524386554,
+      "ci_97_5": {
+        "10": [
+          -0.013999320003626178,
+          0.03125883789140535
+        ],
+        "20": [
+          -0.016556010603857082,
+          0.03497494621551933
+        ],
+        "60": [
+          -0.019943237573324824,
+          0.037354728964003436
+        ]
+      }
+    }
+  },
+  "folds": [
+    {
+      "year": 2016,
+      "family": "HAR",
+      "validation": {
+        "EWMA": -6.27995821452185,
+        "HAR": -6.293014091740014
+      },
+      "train_n": 2505,
+      "train_label_end": "2014-12-19 00:00:00",
+      "validation_start": "2014-12-22 00:00:00",
+      "refit_label_end": "2015-12-31 00:00:00",
+      "test_start": "2016-01-04 00:00:00",
+      "test_n": 255
+    },
+    {
+      "year": 2017,
+      "family": "EWMA",
+      "validation": {
+        "EWMA": -6.069776032385779,
+        "HAR": -6.047252499933323
+      },
+      "train_n": 2760,
+      "train_label_end": "2015-12-21 00:00:00",
+      "validation_start": "2015-12-22 00:00:00",
+      "refit_label_end": "2016-12-30 00:00:00",
+      "test_start": "2017-01-03 00:00:00",
+      "test_n": 256
+    },
+    {
+      "year": 2018,
+      "family": "EWMA",
+      "validation": {
+        "EWMA": -7.1695415987418,
+        "HAR": -7.143195194166231
+      },
+      "train_n": 3016,
+      "train_label_end": "2016-12-20 00:00:00",
+      "validation_start": "2016-12-21 00:00:00",
+      "refit_label_end": "2017-12-29 00:00:00",
+      "test_start": "2018-01-02 00:00:00",
+      "test_n": 252
+    },
+    {
+      "year": 2019,
+      "family": "HAR",
+      "validation": {
+        "EWMA": -7.04967915510536,
+        "HAR": -7.055240706734784
+      },
+      "train_n": 3268,
+      "train_label_end": "2017-12-13 00:00:00",
+      "validation_start": "2017-12-14 00:00:00",
+      "refit_label_end": "2018-12-28 00:00:00",
+      "test_start": "2019-01-02 00:00:00",
+      "test_n": 257
+    },
+    {
+      "year": 2020,
+      "family": "HAR",
+      "validation": {
+        "EWMA": -6.721823709695762,
+        "HAR": -6.761446215045659
+      },
+      "train_n": 3525,
+      "train_label_end": "2018-12-18 00:00:00",
+      "validation_start": "2018-12-19 00:00:00",
+      "refit_label_end": "2019-12-31 00:00:00",
+      "test_start": "2020-01-02 00:00:00",
+      "test_n": 255
+    },
+    {
+      "year": 2021,
+      "family": "HAR",
+      "validation": {
+        "EWMA": -4.703780614251879,
+        "HAR": -4.946764436150684
+      },
+      "train_n": 3780,
+      "train_label_end": "2019-12-19 00:00:00",
+      "validation_start": "2019-12-20 00:00:00",
+      "refit_label_end": "2020-12-31 00:00:00",
+      "test_start": "2021-01-04 00:00:00",
+      "test_n": 253
+    },
+    {
+      "year": 2022,
+      "family": "EWMA",
+      "validation": {
+        "EWMA": -6.58658659048465,
+        "HAR": -6.538547916931793
+      },
+      "train_n": 4033,
+      "train_label_end": "2020-12-17 00:00:00",
+      "validation_start": "2020-12-18 00:00:00",
+      "refit_label_end": "2021-12-31 00:00:00",
+      "test_start": "2022-01-03 00:00:00",
+      "test_n": 252
+    },
+    {
+      "year": 2023,
+      "family": "EWMA",
+      "validation": {
+        "EWMA": -5.991720148571976,
+        "HAR": -5.960193488608873
+      },
+      "train_n": 4285,
+      "train_label_end": "2021-12-15 00:00:00",
+      "validation_start": "2021-12-16 00:00:00",
+      "refit_label_end": "2022-12-30 00:00:00",
+      "test_start": "2023-01-03 00:00:00",
+      "test_n": 251
+    },
+    {
+      "year": 2024,
+      "family": "EWMA",
+      "validation": {
+        "EWMA": -6.6340925179081385,
+        "HAR": -6.624147401735192
+      },
+      "train_n": 4536,
+      "train_label_end": "2022-12-13 00:00:00",
+      "validation_start": "2022-12-14 00:00:00",
+      "refit_label_end": "2023-12-29 00:00:00",
+      "test_start": "2024-01-02 00:00:00",
+      "test_n": 254
+    },
+    {
+      "year": 2025,
+      "family": "HAR",
+      "validation": {
+        "EWMA": -7.15122454119071,
+        "HAR": -7.156211511434579
+      },
+      "train_n": 4790,
+      "train_label_end": "2023-12-15 00:00:00",
+      "validation_start": "2023-12-18 00:00:00",
+      "refit_label_end": "2024-12-31 00:00:00",
+      "test_start": "2025-01-02 00:00:00",
+      "test_n": 253
+    },
+    {
+      "year": 2026,
+      "family": "EWMA",
+      "validation": {
+        "EWMA": -6.840892177412022,
+        "HAR": -6.837811246205919
+      },
+      "train_n": 5043,
+      "train_label_end": "2024-12-16 00:00:00",
+      "validation_start": "2024-12-17 00:00:00",
+      "refit_label_end": "2025-12-31 00:00:00",
+      "test_start": "2026-01-02 00:00:00",
+      "test_n": 113
+    }
+  ],
+  "source_sha256": "f6f80761627e99b897325bbe7485e6f2463d8d6dd429df4ec5cec7c30f328ef9",
+  "provenance_sha256": "5e44866c6b4f9df0b16a5013e7b13a980b03aac7b5c9001a59dcce51b32e4e3e",
+  "code_sha256": "ff8a29582e06b7e60b8ad45f4ebb94e782266aff6083bec2680fc86bef062573",
+  "predictor_sha256": "9c3a0770ee15aefc1ac6e6ea960166b270fba734f447a374bfeed18167cb6dae",
+  "historical_deployability": false,
+  "production_validated": false
+}

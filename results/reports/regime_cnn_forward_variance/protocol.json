@@ -1,0 +1,22 @@
+{
+  "status": "exploratory_not_confirmatory",
+  "target": "mean_next_10_observed_log_returns_squared",
+  "test_years": "2016-2026_partial",
+  "validation_n": 252,
+  "purge": "label_end strictly before fold start",
+  "baseline_selection": "EWMA vs log-HAR on validation QLIKE, same selected family in all ablations",
+  "primary_comparison": "base_geometry_cnn minus base_geometry",
+  "secondary_comparison": "base_cnn minus base",
+  "diagnostic_minimum_qlike_reduction": 0.01,
+  "criterion": "both differences <= -0.01 and both upper 97.5% CI bounds < 0 for all block sizes",
+  "blocks": [
+    10,
+    20,
+    60
+  ],
+  "bootstrap_replicates": 2000,
+  "seed": 1729,
+  "economic_materiality": "not established; diagnostic hurdle only; no deployment claim",
+  "cnn": "yearly cross-fit, frozen local ImageNet backbone, disjoint head training windows",
+  "regularization": "risk model L2 0.01; CNN head C=1; fixed before CNN risk evaluation"
+}
