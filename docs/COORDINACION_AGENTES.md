@@ -69,6 +69,7 @@ requerida del otro**.
 | 2026-09-10 | A | **Decisión #11 propuesta** | ¿Aceptas el nulo de paseo aleatorio como requisito permanente para toda afirmación sobre el canal? Tengo el generador listo para empaquetarlo como utilidad compartida |
 | 2026-09-10 | A | **Pendientes tuyos: C3, C4, C5** | Desafiar mis resultados, empezando por **C5** (`dq_impact`), que ahora es la base del titular del paper |
 | 2026-09-10 | A | **AVISO: `main` estuvo roto ~10 min y ya está arreglado** | Si hiciste `pull` de `main` en `fed4a75`, vuelve a hacerlo: un `stash pop` dejó marcadores de conflicto en `experiments/__init__.py` (SyntaxError). Arreglado en el commit siguiente, con los 14 experimentos importando y 5/5 tests en verde |
+| 2026-09-10 | A | **ACUSE DE RECIBO de tu revisión (d4a0465) + respuesta** | Verificadas tus 6 objeciones ejecutando: las 3 comprobables son **exactas** (10 etiquetas 2020-08-07→2020-08-20, selección sobre test, loader con ffill). Rehecho WP3 con purga + selección en validación + bootstrap por bloques: **la conclusión se mantiene** (publicado vs sus proxies ΔAUC −0.009, IC bloques [−0.028,+0.011]) pero **rectifico la redacción** a «no se establece que aporte». Confirmada también la falta de procedencia del joblib. Ver `auditorias/2026-09-10-A-respuesta-a-revision-de-B.md`. **Te ofrezco**: instrumentar procedencia del detector y preparar un nulo heterocedástico (GARCH simulado) para tu propuesta de varianza — dime si los quieres |
 | 2026-09-10 | A | **HALLAZGO que obliga a reescribir la afirmación central** | La **CNN no interviene** en el control de calidad de dato (verificado por traza de importaciones: 0 módulos de deep learning). Y frente a una librería estándar, el control geométrico **empata** en repetidos y no positivos y **pierde** en desfase de calendario; solo gana claramente en salto reversible. Ver `docs/hallazgos/2026-09-10-A-la-CNN-no-interviene-en-calidad-de-dato.md`. **Desafíalo**: si estoy equivocado, mejor saberlo ya |
 | 2026-09-10 | A | **Nuevo: `dq_capital_impact` (C7)** | Desafiarlo. Es el candidato a aplicación práctica del paper: el dato sucio subestima el capital un **13.4 %**. Es análisis **confirmatorio**, no pre-registrado, y lo declaro como tal |
 
@@ -76,8 +77,8 @@ requerida del otro**.
 
 | Fecha | De | Asunto | Acción requerida |
 |---|---|---|---|
-| 2026-09-10 | B | Usuario descarta CNN–DQ; revisión CNN/régimen/vol terminada | Leer auditorias/2026-09-10-B-revision-regimen-volatilidad.md. WP3 no evaluó CNN; C4 se reabre por purga ausente (10 etiquetas) y bootstrap i.i.d. Solicito a A revisar objetivo forward variance, baselines y procedencia CNN en paralelo. No integrar el gate FRTB como contribución CNN. Acusar recibo en bandeja B. |
-| 2026-09-10 | B | Respuesta C1/C2 y cierre previo C3–C5 | Acepto retirar lead time y atribución económica del Markov; el paseo aleatorio es control necesario, no prueba universal. C3–C5 están en track-b, commits 1b2d82c/7ae8d0e; C4 queda ahora reabierto por esta revisión. El resultado WP2-B reject sigue limitado a su política. |
+| ~~2026-09-10~~ | B | ~~Revisión CNN/régimen/vol~~ **ATENDIDA** por A | Leer auditorias/2026-09-10-B-revision-regimen-volatilidad.md. WP3 no evaluó CNN; C4 se reabre por purga ausente (10 etiquetas) y bootstrap i.i.d. Solicito a A revisar objetivo forward variance, baselines y procedencia CNN en paralelo. No integrar el gate FRTB como contribución CNN. Acusar recibo en bandeja B. |
+| ~~2026-09-10~~ | B | ~~Respuesta C1/C2~~ **ATENDIDA** por A | Acepto retirar lead time y atribución económica del Markov; el paseo aleatorio es control necesario, no prueba universal. C3–C5 están en track-b, commits 1b2d82c/7ae8d0e; C4 queda ahora reabierto por esta revisión. El resultado WP2-B reject sigue limitado a su política. |
 
 ---
 
@@ -138,7 +139,7 @@ Cada punto viene de un fallo **real** de este proyecto:
 | C1 | `breakout_detection` — solo la distancia al borde anticipa la ruptura (AUC 0.677) | B | 🟠 **degradado** | A | [veredicto](auditorias/2026-09-10-A-challenge-breakout_detection.md) · un paseo aleatorio da 0.624; señal real +0.03/+0.05. **Lead time retirado**: un alertador aleatorio anticipa más (9.4 vs 7.0) |
 | C2 | `regime_markov` — Markov bate a i.i.d. (+0.61 log-verosim./obs) | B | ❌ **refutado** | A | [veredicto](auditorias/2026-09-10-A-challenge-regime_markov.md) · el nulo da **+0.617 ± 0.035** (real +0.610): la ventaja es del solapamiento de ventanas, no del mercado |
 | C3 | `dq_synthetic_validation` (WP2-A) — `reject` contra su propio umbral | A | 🟡 provisional | **B** | pendiente |
-| C4 | `channel_vol_audit` (WP3) — la atribución de la volatilidad era falsa | A | 🟡 provisional | **B** | pendiente |
+| C4 | `channel_vol_audit` (WP3) — la atribución de la volatilidad era falsa | A | 🟠 **degradado** | B | **reabierto por B y resuelto**: 3 defectos metodológicos confirmados (purga, selección en test, bootstrap i.i.d.); corregidos, la conclusión se mantiene pero la redacción pasa a «no se establece que aporte». [respuesta](auditorias/2026-09-10-A-respuesta-a-revision-de-B.md) |
 | C5 | `dq_impact` — 74.4 pp de distorsión corregida | A (heredado) | 🟡 provisional | **B** | pendiente |
 | C6 | `frtb_capital` — −57.1 % de capital (parcial) | B | 🟡 provisional | **A** | pendiente |
 | C7 | `dq_capital_impact` — el dato sucio subestima el capital un 13.4 % | A | 🟡 provisional | **B** | pendiente · **candidato a aplicación práctica del paper** |

@@ -71,7 +71,7 @@ Like-for-like, excluyendo además las filas del ataque A1:
 | Brent real | 0.6266 |
 | **Diferencia** | **+0.0339** |
 
-**El 92 % del AUC reportado lo produce un modelo nulo sin información.** La
+**Un modelo nulo sin información alcanza 0.624 de los 0.677 reportados.** *(Corregido tras la revisión de B: la formulación anterior —«el 92 % del AUC»— era indebida; un cociente de AUC no es un porcentaje de información explicada.)* La
 ganancia real sobre el nulo correcto es de **+0.03 a +0.05**, no de **+0.18**
 sobre el baseline actuarial.
 
