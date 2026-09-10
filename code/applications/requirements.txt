@@ -15,3 +15,7 @@ lifelines>=0.27
 # xgboost>=1.7
 
 # La aplicación FRTB solo usa extract_episodes (numpy/pandas), no requiere extras.
+
+# Baseline GARCH(1,1) de la auditoría WP3 (channel_vol_audit).
+arch>=6.0
+

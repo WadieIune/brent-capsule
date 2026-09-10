@@ -34,7 +34,8 @@ hace —y se publica igualmente— y `review` cuando la comparación no es concl
 
 | Id | Qué hace | Baseline | Resultado | Dec. |
 |----|----------|----------|-----------|------|
-| `channel_vol_forecast` | ¿Compresión del canal + `P(T>k)` anticipan expansión de vol? | AUC 0.5 | AUC **0.716** con geometría; la supervivencia **no** añade (Δ=−0.002) | `accept` |
+| `channel_vol_forecast` | ¿Compresión del canal + `P(T>k)` anticipan expansión de vol? | AUC 0.5 | AUC **0.716**, pero **el mérito es de la volatilidad, no de la forma** (ver auditoría WP3) | `accept`* |
+| `channel_vol_audit` | **WP3**: audita el anterior contra vol realizada, EWMA(0.94) y GARCH(1,1) | Baselines de volatilidad | Supera a los baselines de una sola medida, pero **no bate a sus propios proxies de vol** | `review` |
 | `breakout_detection` | ¿Se anticipa la ruptura a ≤5 sesiones? | Actuarial (solo tiempo) 0.496; vol 0.482; forma 0.518 | Solo la **distancia al borde** informa: AUC **0.677** (+0.181 sobre el mejor baseline); *lead time* mediano 6 sesiones | `accept` |
 | `regime_markov` | Cadena de Markov de 4 estados (asc/desc × borde/centro) | Modelo i.i.d. | Markov bate al i.i.d. (**+0.61** log-verosimilitud por obs.); hazard heterogéneo por edad (p=0.020) → conviene semi-Markov | `accept` |
 
@@ -52,6 +53,58 @@ hace —y se publica igualmente— y `review` cuando la comparación no es concl
 | Id | Qué hace | Estado |
 |----|----------|--------|
 | `frtb_applications` | Stress period, *liquidity horizon*, observabilidad NMRF/RFET | Proxy / scaffolding |
+
+### WP3 · Auditoría de `channel_vol_forecast`: la atribución era falsa
+
+> `accept`* significa que el experimento **mantiene** su decisión —supera el
+> umbral pre-registrado— pero **la causa que se le atribuía es incorrecta**.
+
+`channel_vol_forecast` se publicó con AUC 0.716 prediciendo la expansión de la
+volatilidad realizada, comparado únicamente contra la tasa base (AUC 0.5). Nunca
+se contrastó con un modelo de volatilidad, que es el mismo patrón que invalidó el
+resultado del VaR.
+
+Había un motivo concreto para sospechar: de las once *features* que el
+experimento llama "geometría", **cuatro son medidas de volatilidad**:
+
+| Feature | Qué es realmente |
+|---|---|
+| `vol20` | desviación de los últimos 20 retornos — volatilidad realizada |
+| `atr_norm` | ATR / precio — rango medio |
+| `resid_norm` | σ de los residuos / nivel — dispersión *detrended* |
+| `band_width` | 2·m·σ_resid / nivel — la anterior, reescalada |
+
+Y el objetivo —¿superará la vol futura a la actual?— es en gran parte una
+pregunta sobre **reversión a la media de la volatilidad**. Resultado de la
+auditoría (mismo objetivo, split, clasificador y estandarización para todos):
+
+| Modelo | AUC | Qué contiene |
+|---|---|---|
+| **`vol_proxies_solo`** | **0.723** | **solo los 4 proxies de vol, cero forma** |
+| `geometria_publicada` | 0.716 | las 11 features publicadas |
+| `vol_mejor_mas_forma` | 0.631 | mejor vol + forma pura |
+| `rv_lagged` | 0.625 | vol realizada (nivel y posición relativa) |
+| `forma_pura` | 0.608 | geometría **sin** los 4 proxies de vol |
+| `garch_11` | 0.566 | GARCH(1,1), parámetros solo de train |
+| `ewma_094` | 0.560 | EWMA λ=0.94 |
+
+Tres contrastes *bootstrap* (B=3000) cierran la atribución:
+
+- **Criterio pre-registrado** — publicado vs `rv_lagged`: ΔAUC **+0.091**,
+  IC95 [+0.053, +0.127] → **supera**, así que el `accept` se mantiene.
+- **Atribución** — publicado vs *solo sus proxies de vol*: ΔAUC **−0.007**,
+  IC95 [−0.021, +0.006] → **la forma no aporta nada**; el modelo sin ninguna
+  información de forma es, si acaso, ligeramente mejor.
+- **Incremental** — añadir forma a la mejor vol: ΔAUC **+0.006**,
+  IC95 [−0.024, +0.035] → indistinguible de cero.
+
+**Conclusión.** El experimento supera el umbral, pero **no porque la geometría
+del canal anticipe la volatilidad**: lo hace porque sus *features* contienen una
+**representación multi-medida de la volatilidad** (realizada + ATR + dispersión
+*detrended*) que resulta mejor predictor que EWMA o GARCH(1,1) de una sola
+medida. Eso sigue siendo un hallazgo útil —y algo llamativo, porque bate a
+GARCH— pero pertenece a la **medición de volatilidad**, no al chartismo. La
+afirmación "la compresión del canal anticipa la expansión de vol" queda refutada.
 
 ### El resultado de VaR, corregido
 

@@ -812,6 +812,65 @@ frente a un único ES estresado con $m_c=1{,}5$—. La vida mediana del canal
 (11 sesiones) se emplea únicamente como evidencia de apoyo del horizonte, nunca
 en sustitución del valor prescrito.
 
+\subsection{Una atribución falsa detectada por auditoría}
+\label{sec:auditvol}
+La regla que el proyecto se impuso tras el episodio del VaR —ningún resultado
+positivo se sostiene sin un \emph{baseline} fuerte— se aplicó también a los
+\texttt{accept} propios. El más expuesto era el módulo que relaciona la
+compresión del canal con la expansión de la volatilidad realizada: se había
+publicado con AUC $0{,}716$ contrastado únicamente frente a la tasa base
+($\mathrm{AUC}=0{,}5$), sin compararse jamás con un modelo de volatilidad.
+
+La sospecha tenía fundamento estructural. De las once variables que el
+experimento denomina ``geometría'', \textbf{cuatro son medidas de volatilidad}:
+la desviación de los últimos veinte retornos, el ATR relativo, la dispersión de
+los residuos en torno a la recta del canal y la anchura de banda, que es esa
+misma dispersión reescalada. Y el objetivo —si la volatilidad futura superará a
+la actual— es en buena medida una pregunta sobre reversión a la media de la
+volatilidad.
+
+La auditoría contrasta el modelo publicado con volatilidad realizada, EWMA
+($\lambda=0{,}94$) y GARCH(1,1) —parámetros estimados solo en entrenamiento—
+manteniendo idénticos el objetivo, la partición, el clasificador y la
+estandarización (Tabla~\ref{tab:auditvol}).
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Auditoría del módulo de volatilidad: descomposición por conjunto de variables.}
+\label{tab:auditvol}
+\begin{tabular}{lrl}
+\toprule
+\textbf{Modelo} & \textbf{AUC} & \textbf{Contenido} \\
+\midrule
+\textbf{Solo proxies de volatilidad} & \textbf{0.723} & \textbf{las 4 medidas de volatilidad, sin forma alguna} \\
+Geometría publicada & 0.716 & las 11 variables tal y como se publicaron \\
+Mejor volatilidad + forma & 0.631 & prueba incremental \\
+Volatilidad realizada & 0.625 & nivel y posición relativa \\
+Forma pura & 0.608 & geometría \emph{sin} los 4 proxies \\
+GARCH(1,1) & 0.566 & parámetros solo de entrenamiento \\
+EWMA ($\lambda=0.94$) & 0.560 & — \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Tres contrastes \emph{bootstrap} ($B=3000$) cierran la atribución. Frente a la
+volatilidad realizada, el modelo publicado gana ($\Delta\mathrm{AUC}=+0{,}091$;
+IC 95\% $[+0{,}053,+0{,}127]$), de modo que \textbf{supera el umbral
+pre-registrado y conserva su decisión}. Pero frente a \emph{sus propios proxies
+de volatilidad} no gana ($\Delta\mathrm{AUC}=-0{,}007$; IC 95\%
+$[-0{,}021,+0{,}006]$), y añadir la forma a la mejor medida de volatilidad no
+aporta nada ($\Delta\mathrm{AUC}=+0{,}006$; IC 95\% $[-0{,}024,+0{,}035]$).
+
+La conclusión es que el módulo funciona, pero \textbf{no por el motivo que se le
+atribuía}. Su capacidad no procede de la geometría del canal sino de contener una
+\emph{representación multi-medida de la volatilidad} —realizada, rango medio y
+dispersión \emph{detrended} en torno a la tendencia local— que resulta mejor
+predictor de la expansión que EWMA o GARCH(1,1) basados en una sola medida. El
+hallazgo conserva interés, pero pertenece a la \textbf{medición de volatilidad} y
+no al chartismo: la afirmación de que la compresión del canal anticipa la
+expansión de la volatilidad queda refutada.
+
 Las once aplicaciones se ejecutan bajo un \emph{harness} reproducible que registra
 por corrida un manifiesto con identificadores, configuración, semilla, comando,
 entorno, métricas, baseline y decisión, de acuerdo con la disciplina de

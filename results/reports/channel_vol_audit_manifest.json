@@ -1,0 +1,96 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "channel_vol_audit",
+  "title": "WP3 — auditoría de channel_vol_forecast contra vol realizada, EWMA y GARCH(1,1)",
+  "timestamp_utc": "2026-09-10T08:32:48Z",
+  "inputs": [],
+  "config": {
+    "cutoff": "2020-08-20"
+  },
+  "seed": 42,
+  "command": "python -",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+    "horizon": 10,
+    "vol_window": 20,
+    "n": 10163,
+    "n_train": 8646,
+    "n_test": 1517,
+    "base_rate_test": 0.795,
+    "auc_por_modelo": {
+      "geometria_publicada": 0.7159,
+      "forma_pura": 0.6084,
+      "vol_proxies_solo": 0.7233,
+      "rv_lagged": 0.6245,
+      "ewma_094": 0.5601,
+      "garch_11": 0.5662,
+      "vol_mejor_mas_forma": 0.6306
+    },
+    "mejor_baseline_vol": "rv_lagged",
+    "vol_proxies_dentro_de_geometria": [
+      "vol20",
+      "atr_norm",
+      "resid_norm",
+      "band_width"
+    ],
+    "features_forma_pura": [
+      "dir_asc",
+      "slope_norm",
+      "r2",
+      "last_ret",
+      "accel",
+      "n_turn",
+      "pos_in_channel"
+    ],
+    "contraste_preregistrado": {
+      "regla": "channel_vol_forecast mantiene accept solo si su AUC supera al mejor baseline de volatilidad con IC95 que excluya 0",
+      "delta_auc_publicado_vs_mejor_vol": {
+        "delta": 0.0909,
+        "ci_low": 0.0532,
+        "ci_high": 0.1273,
+        "p_gana": 1.0
+      },
+      "supera": true
+    },
+    "forma_pura_vs_mejor_vol": {
+      "delta": -0.0166,
+      "ci_low": -0.0587,
+      "ci_high": 0.0253,
+      "p_gana": 0.2213
+    },
+    "atribucion_publicado_vs_solo_vol_proxies": {
+      "delta": -0.0074,
+      "ci_low": -0.0214,
+      "ci_high": 0.0064,
+      "p_gana": 0.152
+    },
+    "geometria_aporta_sobre_su_propia_vol": false,
+    "lectura": "El criterio numérico pre-registrado se refiere a si el modelo publicado bate a los baselines de volatilidad de UNA sola medida. La atribución responde a otra pregunta: si el mérito es de la forma del canal o de las medidas de volatilidad que sus features ya contienen. Ambas respuestas deben reportarse juntas.",
+    "incremental_forma_sobre_vol": {
+      "delta": 0.0059,
+      "ci_low": -0.024,
+      "ci_high": 0.0354,
+      "p_gana": 0.6563
+    },
+    "garch_ajustado": true
+  },
+  "baseline": {
+    "fuertes": [
+      "rv_lagged",
+      "ewma_094",
+      "garch_11"
+    ],
+    "auc_mejor_vol": 0.6245,
+    "debil_previo": "tasa base (AUC 0.5) y geometría sin supervivencia"
+  },
+  "artifacts": [],
+  "decision": "review",
+  "notes": "[REVIEW] AUC: vol_proxies_solo 0.723 · geometria_publicada 0.716 · vol_mejor_mas_forma 0.631 · rv_lagged 0.625 · forma_pura 0.608 · garch_11 0.566 · ewma_094 0.560. Contraste pre-registrado — geometría publicada vs rv_lagged: ΔAUC=+0.0909 IC95=[+0.0532,+0.1273] -> SUPERA. Forma pura (sin los 4 proxies de vol) vs rv_lagged: ΔAUC=-0.0166 IC95=[-0.0587,+0.0253]. Incremental (vol+forma vs vol): ΔAUC=+0.0059 IC95=[-0.0240,+0.0354]. ATRIBUCIÓN — publicado vs SOLO sus 4 proxies de volatilidad (sin ninguna feature de forma): ΔAUC=-0.0074 IC95=[-0.0214,+0.0064] -> la forma NO aporta. Las features llamadas 'geometría' incluyen vol20, atr_norm, resid_norm y band_width, que son medidas de volatilidad. El mérito del modelo procede de esa representación multi-medida de la volatilidad —mejor que EWMA y GARCH(1,1) de una sola medida—, no de la forma del canal.",
+  "error": null,
+  "elapsed_seconds": 28.312
+}
