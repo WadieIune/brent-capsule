@@ -1,4 +1,8 @@
-# Plan de trabajo paralelo y competitivo — cierre del paper
+# Plan de trabajo en equipo — cierre del paper
+
+> **Modo actual: EQUIPO** (antes competición; cambiado el 2026-09-10). El canal
+> de comunicación entre agentes está en `/home/wadie/Escritorio/brent-coord/`.
+> Léelo antes de empezar: §4.1.
 
 > **Documento de coordinación entre dos agentes.** Redactado por el Agente A tras
 > auditar el repositorio en el commit `a7daf83`. Es **autocontenido**: no hace
@@ -98,24 +102,76 @@ mismos que hacerlo un revisor.
 
 ---
 
-## 4. Protocolo competitivo
+## 4. Protocolo de trabajo — **modo equipo**
 
-Competir solo suma si los resultados son comparables y el ganador no se elige
-*a posteriori*.
+> **Cambio de modo (2026-09-10, por decisión del usuario).** Se sustituye la
+> competición por **trabajo en equipo**. Motivo: competir sin canal de
+> comunicación obligaba a que el usuario hiciera de relé entre los dos agentes,
+> lo que era lento y duplicaba esfuerzo. Se conserva **todo el rigor** —el
+> pre-registro y los baselines fuertes— porque eso protege el resultado tanto en
+> equipo como en competición; lo que desaparece es la independencia y la
+> adjudicación por ganador.
 
-1. **Pre-registro obligatorio.** Hipótesis, métrica, baseline y umbral de éxito se
-   escriben en `docs/PREREGISTRO.md` **antes** de ejecutar nada. Elegir el ganador
-   después de ver los números es exactamente el sesgo de selección que el paper
-   denuncia con DSR/PBO: sin pre-registro, la competición invalida el trabajo en
-   lugar de reforzarlo.
-2. **Mismo dato, mismo split, mismo harness.** Corte `2020-08-20`, **días
-   hábiles**, `RunContext`/manifiesto ARF. Cualquier desviación se documenta en el
-   pre-registro.
-3. **Independencia.** Ningún agente consulta resultados intermedios del otro hasta
-   la adjudicación.
-4. **Adjudicación contra el pre-registro**, no contra la impresión. **Se publican
-   ambos tracks, gane quien gane**: un `reject` documentado vale tanto como un
-   `accept` y es coherente con el resto del proyecto (3 de 11 ya lo son).
+### 4.1 Canal de comunicación (obligatorio leerlo antes de trabajar)
+
+Los dos agentes trabajan en *worktrees* distintos del mismo repositorio:
+
+| Agente | Directorio | Rama |
+|---|---|---|
+| A | `/home/wadie/Escritorio/brent-capsule` | `track-a` |
+| B | `/tmp/brent-track-b-worktree` | `track-b` |
+
+Comparten el `.git` —y por tanto los commits— pero **no ven los ficheros del
+otro**, porque cada worktree tiene su propio árbol de trabajo. Por eso el canal
+vive **fuera de ambos**:
+
+```
+/home/wadie/Escritorio/brent-coord/
+├── README.md              reglas del canal
+├── TABLERO.md             estado de cada agente + decisiones abiertas
+├── bitacora/
+│   ├── agente-a.md        SOLO escribe A (append-only); B lee
+│   └── agente-b.md        SOLO escribe B (append-only); A lee
+└── hallazgos/             un fichero por hallazgo que afecte al otro
+```
+
+Regla que evita destrucción mutua: **cada agente escribe solo en su fichero** y
+añade al final; en `TABLERO.md` cada uno edita únicamente su bloque delimitado.
+
+Para leer el trabajo del otro sin hacer merge:
+`git show track-b:code/applications/experiments/<fichero>.py`
+
+Esta carpeta es un artefacto **de proceso**, no del entregable: no forma parte de
+la cápsula que verá la revista.
+
+### 4.2 Reglas que se mantienen
+
+1. **Pre-registro obligatorio.** Hipótesis, métrica, baseline y umbral se escriben
+   en `docs/PREREGISTRO.md` **antes** de ejecutar. En equipo sigue siendo
+   imprescindible: sin umbral previo, dos agentes de acuerdo se confirman
+   mutuamente un resultado que no aguanta —y eso es peor que competir.
+2. **Mismo dato, mismo split, mismo harness.** Corte `2020-08-20`, días hábiles,
+   manifiesto ARF. Las desviaciones se documentan en §4 del pre-registro.
+3. **Baseline fuerte y control de nivel** para todo resultado positivo (§3).
+4. **Se publica el signo real.** Un `reject` documentado vale tanto como un
+   `accept`: 3 de 11 ya lo son, más el `reject` de WP2-A y el `review` de WP3.
+
+### 4.3 Reglas que cambian
+
+| Antes (competición) | Ahora (equipo) |
+|---|---|
+| Independencia hasta la adjudicación | **Compartir hallazgos en cuanto aparecen**, por el canal |
+| Cada agente audita solo lo suyo | **Auditoría cruzada permitida y bienvenida** |
+| Gana un track, el otro es de apoyo | **Un solo objetivo**: el mejor resultado, venga de quien venga |
+| Adjudicación por umbral | **Integración conjunta**, con el umbral como criterio de qué se afirma |
+
+### 4.4 Rutina de sesión
+
+1. Leer `TABLERO.md`, la bitácora del otro y `hallazgos/` (30 segundos).
+2. Anunciar en el propio bloque del TABLERO qué se va a tocar, para no chocar.
+3. Trabajar en la rama propia; no tocar la zona del otro sin su OK escrito.
+4. Al cerrar: escribir en la propia bitácora **con números**, y subir un hallazgo
+   si afecta al otro.
 
 ---
 
@@ -178,10 +234,11 @@ Re-testar `channel_vol_forecast` contra EWMA, GARCH(1,1) y vol realizada.
 **Éxito:** sobrevive con margen, **o** se degrada a `review` con honestidad. Las
 dos salidas son válidas; ocultarlo no.
 
-### WP4 · Adjudicación e integración
+### WP4 · Integración conjunta
 **Dueño:** ambos, secuencial (nunca simultáneo en `docs/`)
 
-Contrastar resultados contra el pre-registro, elegir el titular, integrar en
+Contrastar todos los resultados contra sus umbrales pre-registrados, acordar el
+titular **en el canal** (no por adjudicación: por acuerdo razonado), integrar en
 LaTeX + HTML, actualizar `PROJECT_LEDGER.md`, commit y push.
 
 ---
