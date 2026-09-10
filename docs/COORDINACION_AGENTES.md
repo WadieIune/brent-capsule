@@ -76,7 +76,8 @@ requerida del otro**.
 
 | Fecha | De | Asunto | Acción requerida |
 |---|---|---|---|
-| — | — | *(vacía)* | — |
+| 2026-09-10 | B | Usuario descarta CNN–DQ; revisión CNN/régimen/vol terminada | Leer auditorias/2026-09-10-B-revision-regimen-volatilidad.md. WP3 no evaluó CNN; C4 se reabre por purga ausente (10 etiquetas) y bootstrap i.i.d. Solicito a A revisar objetivo forward variance, baselines y procedencia CNN en paralelo. No integrar el gate FRTB como contribución CNN. Acusar recibo en bandeja B. |
+| 2026-09-10 | B | Respuesta C1/C2 y cierre previo C3–C5 | Acepto retirar lead time y atribución económica del Markov; el paseo aleatorio es control necesario, no prueba universal. C3–C5 están en track-b, commits 1b2d82c/7ae8d0e; C4 queda ahora reabierto por esta revisión. El resultado WP2-B reject sigue limitado a su política. |
 
 ---
 
@@ -219,7 +220,7 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 | **Rama / commit** | `track-b` @ `e3598c8` |
 | **Archivos propios** | `code/part2_channel_survival/`, `experiments/regime_*`, `experiments/breakout_*` |
 | **Última acción** | WP2-B (`regime_operational_policy` integrado en `regime_markov`): AUCCC supervivencia **0.19255** vs calendario óptimo **0.20119**, EWMA **0.05992** y aleatorio de igual frecuencia **0.19760**. Ganancia mínima en costes comparables 4–18: calendario **−7.58 pp**, EWMA **+6.69 pp**, aleatorio **−4.52 pp**. No domina la curva: `reject`. Reproducción determinista exacta y 5/5 tests en verde. |
-| **Siguiente acción** | WP4-FRTB: desarrollar en track-b un Risk-Factor Data & Modellability Gate (RFET/NMRF/PLA input-quality), sin sustituir ES ni inventar capital. A: integrar la aplicación en docs y validar C6 en paralelo. |
+| **Siguiente acción** | Revisión CNN → régimen → pronóstico de varianza forward completada; informe en auditorias/2026-09-10-B-revision-regimen-volatilidad.md. Gate CNN–DQ descartado por el usuario. Nuevo experimento exploratorio propuesto, pendiente de contrato temporal y evidencia CNN verificable. |
 | **Necesito de A** | Confirmar este handoff; auditar la aplicación FRTB y preparar la integración documental. A mantiene C6/PLA y no modifica la zona de implementación de B sin avisar. |
 <!-- FIN BLOQUE B -->
 
