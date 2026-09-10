@@ -420,6 +420,61 @@
     <div class="card"><span class="tag">Lo que no ve el baseline</b></span><h3>1.145 marcas stale</h3><p>88.6% en fin de semana. Un retorno cero <b>nunca</b> es outlier de cola, así que el control convencional no puede verlo por construcción.</p></div>
   </div>
 
+  <div class="callout" style="border-left-color:#B23A3A;background:#fbeaea">
+    <b>Atribución honesta: aquí NO interviene la CNN.</b> El control de calidad de dato usa una
+    <b>regresión lineal móvil</b> de 32 sesiones con bandas de residuo, un ATR y una regla de rachas.
+    Verificado ejecutando la traza de importaciones: la ruta completa de calidad de dato no carga
+    <i>ningún</i> módulo de deep learning. La red convolucional pertenece a la 1ª pata, donde se
+    demostró que reconoce la geometría con AUC 0.97 y que eso <b>no es monetizable</b>.
+  </div>
+
+  <h3 style="margin:1.4rem 0 .5rem">¿Y frente a una librería estándar de calidad de dato?</h3>
+  <p class="lead">La comparación pertinente no es contra la CNN sino contra lo que ya usa cualquier
+  equipo: repetidos, rachas de repetidos, 3 desviaciones sobre retornos, no positivos. Sobre la
+  inyección sintética con verdad conocida (5 familias × 3 tasas × 10 semillas):</p>
+
+  <table>
+    <tr><th>Familia de defecto</th><th class="num">Geométrico</th><th class="num">Convencional</th><th class="num">Dif.</th></tr>
+    <tr><td>Relleno / precio congelado</td><td class="num">0.945</td><td class="num">0.879</td><td class="num">+0.066</td></tr>
+    <tr><td><b>Salto reversible</b> <span class="muted">(fat finger)</span></td><td class="num good">0.634</td><td class="num">0.022</td><td class="num good">+0.612</td></tr>
+    <tr><td>Salto persistente de nivel</td><td class="num">0.079</td><td class="num">0.022</td><td class="num">+0.057</td></tr>
+    <tr><td>Precio no positivo</td><td class="num">1.000</td><td class="num">0.972</td><td class="num">+0.028</td></tr>
+    <tr><td><b>Desfase de calendario</b></td><td class="num">0.018</td><td class="num bad">0.321</td><td class="num bad">−0.303</td></tr>
+    <tr><td><b>Media</b></td><td class="num">0.535</td><td class="num">0.443</td><td class="num">+0.092</td></tr>
+  </table>
+
+  <div class="callout"><b>Lectura sin adornos.</b> En <b>repetidos y no positivos hay empate</b>: para
+  eso basta un <code>diff()==0</code> y un <code>close&lt;=0</code>. En <b>desfase de calendario gana
+  la librería convencional</b>. En salto persistente <b>fallan las dos</b>. La única ventaja
+  sustancial es el <b>salto reversible</b>, porque un 3σ global sufre <i>enmascaramiento</i> —los
+  propios saltos inflan la desviación— y marca dos días por un defecto, mientras la regla geométrica
+  usa la firma «salta y vuelve». Frente a estadística robusta la ventaja se estrecha aún más
+  (0.945 vs 0.823 del detector de rachas; 0.518 vs 0.367 de Hampel).<br><br>
+  <b>Lo que sí queda en pie</b> y no depende del detector: los controles de <b>cola</b> (Hampel,
+  Tukey, isolation forest) tienen recall <b>exactamente 0.00</b> en precio congelado y no positivo.
+  Un retorno nulo nunca es atípico de cola: la ceguera es <b>de construcción, no de calibración</b>.</div>
+
+  <h3 style="margin:1.6rem 0 .5rem">La aplicación práctica: eso cuesta capital</h3>
+  <p class="lead">La contribución no es un detector nuevo, sino <b>cuantificar en capital regulatorio
+  y en observabilidad</b> la consecuencia de ese punto ciego. Mismo VaR, misma cartera, misma
+  ventana; lo único que cambia es si el dato se depura:</p>
+
+  <table>
+    <tr><th></th><th class="num">Sin depurar</th><th class="num">Depurado</th><th class="num">Variación</th></tr>
+    <tr><td>VaR medio (99%, histórico)</td><td class="num">3.562%</td><td class="num">4.114%</td><td class="num">+15.5%</td></tr>
+    <tr><td><b>Capital k·VaR</b></td><td class="num">10.69%</td><td class="num">12.34%</td><td class="num bad">+15.5%</td></tr>
+  </table>
+
+  <div class="cards">
+    <div class="card"><span class="tag">Capital · Basilea</span><h3 class="bad">−13.4%</h3><p>Consumir el panel <b>tal cual se recibe subestima el capital</b> por riesgo de mercado en ese porcentaje.</p></div>
+    <div class="card"><span class="tag">FRTB · RFET (MAR31.12)</span><h3>×1.46</h3><p>Observabilidad declarada <b>inflada</b>: en la peor ventana de 90 días el Brent declara <b>90 obs cuando solo 52 son reales</b>; rachas de hasta 16 sesiones congeladas.</p></div>
+    <div class="card"><span class="tag">Alcance honesto</span><h3>Potencial, no efectivo</h3><p>En esta cartera líquida <b>ningún factor</b> deja de ser modelizable. El mecanismo queda demostrado; muerde donde el RFET es vinculante (factores cerca del umbral → IMA en vez de SES).</p></div>
+  </div>
+
+  <p class="muted" style="margin-top:.6rem"><b>Análisis confirmatorio, no pre-registrado</b>: el
+  efecto sobre el capital se observó al corregir los defectos de datos, y así se declara en el
+  preflight del propio experimento.</p>
+
   <h3 style="margin:1.4rem 0 .5rem">Régimen interpretable — la antesala de los modelos de vol</h3>
   <div class="cards">
     <div class="card"><span class="tag">regime_markov · accept</span><h3>+0.61 log-verosim.</h3><p>Cadena de Markov de 4 estados (asc/desc × borde/centro) frente a i.i.d.; permanencia 3.2–3.7 sesiones. Hazard heterogéneo por edad (p=0.020) → conviene semi-Markov.</p></div>

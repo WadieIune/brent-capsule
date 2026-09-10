@@ -779,17 +779,111 @@ anticipa la dirección (primera pata), ni el beneficio (segunda), ni la cola
 \subsection{Dónde sí aporta valor la geometría}
 El mismo conjunto de experimentos identifica dos ámbitos con mejora medible.
 
-\paragraph{Calidad de dato.} El control geométrico detecta defectos que un
-control convencional de cola \emph{no puede ver}, y su valor se expresa en
-unidades de riesgo en lugar de en recuento de alertas. Los dos defectos reales
-del panel —el precio negativo del WTI y el relleno de calendario, con 1.145
-marcas \emph{stale} de las que el 88{,}6\% caen en fin de semana— pasan
-inadvertidos para el detector convencional, porque un retorno nulo nunca es un
-valor atípico de cola. Depurarlos corrige \textbf{74{,}4 puntos porcentuales} de
-distorsión en la contribución al riesgo (la del WTI baja de $0{,}985$ a
-$0{,}240$) y elimina el 31{,}1\% de retornos nulos. El monitor diario emite 459
-alertas sobre 28.086 observaciones (1{,}63\% de carga operativa) frente a las 30
-del control convencional.
+\paragraph{Calidad de dato: qué aporta exactamente, y qué no.}
+\label{par:dq}
+Conviene ser preciso con la atribución, porque es donde un revisor mirará
+primero. El control de calidad de dato de este trabajo \textbf{no utiliza la red
+convolucional}: se apoya en una regresión lineal móvil sobre ventanas de 32
+sesiones con bandas de residuo, un ATR y una regla de rachas. La verificación es
+inmediata —la ruta completa de calidad de dato no carga ningún módulo de
+\emph{deep learning}— y se explicita aquí para que la contribución no se lea como
+lo que no es. La red convolucional pertenece a la primera pata, donde se demostró
+que reconoce la geometría con AUC 0.97 y que \emph{eso no es monetizable}.
+
+La comparación pertinente es, por tanto, con una biblioteca convencional de
+calidad de dato: valores repetidos, rachas de repetidos, umbral de tres
+desviaciones sobre los retornos y control de precios no positivos. Sobre la
+inyección sintética con verdad conocida (Tabla~\ref{tab:dqvsestandar}) el
+resultado es matizado, y conviene enunciarlo sin adornos.
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Control geométrico frente a una biblioteca convencional de calidad de
+dato. AUC-PR medio sobre 5 familias $\times$ 3 tasas de corrupción $\times$ 10
+semillas, con verdad de referencia conocida.}
+\label{tab:dqvsestandar}
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Familia de defecto} & \textbf{Geométrico} & \textbf{Convencional} & \textbf{Dif.} \\
+\midrule
+Relleno / precio congelado & 0.945 & 0.879 & $+0.066$ \\
+Salto reversible (\emph{fat finger}) & \textbf{0.634} & 0.022 & $\mathbf{+0.612}$ \\
+Salto persistente de nivel & 0.079 & 0.022 & $+0.057$ \\
+Precio no positivo & 1.000 & 0.972 & $+0.028$ \\
+Desfase de calendario & 0.018 & \textbf{0.321} & $\mathbf{-0.303}$ \\
+\midrule
+Media & 0.535 & 0.443 & $+0.092$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+En repetidos y precios no positivos el empate es sustancial: para eso bastan una
+comparación de igualdad y un control de signo, sin geometría alguna. En el
+desfase de calendario \textbf{gana} el control convencional. En el salto
+persistente fallan ambos. La única ventaja sustancial del control geométrico está
+en el \textbf{salto reversible}, y por un motivo identificable: un umbral de tres
+desviaciones global sufre \emph{enmascaramiento} —los propios saltos inflan la
+desviación típica hasta que dejan de superar el umbral— y además marca dos días,
+el salto y su reversión, por un único defecto; la regla geométrica utiliza la
+firma «salta y vuelve», que sí es información de forma. Frente a estadística
+robusta la ventaja se estrecha todavía más: 0.945 contra 0.823 de un detector de
+rachas en el relleno, y 0.518 contra 0.367 de Hampel/MAD en el salto reversible.
+
+Lo que sí queda establecido, y no depende de qué detector se emplee, es la
+\textbf{ceguera estructural} de los controles basados en la cola de la
+distribución: Hampel, Tukey e \emph{isolation forest} obtienen un recall de
+exactamente \textbf{0.00} sobre el precio congelado y el precio no positivo,
+porque un retorno nulo nunca es un valor atípico de cola. No es un problema de
+calibración sino de construcción, y muchos controles desplegados en producción
+son de ese tipo.
+
+Los dos defectos reales del panel —el precio negativo del WTI y el relleno de
+calendario, con 1.145 marcas \emph{stale} de las que el 88{,}6\% caen en fin de
+semana— caen justo en ese punto ciego. Depurarlos corrige \textbf{74{,}4 puntos
+porcentuales} de distorsión en la contribución al riesgo (la del WTI baja de
+$0{,}985$ a $0{,}240$) y elimina el 31{,}1\% de retornos nulos.
+
+\paragraph{La consecuencia en capital.}
+\label{par:capital}
+La contribución práctica de este trabajo no es un detector nuevo, sino
+\textbf{cuantificar en capital regulatorio y en observabilidad la consecuencia de
+ese punto ciego}. Calculando el VaR y el capital de la cartera por dos vías
+idénticas salvo en la depuración del dato:
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Impacto de la calidad del dato sobre el capital por riesgo de mercado.}
+\label{tab:dqcapital}
+\begin{tabular}{lrrr}
+\toprule
+& \textbf{Sin depurar} & \textbf{Depurado} & \textbf{Variación} \\
+\midrule
+VaR medio (99\%, histórico) & 3.562\% & 4.114\% & $+15{,}5\%$ \\
+Capital $k\cdot\mathrm{VaR}$ & 10.69\% & 12.34\% & $+15{,}5\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Es decir, \textbf{consumir el panel tal y como se recibe subestima el capital por
+riesgo de mercado en un 13{,}4\%}. Por la vía de FRTB el efecto es análogo: bajo
+el \emph{Risk Factor Eligibility Test} (MAR31.12) un factor es modelizable si
+acumula al menos 24 observaciones anuales sin huecos de 90 días con menos de
+cuatro, y un precio arrastrado por \emph{forward-fill} no es una observación
+aunque el recuento ingenuo lo cuente como tal. La observabilidad declarada
+resulta estar \textbf{inflada en un factor de 1{,}46} de media: en la peor
+ventana de 90 días el Brent declara 90 observaciones cuando solo 52 son reales, y
+se registran rachas de hasta 16 sesiones con el precio congelado. En esta cartera
+—seis materias primas líquidas— ningún factor deja de ser modelizable, de modo
+que el efecto es potencial y no efectivo; pero el mecanismo queda demostrado y es
+exactamente donde el RFET resulta vinculante, porque un factor próximo al umbral
+pasaría por modelizable sin serlo y su capital se calcularía por IMA en lugar de
+por SES.
+
+Este análisis es \textbf{confirmatorio y no pre-registrado}: el efecto sobre el
+capital se observó al corregir los defectos de datos descritos en la
+Sección~\ref{sec:defectos}, y se declara como tal.
 
 \paragraph{Descripción interpretable del régimen.} Una cadena de Markov de cuatro
 estados (ascendente/descendente $\times$ borde/centro) supera al modelo i.i.d. en
