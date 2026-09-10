@@ -7,34 +7,32 @@ from .portfolio_var_alert import PortfolioVaRAlertExperiment
 from .frtb_applications import FRTBApplicationsExperiment
 from .frtb_capital import FRTBCapitalExperiment
 from .dq_impact import DQImpactExperiment
+from .dq_daily_monitor import DQDailyMonitorExperiment
+from .dq_synthetic_validation import DQSyntheticValidationExperiment
+from .dq_capital_impact import DQCapitalImpactExperiment
 from .breakout_detection import BreakoutDetectionExperiment
 from .regime_markov import RegimeMarkovExperiment
-from .dq_daily_monitor import DQDailyMonitorExperiment
-<<<<<<< Updated upstream
-=======
-from .dq_synthetic_validation import DQSyntheticValidationExperiment
 from .channel_vol_audit import ChannelVolAuditExperiment
-from .dq_capital_impact import DQCapitalImpactExperiment
->>>>>>> Stashed changes
 
 ALL_EXPERIMENTS = [
+    # A · calidad de dato
     DQPriceControlExperiment,
+    DQImpactExperiment,
+    DQDailyMonitorExperiment,
+    DQSyntheticValidationExperiment,
+    DQCapitalImpactExperiment,
+    # B · régimen y ruptura
     ChannelVolForecastExperiment,
+    BreakoutDetectionExperiment,
+    RegimeMarkovExperiment,
+    # C · VaR y capital
     PredictedVaRExperiment,
     PortfolioVaRExperiment,
     PortfolioVaRAlertExperiment,
-    FRTBApplicationsExperiment,
     FRTBCapitalExperiment,
-    DQImpactExperiment,
-    BreakoutDetectionExperiment,
-    RegimeMarkovExperiment,
-    DQDailyMonitorExperiment,
-<<<<<<< Updated upstream
-=======
-    DQSyntheticValidationExperiment,
+    # D · FRTB (proxies) y auditorías
+    FRTBApplicationsExperiment,
     ChannelVolAuditExperiment,
-    DQCapitalImpactExperiment,
->>>>>>> Stashed changes
 ]
 
 __all__ = [c.__name__ for c in ALL_EXPERIMENTS] + ["ALL_EXPERIMENTS"]

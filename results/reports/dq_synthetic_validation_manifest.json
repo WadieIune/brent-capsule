@@ -1,0 +1,321 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "dq_synthetic_validation",
+  "title": "Track A — control geométrico validado con inyección sintética (verdad conocida)",
+  "timestamp_utc": "2026-09-09T21:48:09Z",
+  "inputs": [],
+  "config": {},
+  "seed": 42,
+  "command": "python -",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "diseno": {
+      "rates": [
+        0.005,
+        0.01,
+        0.02
+      ],
+      "n_seeds": 10,
+      "n_obs_serie": 4000,
+      "familias": [
+        "stale_fill",
+        "salto_reversible",
+        "outlier_de_cola",
+        "precio_no_positivo",
+        "desfase_calendario"
+      ],
+      "umbral_operativo_q": 0.99,
+      "config_geometrica": {
+        "lookback": 32,
+        "k_sigma": 5.0,
+        "tol_atr": 1.0
+      },
+      "hiperparametros_optimizados": false
+    },
+    "por_familia": {
+      "stale_fill": {
+        "geometrico": {
+          "auc_pr": 0.9453,
+          "recall": 0.7594,
+          "precision": 0.8125
+        },
+        "mejor_baseline": "run_detector",
+        "baselines": {
+          "hampel_mad": {
+            "auc_pr": 0.0069,
+            "recall": 0.0,
+            "precision": 0.0
+          },
+          "iforest": {
+            "auc_pr": 0.0172,
+            "recall": 0.0,
+            "precision": 0.0
+          },
+          "run_detector": {
+            "auc_pr": 0.8229,
+            "recall": 0.6922,
+            "precision": 0.7125
+          },
+          "tukey": {
+            "auc_pr": 0.0126,
+            "recall": 0.0,
+            "precision": 0.0
+          }
+        },
+        "control_aleatorio": {
+          "auc_pr": 0.0138,
+          "recall": 0.0092,
+          "precision": 0.015
+        }
+      },
+      "salto_reversible": {
+        "geometrico": {
+          "auc_pr": 0.5185,
+          "recall": 0.5683,
+          "precision": 0.555
+        },
+        "mejor_baseline": "hampel_mad",
+        "baselines": {
+          "hampel_mad": {
+            "auc_pr": 0.3674,
+            "recall": 0.4146,
+            "precision": 0.3933
+          },
+          "iforest": {
+            "auc_pr": 0.1645,
+            "recall": 0.1842,
+            "precision": 0.185
+          },
+          "run_detector": {
+            "auc_pr": 0.0117,
+            "recall": 0.0108,
+            "precision": 0.0125
+          },
+          "tukey": {
+            "auc_pr": 0.2048,
+            "recall": 0.26,
+            "precision": 0.255
+          }
+        },
+        "control_aleatorio": {
+          "auc_pr": 0.0143,
+          "recall": 0.0158,
+          "precision": 0.0167
+        }
+      },
+      "outlier_de_cola": {
+        "geometrico": {
+          "auc_pr": 0.0869,
+          "recall": 0.1387,
+          "precision": 0.1375
+        },
+        "mejor_baseline": "hampel_mad",
+        "baselines": {
+          "hampel_mad": {
+            "auc_pr": 0.498,
+            "recall": 0.4983,
+            "precision": 0.4875
+          },
+          "iforest": {
+            "auc_pr": 0.1731,
+            "recall": 0.2183,
+            "precision": 0.215
+          },
+          "run_detector": {
+            "auc_pr": 0.0117,
+            "recall": 0.0108,
+            "precision": 0.0125
+          },
+          "tukey": {
+            "auc_pr": 0.2127,
+            "recall": 0.2642,
+            "precision": 0.2592
+          }
+        },
+        "control_aleatorio": {
+          "auc_pr": 0.0143,
+          "recall": 0.0158,
+          "precision": 0.0167
+        }
+      },
+      "precio_no_positivo": {
+        "geometrico": {
+          "auc_pr": 1.0,
+          "recall": 0.8333,
+          "precision": 0.8333
+        },
+        "mejor_baseline": "run_detector",
+        "baselines": {
+          "hampel_mad": {
+            "auc_pr": 0.0063,
+            "recall": 0.0,
+            "precision": 0.0
+          },
+          "iforest": {
+            "auc_pr": 0.0111,
+            "recall": 0.0,
+            "precision": 0.0
+          },
+          "run_detector": {
+            "auc_pr": 0.0192,
+            "recall": 0.0171,
+            "precision": 0.0225
+          },
+          "tukey": {
+            "auc_pr": 0.0113,
+            "recall": 0.0,
+            "precision": 0.0
+          }
+        },
+        "control_aleatorio": {
+          "auc_pr": 0.0143,
+          "recall": 0.0158,
+          "precision": 0.0167
+        }
+      },
+      "desfase_calendario": {
+        "geometrico": {
+          "auc_pr": 0.0183,
+          "recall": 0.0054,
+          "precision": 0.01
+        },
+        "mejor_baseline": "run_detector",
+        "baselines": {
+          "hampel_mad": {
+            "auc_pr": 0.0171,
+            "recall": 0.0066,
+            "precision": 0.0142
+          },
+          "iforest": {
+            "auc_pr": 0.0215,
+            "recall": 0.0143,
+            "precision": 0.0208
+          },
+          "run_detector": {
+            "auc_pr": 0.3673,
+            "recall": 0.342,
+            "precision": 0.5883
+          },
+          "tukey": {
+            "auc_pr": 0.0211,
+            "recall": 0.014,
+            "precision": 0.0233
+          }
+        },
+        "control_aleatorio": {
+          "auc_pr": 0.0181,
+          "recall": 0.0108,
+          "precision": 0.0233
+        }
+      }
+    },
+    "bootstrap_delta_auc_pr": {
+      "stale_fill": {
+        "delta": 0.0917,
+        "ci_low": -0.0176,
+        "ci_high": 0.2188,
+        "vs": "run_detector"
+      },
+      "salto_reversible": {
+        "delta": 0.1977,
+        "ci_low": 0.0445,
+        "ci_high": 0.3554,
+        "vs": "hampel_mad"
+      },
+      "outlier_de_cola": {
+        "delta": -0.5074,
+        "ci_low": -0.6349,
+        "ci_high": -0.3703,
+        "vs": "hampel_mad"
+      },
+      "precio_no_positivo": {
+        "delta": 0.99,
+        "ci_low": 0.99,
+        "ci_high": 0.99,
+        "vs": "run_detector"
+      },
+      "desfase_calendario": {
+        "delta": -0.2962,
+        "ci_low": -0.4059,
+        "ci_high": -0.1889,
+        "vs": "run_detector"
+      }
+    },
+    "criterio_1_familias_ciegas": {
+      "detalle": {
+        "stale_fill": {
+          "recall_geometrico": 0.7594,
+          "recall_mejor_baseline": 0.6922,
+          "baseline_recall_por_detector": {
+            "hampel_mad": 0.0,
+            "iforest": 0.0,
+            "run_detector": 0.6922,
+            "tukey": 0.0
+          },
+          "cumple": false
+        },
+        "precio_no_positivo": {
+          "recall_geometrico": 0.8333,
+          "recall_mejor_baseline": 0.0171,
+          "baseline_recall_por_detector": {
+            "hampel_mad": 0.0,
+            "iforest": 0.0,
+            "run_detector": 0.0171,
+            "tukey": 0.0
+          },
+          "cumple": true
+        }
+      },
+      "cumple": false,
+      "regla": "recall geométrico >= 0.70 y recall del mejor baseline < 0.10"
+    },
+    "criterio_2_familias_comunes": {
+      "detalle": {
+        "salto_reversible": {
+          "delta_auc_pr": 0.1977,
+          "ci_low": 0.0445,
+          "ci_high": 0.3554,
+          "vs": "hampel_mad",
+          "cumple": true
+        },
+        "outlier_de_cola": {
+          "delta_auc_pr": -0.5074,
+          "ci_low": -0.6349,
+          "ci_high": -0.3703,
+          "vs": "hampel_mad",
+          "cumple": false
+        },
+        "desfase_calendario": {
+          "delta_auc_pr": -0.2962,
+          "ci_low": -0.4059,
+          "ci_high": -0.1889,
+          "vs": "run_detector",
+          "cumple": false
+        }
+      },
+      "cumple": false,
+      "regla": "IC95 inferior de ΔAUC-PR >= -0.05 (no ser materialmente peor)"
+    }
+  },
+  "baseline": {
+    "fuertes": [
+      "hampel_mad",
+      "tukey",
+      "iforest",
+      "run_detector"
+    ],
+    "control_de_nivel": "detector aleatorio de igual volumen de alertas",
+    "debil_previo": "cuantil de |retorno| (usado en dq_price_control)"
+  },
+  "artifacts": [
+    "outputs/dq_synthetic_validation/synthetic_runs.csv"
+  ],
+  "decision": "reject",
+  "notes": "[REJECT] stale_fill: AUC-PR geom 0.945 vs run_detector 0.823 · salto_reversible: AUC-PR geom 0.518 vs hampel_mad 0.367 · outlier_de_cola: AUC-PR geom 0.087 vs hampel_mad 0.498 · precio_no_positivo: AUC-PR geom 1.000 vs run_detector 0.019 · desfase_calendario: AUC-PR geom 0.018 vs run_detector 0.367. Criterio 1 (familias ciegas, pre-registrado) NO CUMPLE — stale_fill: geom 0.76 vs baseline 0.69; precio_no_positivo: geom 0.83 vs baseline 0.02. Criterio 2 (familias comunes) NO CUMPLE. Veredicto emitido contra los umbrales congelados en docs/PREREGISTRO.md, sin optimizar hiperparámetros del control geométrico.",
+  "error": null,
+  "elapsed_seconds": 87.053
+}
