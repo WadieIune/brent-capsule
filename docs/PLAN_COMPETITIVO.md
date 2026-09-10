@@ -140,12 +140,24 @@ un fichero por hallazgo, referenciados desde la tabla del canal.
 4. **Se publica el signo real.** Un `reject` documentado vale tanto como un
    `accept`: 3 de 11 ya lo son, más el `reject` de WP2-A y el `review` de WP3.
 
+### 4.2-bis Auditoría cruzada obligatoria
+
+**Ningún agente cierra su propio resultado.** Todo lo que produce uno lo desafía
+el otro, con la checklist de 10 puntos y los cuatro estados
+(🟡 provisional → ✅ confirmado / 🟠 degradado / ❌ refutado). El procedimiento
+completo, el registro de challenges abiertos y la plantilla están en
+[`COORDINACION_AGENTES.md`](COORDINACION_AGENTES.md) y `docs/auditorias/`.
+
+Un resultado en estado 🟡 **no puede figurar como afirmación en el paper**. Los
+negativos también se desafían: un `reject` mal medido puede estar descartando
+algo que sí funciona.
+
 ### 4.3 Reglas que cambian
 
 | Antes (competición) | Ahora (equipo) |
 |---|---|
 | Independencia hasta la adjudicación | **Compartir hallazgos en cuanto aparecen**, por el canal |
-| Cada agente audita solo lo suyo | **Auditoría cruzada permitida y bienvenida** |
+| Cada agente audita solo lo suyo | **Auditoría cruzada OBLIGATORIA**: lo que hace uno lo desafía el otro (§4.2-bis) |
 | Gana un track, el otro es de apoyo | **Un solo objetivo**: el mejor resultado, venga de quien venga |
 | Adjudicación por umbral | **Integración conjunta**, con el umbral como criterio de qué se afirma |
 

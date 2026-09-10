@@ -43,11 +43,79 @@ escriban a la vez.
 
 ---
 
+## Auditoría cruzada (*challenge*) — procedimiento obligatorio
+
+> **Regla fundamental: ningún agente cierra su propio resultado.** Lo que produce
+> A lo desafía B, y viceversa. Un resultado sin *challenge* superado es
+> **provisional** y no puede figurar como afirmación en el paper.
+
+No es burocracia: es lo único que ha funcionado. Las dos afirmaciones falsas del
+proyecto —el *overlay* del VaR y la atribución de la volatilidad— no las detectó
+el autor del experimento, sino una revisión posterior con otro criterio.
+Institucionalizarlo convierte ese acierto en un proceso repetible.
+
+### Estados de un resultado
+
+| Estado | Significado |
+|---|---|
+| 🟡 `provisional` | Publicado por su autor, **pendiente de challenge**. No se cita como afirmación firme. |
+| ✅ `confirmado` | El challenge no lo tumbó. Puede ir al paper. |
+| 🟠 `degradado` | Sobrevive con alcance **más estrecho** del reclamado. Se reescribe la afirmación. |
+| ❌ `refutado` | El challenge lo tumbó. Se publica como negativo, con el motivo. |
+
+### Flujo
+
+1. **A produce** un resultado → lo marca 🟡 `provisional` en su bloque y lo anota
+   en el registro de abajo.
+2. **B desafía**: intenta **romperlo**, no confirmarlo. Recorre la checklist entera.
+3. **B escribe el veredicto** en `docs/auditorias/AAAA-MM-DD-<agente>-challenge-<tema>.md`,
+   con evidencia numérica, y actualiza el registro.
+4. **A responde**: corrige, acepta la degradación, o discrepa por escrito.
+5. Si el **desacuerdo persiste**, se escala al usuario con **ambas posiciones
+   escritas y sus números**, nunca con opiniones.
+
+Y al revés, igual. Un challenge que solo busca confirmar no cuenta como challenge.
+
+### Checklist del challenge
+
+Cada punto viene de un fallo **real** de este proyecto:
+
+| # | Pregunta | De dónde viene la lección |
+|---|---|---|
+| 1 | ¿El **baseline** es fuerte o de conveniencia? | El VaR se comparó con el histórico en vez de con FHS-EWMA |
+| 2 | ¿Hay **control de nivel**? (constante o aleatorio de igual volumen/media) | Al *overlay* del VaR lo igualaba una constante del mismo VaR medio |
+| 3 | ¿Las ***features* contienen lo que se predice**? | 4 de las 11 "de geometría" eran volatilidad (WP3) |
+| 4 | ¿El modelo bate a **sus propios componentes**? | El modelo de vol no batía a sus proxies aislados |
+| 5 | ¿Hay **fuga temporal**? ¿Censura administrativa donde toca? | Episodios que rompían tras el corte entrenaban con su futuro |
+| 6 | ¿Algún **caso degenerado** produce una métrica espuria? | Score constante → recall 1.0 sin detectar nada (WP2-A) |
+| 7 | ¿La **verdad de referencia** está bien planteada? | Mi inyección de desfase marcaba posiciones no detectables |
+| 8 | ¿Un **método simple y especializado** lo iguala? | El detector de rachas alcanzó recall 0.69 en *stale* |
+| 9 | ¿El **dato** está limpio? (no positivos, *ffill*, calendario vs hábiles) | WTI −37.63 daba a ese activo el 98.4 % del riesgo de cartera |
+| 10 | ¿Se **exploraron configuraciones** sin declararlo? ¿Procede deflactar? | DSR/PBO: es la tesis metodológica del propio paper |
+
+### Registro de challenges
+
+| # | Resultado | Autor | Estado | Desafía | Veredicto |
+|---|---|---|---|---|---|
+| C1 | `breakout_detection` — solo la distancia al borde anticipa la ruptura (AUC 0.677) | B | 🟡 provisional | **A** | pendiente |
+| C2 | `regime_markov` — Markov bate a i.i.d. (+0.61 log-verosim./obs) | B | 🟡 provisional | **A** | pendiente |
+| C3 | `dq_synthetic_validation` (WP2-A) — `reject` contra su propio umbral | A | 🟡 provisional | **B** | pendiente |
+| C4 | `channel_vol_audit` (WP3) — la atribución de la volatilidad era falsa | A | 🟡 provisional | **B** | pendiente |
+| C5 | `dq_impact` — 74.4 pp de distorsión corregida | A (heredado) | 🟡 provisional | **B** | pendiente |
+| C6 | `frtb_capital` — −57.1 % de capital (parcial) | B | 🟡 provisional | **A** | pendiente |
+
+**Sobre C3 y C4:** un `reject` y un `review` también se desafían. Un resultado
+negativo mal medido es tan dañino como un positivo falso: puede estar descartando
+algo que sí funciona.
+
+---
+
 ## Objetivo actual
 
 **Producir el resultado de WP4: cerrar el paper con un titular positivo, real y
 defendible**, o concluir de forma razonada que no lo hay y cerrar con el
-reencuadre negativo (que también es publicable).
+reencuadre negativo (que también es publicable). **Ningún resultado llega al
+paper sin haber pasado su challenge.**
 
 Restricción vigente: ningún resultado se promueve a titular sin **baseline
 fuerte** y **control de nivel**. Dos afirmaciones ya han caído por incumplirla
@@ -83,8 +151,8 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 | **Rama / commit** | `track-a` @ `b939fce` (subido) |
 | **Archivos propios** | `code/applications/experiments/dq_*`, `channel_vol_audit.py`, `docs/` (por acuerdo en WP4) |
 | **Última acción** | WP3: auditoría de `channel_vol_forecast` → `review`. El módulo mantiene su `accept` (supera el umbral pre-registrado frente a vol realizada, ΔAUC +0.091 IC95 [+0.053,+0.127]) pero **la atribución era falsa**: frente a sus propios proxies de volatilidad no gana (Δ −0.007, IC incluye 0). |
-| **Siguiente acción** | A la espera de acuerdo con B sobre el reparto. Ofrezco: (a) auditoría cruzada de `regime_markov` y `breakout_detection`, (b) convertir el `reject` de WP2-A en un positivo acotado, (c) integración WP4. |
-| **Necesito de B** | Que confirme si quiere que audite sus dos módulos o prefiere auditarlos él. No entro en su zona sin OK escrito. |
+| **Siguiente acción** | **Challenge C1 y C2** (`breakout_detection` y `regime_markov`), por el procedimiento de auditoría cruzada. Empiezo en cuanto B lo vea escrito aquí. |
+| **Necesito de B** | Que desafíe C3, C4 y C5 (míos) e intente romperlos: son mi track y no puedo cerrarlos yo. Prioridad: **C5** (`dq_impact`), porque es el candidato a titular por el lado de calidad de dato. |
 
 **Resultados con números** (reproducibles desde `results/reports/`):
 
@@ -129,6 +197,7 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 
 | Zona | Propietario | Notas |
 |---|---|---|
+| *(cualquier zona, para **auditar**)* | **Ambos** | El challenge autoriza **leer y ejecutar** el código del otro y crear ficheros nuevos en `docs/auditorias/`. **No** autoriza modificar su código: los fallos se reportan, los corrige su autor. |
 | `code/applications/experiments/dq_*`, `channel_vol_audit.py` | **A** | |
 | `code/part2_channel_survival/`, `experiments/regime_*`, `experiments/breakout_*` | **B** | |
 | `code/applications/experiments/` (resto: `predicted_var`, `portfolio_var*`, `frtb_*`, `channel_vol_forecast`) | **Compartida** | Avisar en el bloque propio antes de tocar |
@@ -142,8 +211,8 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 
 Orden concreto de merge y validación para WP4:
 
-1. **Auditoría cruzada** de `regime_markov` y `breakout_detection` (decide B quién la hace) → cierra las decisiones #9 y #10.
-2. **Acuerdo sobre el titular** escrito en este fichero, con el umbral pre-registrado como criterio.
+1. **Cerrar los 6 challenges** del registro (C1–C6). Ninguna afirmación entra en el paper en estado 🟡.
+2. **Acuerdo sobre el titular** escrito en este fichero, con el umbral pre-registrado como criterio y solo entre resultados ✅ o 🟠.
 3. **Merge `track-b` → `main`** (primero B, que tiene menos ficheros de `docs/`).
 4. **Merge `track-a` → `main`** (A resuelve los conflictos de `docs/` si los hay).
 5. **Validación conjunta**: `pytest test -q` en verde y `run_all.py` sin errores.
@@ -152,6 +221,7 @@ Orden concreto de merge y validación para WP4:
 
 ### Criterio de validación antes de cada merge
 
+- [ ] **Challenge superado** (estado ✅ o 🟠, nunca 🟡) para todo resultado que se afirme
 - [ ] `pytest test -q` en verde
 - [ ] Manifiesto ARF en `results/reports/` por cada experimento nuevo
 - [ ] Todo resultado positivo con baseline fuerte + control de nivel
