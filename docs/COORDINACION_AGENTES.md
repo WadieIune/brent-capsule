@@ -97,8 +97,8 @@ Cada punto viene de un fallo **real** de este proyecto:
 
 | # | Resultado | Autor | Estado | Desafía | Veredicto |
 |---|---|---|---|---|---|
-| C1 | `breakout_detection` — solo la distancia al borde anticipa la ruptura (AUC 0.677) | B | 🟡 provisional | **A** | pendiente |
-| C2 | `regime_markov` — Markov bate a i.i.d. (+0.61 log-verosim./obs) | B | 🟡 provisional | **A** | pendiente |
+| C1 | `breakout_detection` — solo la distancia al borde anticipa la ruptura (AUC 0.677) | B | 🟠 **degradado** | A | [veredicto](auditorias/2026-09-10-A-challenge-breakout_detection.md) · un paseo aleatorio da 0.624; señal real +0.03/+0.05. **Lead time retirado**: un alertador aleatorio anticipa más (9.4 vs 7.0) |
+| C2 | `regime_markov` — Markov bate a i.i.d. (+0.61 log-verosim./obs) | B | ❌ **refutado** | A | [veredicto](auditorias/2026-09-10-A-challenge-regime_markov.md) · el nulo da **+0.617 ± 0.035** (real +0.610): la ventaja es del solapamiento de ventanas, no del mercado |
 | C3 | `dq_synthetic_validation` (WP2-A) — `reject` contra su propio umbral | A | 🟡 provisional | **B** | pendiente |
 | C4 | `channel_vol_audit` (WP3) — la atribución de la volatilidad era falsa | A | 🟡 provisional | **B** | pendiente |
 | C5 | `dq_impact` — 74.4 pp de distorsión corregida | A (heredado) | 🟡 provisional | **B** | pendiente |
@@ -137,8 +137,9 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 | 6 | La compresión del canal anticipa la expansión de vol | ❌ **Rechazada** | WP3: solo los proxies de vol dan AUC 0.723 ≥ 0.716 del modelo completo; la forma aporta +0.006 (IC incluye 0) |
 | 7 | El control geométrico ve defectos que un control de **cola** no ve | ✅ **Aceptada** | recall 0.00 de Hampel, Tukey e iForest en *stale* y precio no positivo |
 | 8 | …y también los ve mejor que un detector **especializado** | ❌ **Rechazada** | WP2-A: el detector de rachas alcanza recall 0.69 en *stale* |
-| 9 | Solo la distancia al borde anticipa la ruptura | 🟡 **Provisional** | AUC 0.677 vs 0.496 actuarial y 0.482 vol — **pendiente de auditoría cruzada** |
-| 10 | La cadena de Markov describe el régimen mejor que i.i.d. | 🟡 **Provisional** | +0.61 log-verosimilitud/obs — **pendiente de auditoría cruzada** |
+| 9 | Solo la distancia al borde anticipa la ruptura | 🟠 **Degradada** (C1) | AUC 0.677, pero un paseo aleatorio da 0.624. Señal real sobre el nulo: **+0.03 a +0.05** |
+| 10 | La cadena de Markov describe el régimen mejor que i.i.d. | ❌ **Rechazada** (C2) | El nulo mecánico da +0.617 ± 0.035 frente a +0.610 real: ventaja del solapamiento de ventanas |
+| 11 | El nulo correcto para el canal es un **paseo aleatorio procesado con la misma maquinaria**, no un baseline estadístico ingenuo | 🟡 **Propuesta de A** | C1 y C2 comparten diagnóstico; pendiente del OK de B |
 
 ---
 
@@ -150,8 +151,8 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 | **Estado** | WP0, WP1, WP2-A y WP3 cerrados. Libre. |
 | **Rama / commit** | `track-a` @ `b939fce` (subido) |
 | **Archivos propios** | `code/applications/experiments/dq_*`, `channel_vol_audit.py`, `docs/` (por acuerdo en WP4) |
-| **Última acción** | WP3: auditoría de `channel_vol_forecast` → `review`. El módulo mantiene su `accept` (supera el umbral pre-registrado frente a vol realizada, ΔAUC +0.091 IC95 [+0.053,+0.127]) pero **la atribución era falsa**: frente a sus propios proxies de volatilidad no gana (Δ −0.007, IC incluye 0). |
-| **Siguiente acción** | **Challenge C1 y C2** (`breakout_detection` y `regime_markov`), por el procedimiento de auditoría cruzada. Empiezo en cuanto B lo vea escrito aquí. |
+| **Última acción** | Challenges C1 (🟠 degradado) y C2 (❌ refutado) sobre los módulos de B, con nulo de paseo aleatorio. Antes: WP3 → `review`. El módulo mantiene su `accept` (supera el umbral pre-registrado frente a vol realizada, ΔAUC +0.091 IC95 [+0.053,+0.127]) pero **la atribución era falsa**: frente a sus propios proxies de volatilidad no gana (Δ −0.007, IC incluye 0). |
+| **Siguiente acción** | C1 y C2 **cerrados** (ver registro). Pendiente: C6 (`frtb_capital`) y la respuesta de B a mis veredictos. |
 | **Necesito de B** | Que desafíe C3, C4 y C5 (míos) e intente romperlos: son mi track y no puedo cerrarlos yo. Prioridad: **C5** (`dq_impact`), porque es el candidato a titular por el lado de calidad de dato. |
 
 **Resultados con números** (reproducibles desde `results/reports/`):
