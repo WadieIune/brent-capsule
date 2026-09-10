@@ -952,12 +952,18 @@ Tres contrastes \emph{bootstrap} ($B=3000$) cierran la atribución. Frente a la
 volatilidad realizada, el modelo publicado gana ($\Delta\mathrm{AUC}=+0{,}091$;
 IC 95\% $[+0{,}053,+0{,}127]$), de modo que \textbf{supera el umbral
 pre-registrado y conserva su decisión}. Pero frente a \emph{sus propios proxies
-de volatilidad} no gana ($\Delta\mathrm{AUC}=-0{,}007$; IC 95\%
-$[-0{,}021,+0{,}006]$), y añadir la forma a la mejor medida de volatilidad no
-aporta nada ($\Delta\mathrm{AUC}=+0{,}006$; IC 95\% $[-0{,}024,+0{,}035]$).
+de volatilidad} no gana ($\Delta\mathrm{AUC}=-0{,}009$; IC 95\% por bloques
+temporales de 63 sesiones $[-0{,}028,+0{,}011]$), de modo que \textbf{no se
+establece} que la forma aporte por encima de la volatilidad que las propias
+variables contienen. El matiz importa: un intervalo que contiene el cero es
+compatible con una aportación nula o pequeña en cualquier sentido, y no prueba
+equivalencia. Estas cifras incorporan tres correcciones señaladas en auditoría
+cruzada: purga de las diez sesiones cuyas etiquetas rebasaban el corte, elección
+del \emph{baseline} en validación en lugar de en test, y remuestreo por bloques
+en lugar de i.i.d.
 
 La conclusión es que el módulo funciona, pero \textbf{no por el motivo que se le
-atribuía}. Su capacidad no procede de la geometría del canal sino de contener una
+atribuía}. Su capacidad no queda establecido que proceda de la geometría del canal, sino que es compatible con proceder de contener una
 \emph{representación multi-medida de la volatilidad} —realizada, rango medio y
 dispersión \emph{detrended} en torno a la tendencia local— que resulta mejor
 predictor de la expansión que EWMA o GARCH(1,1) basados en una sola medida. El

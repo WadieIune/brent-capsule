@@ -92,9 +92,10 @@ Tres contrastes *bootstrap* (B=3000) cierran la atribución:
 
 - **Criterio pre-registrado** — publicado vs `rv_lagged`: ΔAUC **+0.091**,
   IC95 [+0.053, +0.127] → **supera**, así que el `accept` se mantiene.
-- **Atribución** — publicado vs *solo sus proxies de vol*: ΔAUC **−0.007**,
-  IC95 [−0.021, +0.006] → **la forma no aporta nada**; el modelo sin ninguna
-  información de forma es, si acaso, ligeramente mejor.
+- **Atribución** — publicado vs *solo sus proxies de vol*: ΔAUC **−0.009**,
+  IC95 **por bloques** [−0.028, +0.011] → **no se establece** que la forma aporte
+  (un IC que contiene el cero no prueba equivalencia). Cifras con purga,
+  selección en validación y bootstrap por bloques, tras la auditoría cruzada de B.
 - **Incremental** — añadir forma a la mejor vol: ΔAUC **+0.006**,
   IC95 [−0.024, +0.035] → indistinguible de cero.
 
