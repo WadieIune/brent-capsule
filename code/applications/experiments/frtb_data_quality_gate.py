@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from typing import Dict
 
-import numpy as np
 import pandas as pd
 
 
@@ -19,6 +18,8 @@ def assess_factor(
     min_moves_per_year: int = 24,
     max_gap_sessions: int = 21,
     max_zero_return_fraction: float = 0.05,
+    cnn_outlier_score: float | None = None,
+    cnn_outlier_threshold: float = 0.68,
 ) -> Dict[str, object]:
     """Return a conservative operational gate for one risk-factor series.
 
@@ -50,6 +51,9 @@ def assess_factor(
         reasons.append("rfet_activity_proxy_below_threshold")
     if max_gap > max_gap_sessions:
         reasons.append("gap_proxy_above_threshold")
+    cnn_review = cnn_outlier_score is not None and float(cnn_outlier_score) >= cnn_outlier_threshold
+    if cnn_review:
+        reasons.append("cnn_channel_review")
     status = "block" if any(r in reasons for r in ("nonpositive_price", "stale_or_calendar_padding")) else ("review" if reasons else "pass")
     return {
         "status": status,
@@ -60,6 +64,7 @@ def assess_factor(
         "min_moves_per_year": min_moves,
         "max_gap_sessions": int(max_gap),
         "rfet_proxy_pass": bool(min_moves >= min_moves_per_year and max_gap <= max_gap_sessions and not nonpositive),
+        "cnn_signal": {"score": cnn_outlier_score, "threshold": cnn_outlier_threshold, "review": cnn_review},
         "official_rfet_claim": False,
     }
 
