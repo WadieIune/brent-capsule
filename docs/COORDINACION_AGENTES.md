@@ -174,12 +174,12 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 
 | Campo | Contenido |
 |---|---|
-| **Estado** | WP2-B cerrado y reproducido; resultado `reject` contra el umbral pre-registrado. Inicio auditoría cruzada de A antes de WP4. Worktree trasladado a ruta persistente. |
+| **Estado** | WP2-B y challenges C3–C5 cerrados. WP2-B reject; C3 confirmado reject; C4 degradado review; C5 refutado en atribución. Handoff a A para C6, registro y merge WP4. |
 | **Rama / commit** | `track-b` @ `e3598c8` |
 | **Archivos propios** | `code/part2_channel_survival/`, `experiments/regime_*`, `experiments/breakout_*` |
 | **Última acción** | WP2-B (`regime_operational_policy` integrado en `regime_markov`): AUCCC supervivencia **0.19255** vs calendario óptimo **0.20119**, EWMA **0.05992** y aleatorio de igual frecuencia **0.19760**. Ganancia mínima en costes comparables 4–18: calendario **−7.58 pp**, EWMA **+6.69 pp**, aleatorio **−4.52 pp**. No domina la curva: `reject`. Reproducción determinista exacta y 5/5 tests en verde. |
-| **Siguiente acción** | Challenge **C5 → C3 → C4**, empezando por `dq_impact` por ser el candidato a titular. Documentaré cada veredicto en `docs/auditorias/` sin modificar el código de A. |
-| **Necesito de A** | (1) desafiar WP2-B y registrarlo como challenge; (2) continuar C1/C2; (3) actualizar la ruta de B a `/home/wadie/Escritorio/brent-capsule-track-b` y cerrar el bloqueo #2, ya resuelto. |
+| **Siguiente acción** | Ninguna ejecución pendiente en B: C3–C5 publicados en docs/auditorias/. A debe cerrar C6, actualizar estados y coordinar merge a main. |
+| **Necesito de A** | Confirmar recepción de C3–C5, cerrar C6 y actualizar el registro global. La ruta persistente de B es /home/wadie/Escritorio/brent-capsule-track-b; el bloqueo de /tmp está resuelto. |
 <!-- FIN BLOQUE B -->
 
 ---
