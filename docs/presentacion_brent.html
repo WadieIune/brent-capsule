@@ -482,6 +482,37 @@
     <div class="card"><span class="tag">frtb_capital · review</span><h3>−57.1% capital</h3><p>FRTB IMA vs Basilea 2.5. <b>Parcial</b>: omite SES/DRC/RRAO; la caída refleja sobre todo VaR+sVaR con k=3 frente a un ES estresado con m<sub>c</sub>=1.5.</p></div>
   </div>
 
+  <h3 style="margin:1.6rem 0 .5rem">Autoauditoría: una atribución falsa que encontramos nosotros</h3>
+  <p class="lead">La regla que nos impusimos tras el episodio del VaR —ningún positivo sin baseline
+  fuerte— la aplicamos también a nuestros propios <code>accept</code>. El más expuesto:
+  <code>channel_vol_forecast</code>, publicado con AUC 0.716 contra la tasa base (0.5), sin haberse
+  comparado nunca con un modelo de volatilidad.</p>
+
+  <p class="lead">La sospecha era estructural: de las <b>11 features llamadas "geometría", 4 son
+  medidas de volatilidad</b> (<code>vol20</code>, <code>atr_norm</code>, <code>resid_norm</code>,
+  <code>band_width</code>). Y el objetivo —¿subirá la vol futura?— es en gran parte una pregunta sobre
+  reversión a la media de la volatilidad.</p>
+
+  <table>
+    <tr><th>Modelo</th><th class="num">AUC</th><th>Qué contiene</th></tr>
+    <tr><td><b>Solo proxies de vol</b></td><td class="num bad">0.723</td><td><b>las 4 medidas de vol, cero forma</b></td></tr>
+    <tr><td>Geometría publicada</td><td class="num">0.716</td><td>las 11 features publicadas</td></tr>
+    <tr><td>Mejor vol + forma</td><td class="num">0.631</td><td>prueba incremental</td></tr>
+    <tr><td>Vol realizada</td><td class="num">0.625</td><td>nivel y posición relativa</td></tr>
+    <tr><td>Forma pura</td><td class="num">0.608</td><td>geometría <i>sin</i> los 4 proxies</td></tr>
+    <tr><td>GARCH(1,1)</td><td class="num">0.566</td><td>parámetros solo de train</td></tr>
+    <tr><td>EWMA (λ=0.94)</td><td class="num">0.560</td><td>—</td></tr>
+  </table>
+
+  <div class="callout"><b>El modelo funciona, pero no por lo que creíamos.</b> Supera el umbral
+  pre-registrado frente a la vol realizada (ΔAUC <b>+0.091</b>, IC95 [+0.053, +0.127]) y por eso
+  <b>conserva su decisión</b>. Pero frente a <i>sus propios proxies de volatilidad</i> no gana
+  (Δ <b>−0.007</b>, IC95 [−0.021, +0.006]) y añadir forma a la vol no aporta nada (Δ +0.006, IC95
+  incluye 0). Es decir: su capacidad viene de contener una <b>representación multi-medida de la
+  volatilidad</b> —realizada + rango + dispersión <i>detrended</i>— que bate a EWMA y GARCH(1,1) de una
+  sola medida. Interesante, pero pertenece a la <b>medición de volatilidad, no al chartismo</b>: la
+  afirmación "la compresión del canal anticipa la expansión de vol" queda <b>refutada</b>.</div>
+
   <p class="muted" style="margin-top:.8rem">Los 11 experimentos corren bajo el <b>harness</b> del
   Agentic Research Framework: cada corrida deja un manifiesto con id, configuración, semilla, comando,
   entorno, métricas, baseline y decisión. Las decisiones negativas (<code>reject</code>) se publican

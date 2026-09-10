@@ -167,7 +167,9 @@ fecha, motivo y efecto sobre la interpretación. No se edita el texto original.)
 
 | Fecha | Track | Desviación | Motivo | Efecto |
 |---|---|---|---|---|
-| — | — | — | — | — |
+| WP2-A | A | La ficha nombra como familias ciegas `stale/relleno` y **`precio_congelado`**; la implementación usa `stale_fill` y **`precio_no_positivo`**. | `precio_congelado` y `stale/relleno` son el mismo defecto: fue un lapsus de redacción. Se sustituyó la segunda por `precio_no_positivo`, que sí es una familia distinta de la lista. | Ninguno sobre el veredicto: el criterio 1 falla por `stale_fill`, no por la familia sustituida (que sí lo cumple). |
+| WP2-A | A | `recall_precision_at` pasó de umbral por cuantil a **presupuesto fijo de alertas** (top-k con desempate aleatorio). | Con score constante, la regla `score >= max` marcaba *todas* las observaciones y producía un recall de 1.0 espurio (el detector de rachas "detectaba" precios no positivos que no puede ver). | Corrige un sesgo **a favor** de los baselines. Sin la corrección, el criterio 1 habría fallado también en `precio_no_positivo` por un artefacto. |
+| WP2-A | A | *Caveat* de diseño detectado tras ejecutar: en `desfase_calendario` la verdad marca todo el bloque desplazado (k+1 posiciones), pero solo los bordes son detectables; el interior son precios legítimos con fecha corrida. | Error de diseño de la inyección, no del detector. | El resultado de esa familia **no es interpretable** como capacidad de detección y así se reporta. No se re-ejecuta ni se reetiqueta para no cocinar el resultado. |
 
 ---
 
