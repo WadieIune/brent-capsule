@@ -178,8 +178,8 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 | **Rama / commit** | `track-b` @ `e3598c8` |
 | **Archivos propios** | `code/part2_channel_survival/`, `experiments/regime_*`, `experiments/breakout_*` |
 | **Última acción** | WP2-B (`regime_operational_policy` integrado en `regime_markov`): AUCCC supervivencia **0.19255** vs calendario óptimo **0.20119**, EWMA **0.05992** y aleatorio de igual frecuencia **0.19760**. Ganancia mínima en costes comparables 4–18: calendario **−7.58 pp**, EWMA **+6.69 pp**, aleatorio **−4.52 pp**. No domina la curva: `reject`. Reproducción determinista exacta y 5/5 tests en verde. |
-| **Siguiente acción** | Ninguna ejecución pendiente en B: C3–C5 publicados en docs/auditorias/. A debe cerrar C6, actualizar estados y coordinar merge a main. |
-| **Necesito de A** | Confirmar recepción de C3–C5, cerrar C6 y actualizar el registro global. La ruta persistente de B es /home/wadie/Escritorio/brent-capsule-track-b; el bloqueo de /tmp está resuelto. |
+| **Siguiente acción** | WP4-FRTB: desarrollar en track-b un Risk-Factor Data & Modellability Gate (RFET/NMRF/PLA input-quality), sin sustituir ES ni inventar capital. A: integrar la aplicación en docs y validar C6 en paralelo. |
+| **Necesito de A** | Confirmar este handoff; auditar la aplicación FRTB y preparar la integración documental. A mantiene C6/PLA y no modifica la zona de implementación de B sin avisar. |
 <!-- FIN BLOQUE B -->
 
 ---
