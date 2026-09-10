@@ -1,0 +1,149 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "dq_capital_impact",
+  "title": "Impacto en capital de la calidad del dato (VaR/Basilea) y observabilidad RFET",
+  "timestamp_utc": "2026-09-10T15:04:18Z",
+  "inputs": [],
+  "config": {
+    "cutoff": "2020-08-20"
+  },
+  "seed": 42,
+  "command": "python -",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [
+    "ANÁLISIS CONFIRMATORIO, no pre-registrado: el efecto sobre el capital se observó al corregir los datos de portfolio_var"
+  ],
+  "metrics": {
+    "source": "dataset_wide_with_target.csv",
+    "analisis": "confirmatorio (no pre-registrado)",
+    "depuracion": {
+      "precios_no_positivos": 1,
+      "dias_de_relleno": 2115,
+      "pct_dias_de_relleno": 31.13,
+      "sesiones_tras_depurar": 4679
+    },
+    "via_sucia_tal_cual_se_recibe": {
+      "n_test": 2024,
+      "obs_por_año": 365.4,
+      "retornos_cero_pct": 31.18,
+      "exception_rate": 0.01186,
+      "kupiec_p": 0.4145,
+      "christoffersen_p": 0.0316,
+      "excepciones_por_250d": 2.96,
+      "multiplicador_basilea": 3.0,
+      "zona_basilea": "verde",
+      "var_medio": 0.03562,
+      "capital": 0.10687
+    },
+    "via_limpia_tras_control_geometrico": {
+      "n_test": 1393,
+      "obs_por_año": 251.6,
+      "retornos_cero_pct": 0.0,
+      "exception_rate": 0.01292,
+      "kupiec_p": 0.2943,
+      "christoffersen_p": 0.0011,
+      "excepciones_por_250d": 3.23,
+      "multiplicador_basilea": 3.0,
+      "zona_basilea": "verde",
+      "var_medio": 0.04114,
+      "capital": 0.12341
+    },
+    "impacto_capital": {
+      "delta_var_medio_pct": 15.5,
+      "delta_capital_pct": 15.48,
+      "subestimacion_de_capital_pct": 13.4,
+      "lectura": "Consumir el panel tal y como se recibe subestima el capital por riesgo de mercado en ese porcentaje."
+    },
+    "rfet": {
+      "criterios": {
+        "min_obs_año": 24,
+        "ventana_hueco_dias": 90,
+        "min_obs_en_hueco": 4
+      },
+      "por_factor": [
+        {
+          "factor": "BRENT",
+          "obs_declaradas_año": 365.3,
+          "obs_reales_año": 247.4,
+          "inflacion": 1.48,
+          "peor_90d_declarado": 90,
+          "peor_90d_real": 52,
+          "racha_congelado_max": 16,
+          "modelizable_declarado": true,
+          "modelizable_real": true
+        },
+        {
+          "factor": "WTI",
+          "obs_declaradas_año": 365.3,
+          "obs_reales_año": 250.8,
+          "inflacion": 1.46,
+          "peor_90d_declarado": 90,
+          "peor_90d_real": 58,
+          "racha_congelado_max": 4,
+          "modelizable_declarado": true,
+          "modelizable_real": true
+        },
+        {
+          "factor": "GOLD",
+          "obs_declaradas_año": 365.3,
+          "obs_reales_año": 250.7,
+          "inflacion": 1.46,
+          "peor_90d_declarado": 90,
+          "peor_90d_real": 59,
+          "racha_congelado_max": 4,
+          "modelizable_declarado": true,
+          "modelizable_real": true
+        },
+        {
+          "factor": "SILVER",
+          "obs_declaradas_año": 365.3,
+          "obs_reales_año": 251.1,
+          "inflacion": 1.46,
+          "peor_90d_declarado": 90,
+          "peor_90d_real": 58,
+          "racha_congelado_max": 4,
+          "modelizable_declarado": true,
+          "modelizable_real": true
+        },
+        {
+          "factor": "COPPER",
+          "obs_declaradas_año": 365.3,
+          "obs_reales_año": 250.2,
+          "inflacion": 1.46,
+          "peor_90d_declarado": 90,
+          "peor_90d_real": 57,
+          "racha_congelado_max": 4,
+          "modelizable_declarado": true,
+          "modelizable_real": true
+        },
+        {
+          "factor": "NATGAS",
+          "obs_declaradas_año": 365.3,
+          "obs_reales_año": 250.4,
+          "inflacion": 1.46,
+          "peor_90d_declarado": 90,
+          "peor_90d_real": 58,
+          "racha_congelado_max": 4,
+          "modelizable_declarado": true,
+          "modelizable_real": true
+        }
+      ],
+      "inflacion_media_observabilidad": 1.46,
+      "factores_que_dejarian_de_ser_modelizables": []
+    },
+    "por_que_un_control_de_cola_no_lo_ve": "Un retorno exactamente cero nunca es un valor atípico de la distribución de retornos. La ceguera es estructural, no de calibración: demostrada en dq_synthetic_validation con recall 0.00 de Hampel, Tukey e isolation forest sobre la familia stale."
+  },
+  "baseline": {
+    "referencia": "el mismo cálculo de VaR y capital sobre el panel sin depurar",
+    "capital_sin_depurar": 0.10687,
+    "capital_depurado": 0.12341
+  },
+  "artifacts": [],
+  "decision": "accept",
+  "notes": "[ANÁLISIS CONFIRMATORIO] Depurar el panel (2115 días de relleno, 1 precios no positivos) eleva el VaR medio un +15.5% y el capital un +15.5%: consumir el dato tal cual se recibe **subestima el capital en 13.4%**. RFET: la observabilidad declarada está inflada x1.46 de media (peor ventana de 90 días: 90 obs declaradas frente a 52 reales en BRENT); factores que dejarían de ser modelizables con el recuento real: ninguno en esta cartera líquida. Ningún control de cola detecta estos defectos: la ceguera es estructural.",
+  "error": null,
+  "elapsed_seconds": 0.297
+}

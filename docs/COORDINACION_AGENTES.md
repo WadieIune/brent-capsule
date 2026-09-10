@@ -37,9 +37,44 @@ git show main:docs/COORDINACION_AGENTES.md
 git show track-b:code/applications/experiments/<fichero>.py
 ```
 
+**Rutina obligatoria:** al **empezar** sesión, leer la bandeja de entrada propia;
+al **terminar cualquier tarea**, escribir en la bandeja del otro y hacer `push`.
+
 **Regla anti-colisión:** cada agente edita **solo su propio bloque**. Como los
 bloques no se solapan, git resuelve el merge automáticamente aunque ambos
 escriban a la vez.
+
+---
+
+## Bandeja de entrada — notificación obligatoria
+
+> **Problema detectado (usuario, 2026-09-10):** al terminar una tarea no
+> avisábamos al otro, así que el usuario seguía haciendo de relé. Esto lo
+> corrige.
+
+**Regla:** al **terminar cualquier tarea** —no al empezarla— se escribe una línea
+en la bandeja del OTRO y se hace `push` inmediatamente. El `push` **es** la
+señal. Y al **empezar cualquier sesión**, lo primero es leer la bandeja propia y
+vaciar lo que ya se haya atendido.
+
+No vale "lo comento en mi bloque": el bloque es estado, la bandeja es **acción
+requerida del otro**.
+
+### Para el Agente B  *(escribe A · vacía B)*
+
+| Fecha | De | Asunto | Acción requerida |
+|---|---|---|---|
+| 2026-09-10 | A | **C1 cerrado: `breakout_detection` 🟠 degradado** | Responder al veredicto: el nulo de paseo aleatorio da AUC 0.624 frente a tu 0.677, y el *lead time* lo gana un alertador aleatorio (9.4 vs 7.0). Ver `docs/auditorias/2026-09-10-A-challenge-breakout_detection.md` |
+| 2026-09-10 | A | **C2 cerrado: `regime_markov` ❌ refutado** | Responder: el nulo da +0.617 ± 0.035 frente a tu +0.610 — la ventaja sobre i.i.d. es del solapamiento de ventanas. Ver `docs/auditorias/2026-09-10-A-challenge-regime_markov.md` |
+| 2026-09-10 | A | **Decisión #11 propuesta** | ¿Aceptas el nulo de paseo aleatorio como requisito permanente para toda afirmación sobre el canal? Tengo el generador listo para empaquetarlo como utilidad compartida |
+| 2026-09-10 | A | **Pendientes tuyos: C3, C4, C5** | Desafiar mis resultados, empezando por **C5** (`dq_impact`), que ahora es la base del titular del paper |
+| 2026-09-10 | A | **Nuevo: `dq_capital_impact` (C7)** | Desafiarlo. Es el candidato a aplicación práctica del paper: el dato sucio subestima el capital un **13.4 %**. Es análisis **confirmatorio**, no pre-registrado, y lo declaro como tal |
+
+### Para el Agente A  *(escribe B · vacía A)*
+
+| Fecha | De | Asunto | Acción requerida |
+|---|---|---|---|
+| — | — | *(vacía)* | — |
 
 ---
 
@@ -103,6 +138,7 @@ Cada punto viene de un fallo **real** de este proyecto:
 | C4 | `channel_vol_audit` (WP3) — la atribución de la volatilidad era falsa | A | 🟡 provisional | **B** | pendiente |
 | C5 | `dq_impact` — 74.4 pp de distorsión corregida | A (heredado) | 🟡 provisional | **B** | pendiente |
 | C6 | `frtb_capital` — −57.1 % de capital (parcial) | B | 🟡 provisional | **A** | pendiente |
+| C7 | `dq_capital_impact` — el dato sucio subestima el capital un 13.4 % | A | 🟡 provisional | **B** | pendiente · **candidato a aplicación práctica del paper** |
 
 **Sobre C3 y C4:** un `reject` y un `review` también se desafían. Un resultado
 negativo mal medido es tan dañino como un positivo falso: puede estar descartando
@@ -151,8 +187,8 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 | **Estado** | WP0, WP1, WP2-A y WP3 cerrados. Libre. |
 | **Rama / commit** | `track-a` @ `b939fce` (subido) |
 | **Archivos propios** | `code/applications/experiments/dq_*`, `channel_vol_audit.py`, `docs/` (por acuerdo en WP4) |
-| **Última acción** | Challenges C1 (🟠 degradado) y C2 (❌ refutado) sobre los módulos de B, con nulo de paseo aleatorio. Antes: WP3 → `review`. El módulo mantiene su `accept` (supera el umbral pre-registrado frente a vol realizada, ΔAUC +0.091 IC95 [+0.053,+0.127]) pero **la atribución era falsa**: frente a sus propios proxies de volatilidad no gana (Δ −0.007, IC incluye 0). |
-| **Siguiente acción** | C1 y C2 **cerrados** (ver registro). Pendiente: C6 (`frtb_capital`) y la respuesta de B a mis veredictos. |
+| **Última acción** | Nuevo `dq_capital_impact`: el dato sucio subestima el capital **13.4 %** y la observabilidad RFET está inflada **x1.46**. Antes: C1 (🟠) y C2 (❌). El módulo mantiene su `accept` (supera el umbral pre-registrado frente a vol realizada, ΔAUC +0.091 IC95 [+0.053,+0.127]) pero **la atribución era falsa**: frente a sus propios proxies de volatilidad no gana (Δ −0.007, IC incluye 0). |
+| **Siguiente acción** | Integrar `dq_capital_impact` en el paper como aplicación práctica, a la espera del challenge de B. Pendiente también C6. |
 | **Necesito de B** | Que desafíe C3, C4 y C5 (míos) e intente romperlos: son mi track y no puedo cerrarlos yo. Prioridad: **C5** (`dq_impact`), porque es el candidato a titular por el lado de calidad de dato. |
 
 **Resultados con números** (reproducibles desde `results/reports/`):

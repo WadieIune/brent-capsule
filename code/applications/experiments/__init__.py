@@ -10,6 +10,12 @@ from .dq_impact import DQImpactExperiment
 from .breakout_detection import BreakoutDetectionExperiment
 from .regime_markov import RegimeMarkovExperiment
 from .dq_daily_monitor import DQDailyMonitorExperiment
+<<<<<<< Updated upstream
+=======
+from .dq_synthetic_validation import DQSyntheticValidationExperiment
+from .channel_vol_audit import ChannelVolAuditExperiment
+from .dq_capital_impact import DQCapitalImpactExperiment
+>>>>>>> Stashed changes
 
 ALL_EXPERIMENTS = [
     DQPriceControlExperiment,
@@ -23,6 +29,12 @@ ALL_EXPERIMENTS = [
     BreakoutDetectionExperiment,
     RegimeMarkovExperiment,
     DQDailyMonitorExperiment,
+<<<<<<< Updated upstream
+=======
+    DQSyntheticValidationExperiment,
+    ChannelVolAuditExperiment,
+    DQCapitalImpactExperiment,
+>>>>>>> Stashed changes
 ]
 
 __all__ = [c.__name__ for c in ALL_EXPERIMENTS] + ["ALL_EXPERIMENTS"]
