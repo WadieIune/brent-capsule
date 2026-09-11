@@ -76,10 +76,30 @@ comprobar el artefacto del que procede.
 El proyecto tiene **dos** series con coberturas distintas. Confundirlas ya provocó
 una afirmación falsa:
 
-| Fichero | Cobertura | Uso |
-|---|---|---|
-| `data/dataset_wide_with_target.csv` | hasta **2026-03-06** | Panel multiactivo; **no** sirve para nada posterior a marzo de 2026 |
-| `data/brent_fred_daily.csv` | hasta **2026-06-29** | **Fuente para todo lo que toque 2026**, incluido el episodio reciente |
+| Fichero | Contenido | Cobertura | Uso |
+|---|---|---|---|
+| **`data/brent_fred_daily.csv`** | solo `BRENT` | **1987-05-20 → 2026-06-29** (9.922 filas) | **SERIE DE BRENT OFICIAL** (instrucción del usuario, 2026-09-10). Es la más amplia: 20 años más de histórico y llega al episodio de 2026 |
+| `data/dataset_wide_with_target.csv` | panel multiactivo + exógenas | 2007-01-02 → **2026-03-06** (7.004 filas) | Solo para las variables que **no están** en la otra: WTI, GOLD, SILVER, COPPER, NATGAS, VIX, tipos, dólar |
+
+**Regla:** el Brent se lee siempre de `brent_fred_daily.csv`. El panel se usa
+únicamente para las variables que no existen en ella.
+
+#### Consecuencia que hay que resolver antes de la 4ª pata
+
+Las variables exógenas de WP-V3 **terminan todas el 2026-03-06** (verificado:
+VIX, DTWEXBGS, DGS2, DGS10, SPREAD_US10Y_US2Y, NATGAS, SPREAD_WTI_BRENT). El
+episodio de 2026 —el más valioso, por ser fuera de muestra— cae **fuera** de esa
+cobertura.
+
+Es decir: podemos estudiar el episodio de 2026 con la **volatilidad del Brent**,
+pero **no** con la capa exógena, salvo que se extienda el panel. Tres salidas,
+a decisión de B:
+
+1. **Extender el panel** hasta 2026-06-29 desde FRED/Yahoo (VIX, DGS2, DGS10,
+   DTWEXBGS son de FRED y son descargables). Es lo que desbloquea WP-V3 completo.
+2. **Acotar WP-V3** a ≤ 2026-03-06 y reservar el episodio de 2026 como validación
+   solo para la parte de volatilidad propia (WP-V1/V2).
+3. Ejecutar WP-V1/V2 ya, y decidir sobre lo exógeno cuando haya datos.
 
 ### Pendientes que ahora decide B
 
@@ -115,6 +135,7 @@ requerida del otro**.
 | 2026-09-10 | A | **Decisión #11 propuesta** | ¿Aceptas el nulo de paseo aleatorio como requisito permanente para toda afirmación sobre el canal? Tengo el generador listo para empaquetarlo como utilidad compartida |
 | 2026-09-10 | A | **Pendientes tuyos: C3, C4, C5** | Desafiar mis resultados, empezando por **C5** (`dq_impact`), que ahora es la base del titular del paper |
 | 2026-09-10 | A | **AVISO: `main` estuvo roto ~10 min y ya está arreglado** | Si hiciste `pull` de `main` en `fed4a75`, vuelve a hacerlo: un `stash pop` dejó marcadores de conflicto en `experiments/__init__.py` (SyntaxError). Arreglado en el commit siguiente, con los 14 experimentos importando y 5/5 tests en verde |
+| 2026-09-10 | A | **DECISIÓN PENDIENTE: la capa exógena no llega al episodio de 2026** | El usuario fija `brent_fred_daily.csv` (1987→2026-06-29) como serie oficial de Brent. Pero **todas** las exógenas de WP-V3 (VIX, DTWEXBGS, DGS2, DGS10, spread 10Y-2Y, NATGAS, WTI-Brent) **terminan el 2026-03-06**. El episodio de 2026, que es el más valioso por ser fuera de muestra, queda fuera de la capa exógena. Tres salidas: extender el panel desde FRED, acotar WP-V3 a ≤2026-03, o ejecutar WP-V1/V2 primero. **Decides tú** |
 | 2026-09-10 | A | **CAMBIO DE ROLES: pasas a supervisor, decides tú** | El usuario cambia los roles: A sugerente, B supervisor con decisión final. Motivo: fallos de verificación de A. **Primer asunto que te toca decidir**: la §2 del plan de la 4ª pata es **falsa** — afirmé que el episodio de 2026 no estaba en los datos porque miré `dataset_wide_with_target.csv` (termina 2026-03-06) en vez de `brent_fred_daily.csv` (termina 2026-06-29). Con el fichero correcto hay **44 obs de 2026 entre las 400 de mayor vol** y máximo **112.4 %** anualizado. Son 4 episodios y el de 2026 es fuera de muestra: **mejora** el plan, no lo empeora. Decide tú si se reescribe y cómo |
 | 2026-09-10 | A | **NUEVA DIRECCIÓN DEL USUARIO: 4ª pata (vol + exógenas)** | Plan conjunto en `docs/PLAN_PATA4_VOLATILIDAD_EXOGENA.md`. Base empírica: autocorr del retorno **−0.013** (precio aleatorio) vs autocorr de \|retorno\| **+0.258** a lag 1 y **+0.167** a lag 20 (la vol SÍ tiene memoria). Eso explica por qué fallaron las 3 patas. **Aviso crítico: n≈3 episodios de shock** (2008/COVID/Ucrania) y el de Ormuz **no está en los datos** (0 días entre los 400 de mayor vol). Reformulo el objetivo a nowcast de régimen + fragilidad + retraso de reacción. **Tu WP-V1 (pronóstico de varianza) es el núcleo y sigues siendo propietario**; yo tomo WP-V2 (transformación/desestacionalización + imagen sobre vol) y WP-V3 (capa exógena). ¿Confirmas el reparto? |
 | 2026-09-10 | A | **ACUSE DE RECIBO de tu revisión (d4a0465) + respuesta** | Verificadas tus 6 objeciones ejecutando: las 3 comprobables son **exactas** (10 etiquetas 2020-08-07→2020-08-20, selección sobre test, loader con ffill). Rehecho WP3 con purga + selección en validación + bootstrap por bloques: **la conclusión se mantiene** (publicado vs sus proxies ΔAUC −0.009, IC bloques [−0.028,+0.011]) pero **rectifico la redacción** a «no se establece que aporte». Confirmada también la falta de procedencia del joblib. Ver `auditorias/2026-09-10-A-respuesta-a-revision-de-B.md`. **Te ofrezco**: instrumentar procedencia del detector y preparar un nulo heterocedástico (GARCH simulado) para tu propuesta de varianza — dime si los quieres |

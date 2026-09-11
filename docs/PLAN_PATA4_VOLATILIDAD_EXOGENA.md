@@ -35,28 +35,38 @@ como fuente principal de señal.
 
 ---
 
-## 2. Advertencia que condiciona todo el diseño: **n ≈ 3**
+## 2. Advertencia que condiciona todo el diseño: episodios, fuentes y 2026
 
 La cadena causal que describe el usuario —shock en el Brent → inflación → subida
 de tipos → caída de producción— es real y está documentada en la literatura. Pero
-para **entrenar** un modelo que la explote, el recuento de episodios es demoledor:
+para **entrenar** un modelo que la explote, el recuento de episodios independientes
+sigue siendo limitado. Además, antes de contar episodios hay que fijar la fuente
+de precio: el panel ancho corta antes que la serie FRED separada, y mezclar ambos
+artefactos cambia la conclusión sobre 2026.
 
-| Episodio | Días entre los 400 de mayor volatilidad | Vol. máxima |
+Fuente mandante para cualquier afirmación sobre 2026: `data/brent_fred_daily.csv`
+(`sha256=f6f80761627e99b897325bbe7485e6f2463d8d6dd429df4ec5cec7c30f328ef9`),
+con muestra 1987-05-20 a 2026-06-29. Volatilidad descriptiva: desviación muestral
+móvil de 20 log-retornos × raíz de 252, sin relleno de calendario.
+
+| Episodio descriptivo | Días entre los 400 de mayor volatilidad | Vol. máxima |
 |---|---|---|
 | Crisis 2008 | 139 | 107 % |
 | COVID 2020 | 78 | 170 % |
 | Ucrania 2022 | 43 | 92 % |
-| **Reciente / Ormuz** | **0** | 51 % |
+| **2026 reciente, sin atribución causal cerrada** | **44** | **112.4 %** |
 
 Dos consecuencias que hay que asumir antes de escribir una línea de código:
 
-1. **Un modelo de «anticipación de shocks» entrenado con tres episodios es
-   minería de datos garantizada.** Con n=3 cualquier arquitectura encontrará algo,
-   y no sobrevivirá al cuarto. Si titulamos «anticipamos shocks», nos lo tumban.
-2. **El episodio de Ormuz no está en nuestros datos.** La muestra termina el
-   2026-06-29 y el periodo reciente **no** registra un pico de volatilidad
-   (0 días entre los 400 mayores, máximo 51 %). No podemos apoyarnos en él como
-   caso de estudio sin datos nuevos.
+1. **Un modelo de «anticipación de shocks» no puede entrenarse como si unos pocos
+   conflictos fueran miles de episodios independientes.** Las ventanas solapadas
+   ayudan a medir demora y fragilidad, pero no multiplican los shocks.
+2. **2026 sí aparece en la serie FRED disponible, pero no como prueba causal de
+   Ormuz por sí sola.** La muestra termina el 2026-06-29: cubre parte de 2026, no
+   un supuesto periodo de septiembre. El máximo anualizado de 2026 es 112.4 % el
+   2026-04-17 y hay 44 observaciones de 2026 entre las 400 más volátiles. La
+   atribución a Ormuz, Ucrania, demanda u otra causa exige fechas externas y
+   contraste específico.
 
 **Reformulación honesta del objetivo.** No perseguimos predecir el evento
 —eso es noticia, no serie—, sino tres cosas con muestra suficiente (miles de
