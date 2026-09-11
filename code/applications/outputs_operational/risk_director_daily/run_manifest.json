@@ -1,0 +1,42 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "risk_director_daily",
+  "title": "Risk Director diario: Brent, volatilidad y exogenas extendidas",
+  "timestamp_utc": "2026-09-11T18:42:26Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": null,
+    "alpha": 0.99,
+    "horizon": 10,
+    "panel_path": "data/panel_extendido_2026-09-09.csv"
+  },
+  "seed": 42,
+  "command": "python code/applications/run_all.py --only risk_director_daily --panel data/panel_extendido_2026-09-09.csv --out code/applications/outputs_operational",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "as_of": "2026-09-09",
+    "state": "vigilancia",
+    "brent_latest": 109.51,
+    "brent_return_20_obs": 0.17424404889556078,
+    "brent_return_since_2026_06_29": 0.5296829166084649,
+    "vol20_ann": 0.4437358030226137,
+    "vol20_percentile_panel": 0.8345773653419407,
+    "max_vol20_jul_sep_2026": 0.933137346514275,
+    "panel_sha256": "15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8"
+  },
+  "baseline": {},
+  "artifacts": [
+    "code/applications/outputs_operational/risk_director_daily/risk_director_daily.json",
+    "code/applications/outputs_operational/risk_director_daily/risk_director_daily.csv"
+  ],
+  "decision": "accept",
+  "notes": "estado=vigilancia · Brent 2026-09-09=109.51",
+  "error": null,
+  "elapsed_seconds": 0.022
+}

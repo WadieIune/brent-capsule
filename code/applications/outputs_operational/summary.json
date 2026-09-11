@@ -1,0 +1,21 @@
+{
+  "task_id": "risk_applications",
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": null,
+    "alpha": 0.99,
+    "horizon": 10,
+    "panel_path": "data/panel_extendido_2026-09-09.csv"
+  },
+  "experiments": [
+    {
+      "id": "risk_director_daily",
+      "title": "Risk Director diario: Brent, volatilidad y exogenas extendidas",
+      "decision": "accept",
+      "notes": "estado=vigilancia · Brent 2026-09-09=109.51",
+      "error": null,
+      "manifest": "code/applications/outputs_operational/risk_director_daily/run_manifest.json"
+    }
+  ]
+}

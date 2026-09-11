@@ -1,0 +1,141 @@
+{
+  "as_of": "2026-09-09",
+  "panel_path": "data/panel_extendido_2026-09-09.csv",
+  "panel_sha256": "15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8",
+  "panel_rows": 5139,
+  "panel_columns": 22,
+  "panel_date_range": [
+    "2007-01-01",
+    "2026-09-10"
+  ],
+  "brent": {
+    "latest": 109.51,
+    "previous_date": "2026-09-08",
+    "previous": 106.12,
+    "return_1_obs": 0.03194496796079904,
+    "return_5_obs": 0.12214366226047746,
+    "return_20_obs": 0.17424404889556078,
+    "return_since_2026_06_29": 0.5296829166084649,
+    "vol20_ann": 0.4437358030226137,
+    "vol60_ann": 0.6453015966144616,
+    "vol20_percentile_panel": 0.8345773653419407,
+    "max_vol20_jul_sep_2026": 0.933137346514275,
+    "max_vol20_jul_sep_2026_date": "2026-08-04"
+  },
+  "state": "vigilancia",
+  "state_reasons": [
+    "volatilidad julio-septiembre en zona de tension",
+    "Brent cotiza con prima amplia frente a WTI"
+  ],
+  "recommended_actions": [
+    "Revisar sensibilidad de caja/margen a +/-10 y +/-20 USD por barril.",
+    "Comprobar limites internos antes de nuevas posiciones largas/cortas Brent."
+  ],
+  "exogenous_latest": {
+    "WTI": {
+      "latest_date": "2026-09-09",
+      "latest": 97.26,
+      "change_5_obs": 0.06318320944468736
+    },
+    "SPREAD_WTI_BRENT": {
+      "latest_date": "2026-09-09",
+      "latest": -12.25,
+      "change_5_obs": 1.69823788546256
+    },
+    "RATIO_WTI_BRENT": {
+      "latest_date": "2026-09-09",
+      "latest": 0.8881380695826865,
+      "change_5_obs": -0.06778511760680417
+    },
+    "VIX": {
+      "latest_date": "2026-09-10",
+      "latest": 17.84,
+      "change_5_obs": 0.24581005586592175
+    },
+    "DTWEXBGS": {
+      "latest_date": "2026-09-04",
+      "latest": 118.0732,
+      "change_5_obs": -0.005681784688402969
+    },
+    "DGS2": {
+      "latest_date": "2026-09-09",
+      "latest": 4.43,
+      "change_5_obs": 0.009111617312072884
+    },
+    "DGS10": {
+      "latest_date": "2026-09-09",
+      "latest": 4.83,
+      "change_5_obs": 0.008350730688935215
+    },
+    "DGS30": {
+      "latest_date": "2026-09-09",
+      "latest": 5.28,
+      "change_5_obs": 0.00189753320683117
+    },
+    "SPREAD_US10Y_US2Y": {
+      "latest_date": "2026-09-09",
+      "latest": 0.4000000000000003,
+      "change_5_obs": 0.0
+    },
+    "DFF": {
+      "latest_date": "2026-09-09",
+      "latest": 3.63,
+      "change_5_obs": 0.0
+    },
+    "SOFR": {
+      "latest_date": "2026-09-10",
+      "latest": 3.62,
+      "change_5_obs": -0.008219178082191747
+    },
+    "NATGAS": {
+      "latest_date": "2026-09-09",
+      "latest": 2.81,
+      "change_5_obs": -0.03103448275862064
+    },
+    "GOLD": {
+      "latest_date": "2026-09-10",
+      "latest": 4364.5,
+      "change_5_obs": -0.00041220364336136406
+    },
+    "SILVER": {
+      "latest_date": "2026-09-10",
+      "latest": 64.28399658203125,
+      "change_5_obs": -0.0067827973613797665
+    },
+    "COPPER": {
+      "latest_date": "2026-09-10",
+      "latest": 6.4670000076293945,
+      "change_5_obs": -0.005229952356625156
+    },
+    "SP500": {
+      "latest_date": "2026-09-10",
+      "latest": 7591.7001953125,
+      "change_5_obs": -0.009769637308544077
+    },
+    "DAX": {
+      "latest_date": "2026-09-10",
+      "latest": 25361.150390625,
+      "change_5_obs": -0.024695689402645438
+    },
+    "EUROSTOXX50": {
+      "latest_date": "2026-09-10",
+      "latest": 6268.97021484375,
+      "change_5_obs": -0.017801493075339847
+    },
+    "EURUSD": {
+      "latest_date": "2026-09-10",
+      "latest": 1.1633858680725098,
+      "change_5_obs": 0.004188204231420745
+    },
+    "BRENT_EURUSD_RATIO": {
+      "latest_date": "2026-09-09",
+      "latest": 94.18297737217164,
+      "change_5_obs": 0.11907281430970573
+    }
+  },
+  "limits": [
+    "Monitor descriptivo y operativo; no prueba causal ni modelo CNN validado.",
+    "Disponibilidad as-of/release/vintage pendiente de auditoria por variable.",
+    "La atribucion a Iran/Ormuz requiere calendario externo documentado."
+  ]
+}

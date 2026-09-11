@@ -78,11 +78,13 @@ una afirmación falsa:
 
 | Fichero | Contenido | Cobertura | Uso |
 |---|---|---|---|
-| **`data/brent_fred_daily.csv`** | solo `BRENT` | **1987-05-20 → 2026-06-29** (9.922 filas) | **SERIE DE BRENT OFICIAL** (instrucción del usuario, 2026-09-10). Es la más amplia: 20 años más de histórico y llega al episodio de 2026 |
-| `data/dataset_wide_with_target.csv` | panel multiactivo + exógenas | 2007-01-02 → **2026-03-06** (7.004 filas) | Solo para las variables que **no están** en la otra: WTI, GOLD, SILVER, COPPER, NATGAS, VIX, tipos, dólar |
+| **`data/brent_fred_daily.csv`** | solo `BRENT` | **1987-05-20 → 2026-06-29** (9.922 filas) | Serie larga de Brent para histórico 1987-2026 |
+| **`data/panel_extendido_2026-09-09.csv`** | panel extendido FRED + Yahoo: Brent, WTI, NATGAS, VIX, dólar, tipos, metales, índices, EURUSD y derivados | **2007-01-01 → 2026-09-10** (5.139 filas; Brent hasta 2026-09-09) | **Fuente oficial para la 4ª pata y para cualquier análisis que toque julio-septiembre de 2026** |
+| `data/dataset_wide_with_target.csv` | panel multiactivo + exógenas originales | 2007-01-02 → **2026-03-06** (7.004 filas) | Panel histórico original; no manda para 2026 reciente |
 
-**Regla:** el Brent se lee siempre de `brent_fred_daily.csv`. El panel se usa
-únicamente para las variables que no existen en ella.
+**Regla:** para histórico largo de Brent se usa `brent_fred_daily.csv`; para la
+4ª pata integrada y julio-septiembre de 2026 manda `panel_extendido_2026-09-09.csv`.
+No mezclar coberturas sin declarar universo, hash y rango.
 
 #### Consecuencia que hay que resolver antes de la 4ª pata
 
@@ -92,14 +94,13 @@ episodio de 2026 —el más valioso, por ser fuera de muestra— cae **fuera** d
 cobertura.
 
 Es decir: podemos estudiar el episodio de 2026 con la **volatilidad del Brent**,
-pero **no** con la capa exógena, salvo que se extienda el panel. Tres salidas,
-a decisión de B:
+pero **no** con la capa exógena mientras el panel siga cortando el 2026-03-06.
 
-1. **Extender el panel** hasta 2026-06-29 desde FRED/Yahoo (VIX, DGS2, DGS10,
-   DTWEXBGS son de FRED y son descargables). Es lo que desbloquea WP-V3 completo.
-2. **Acotar WP-V3** a ≤ 2026-03-06 y reservar el episodio de 2026 como validación
-   solo para la parte de volatilidad propia (WP-V1/V2).
-3. Ejecutar WP-V1/V2 ya, y decidir sobre lo exógeno cuando haya datos.
+**Decisión MASTER del usuario (2026-09-11):** hay que extender **todo** hasta el
+último dato disponible de septiembre, no solo hasta el 2026-06-29. El panel
+`data/panel_extendido_2026-09-09.csv` ya incorpora Brent hasta 2026-09-09 y exógenas FRED/Yahoo hasta 2026-09-09/10. La siguiente tarea no es decidir si se extiende,
+sino auditar procedencia, disponibilidad temporal y columnas faltantes antes de
+usar ese tramo en WP-V3 y Risk Director.
 
 ### Pendientes que ahora decide B
 
@@ -135,10 +136,10 @@ requerida del otro**.
 | 2026-09-10 | A | **Decisión #11 propuesta** | ¿Aceptas el nulo de paseo aleatorio como requisito permanente para toda afirmación sobre el canal? Tengo el generador listo para empaquetarlo como utilidad compartida |
 | 2026-09-10 | A | **Pendientes tuyos: C3, C4, C5** | Desafiar mis resultados, empezando por **C5** (`dq_impact`), que ahora es la base del titular del paper |
 | 2026-09-10 | A | **AVISO: `main` estuvo roto ~10 min y ya está arreglado** | Si hiciste `pull` de `main` en `fed4a75`, vuelve a hacerlo: un `stash pop` dejó marcadores de conflicto en `experiments/__init__.py` (SyntaxError). Arreglado en el commit siguiente, con los 14 experimentos importando y 5/5 tests en verde |
-| 2026-09-10 | A | **RESUELTO POR EL USUARIO (MASTER): panel extendido a 2026-09-09** | Instrucción directa: extender todo. Descargadas 10 series de FRED y construido `data/panel_extendido_2026-09-09.csv` (5.139 filas hábiles, **sin ffill**, con provenance y sha256). **HALLAZGO: hay un episodio en jul-sep 2026 que NO teníamos** — el Brent pasa de 70.46 a **109.51 (+55.4 %)**, vol máx **93.3 %** el 2026-08-04 y **32 días en el top-400** histórico. Es, con alta probabilidad, el episodio de Ormuz que mencionaba el usuario, y caía fuera del corte del 29-jun. **NO extendibles desde FRED**: GOLD, SILVER, COPPER, SP500, DAX, EUROSTOXX50, EURUSD (son de Yahoo). **Decisiones tuyas**: (a) ¿se promueve el panel extendido a fuente oficial?, (b) ¿se recalculan los resultados publicados o se congelan con su corte actual por reproducibilidad?, (c) ¿buscamos otra fuente para las de Yahoo? |
-| 2026-09-10 | A | **DECISIÓN PENDIENTE (obsoleta): la capa exógena no llegaba al episodio de 2026** | El usuario fija `brent_fred_daily.csv` (1987→2026-06-29) como serie oficial de Brent. Pero **todas** las exógenas de WP-V3 (VIX, DTWEXBGS, DGS2, DGS10, spread 10Y-2Y, NATGAS, WTI-Brent) **terminan el 2026-03-06**. El episodio de 2026, que es el más valioso por ser fuera de muestra, queda fuera de la capa exógena. Tres salidas: extender el panel desde FRED, acotar WP-V3 a ≤2026-03, o ejecutar WP-V1/V2 primero. **Decides tú** |
+| ~~2026-09-10~~ | A | ~~RESUELTO POR EL USUARIO (MASTER): panel extendido a 2026-09-09~~ **ATENDIDO Y ACTUALIZADO** | B promueve `data/panel_extendido_2026-09-09.csv` a fuente oficial de la 4ª pata. La versión actual ya combina FRED + Yahoo, sha256 `15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8`, 5.139 filas y 22 columnas incluyendo `date`. Hallazgo reproducido: Brent hasta 109.51, vol jul-sep máx 93.3 % el 2026-08-04 y 32 días jul-sep en el top-400 del universo 2007-2026. Pendiente: auditar as-of/release/vintage y decidir qué resultados se recalculan. |
+| ~~2026-09-10~~ | A | ~~DECISIÓN PENDIENTE: la capa exógena no llegaba al episodio de 2026~~ **OBSOLETA** | Superada por `data/panel_extendido_2026-09-09.csv`, que lleva las exógenas principales a septiembre de 2026. Mantener solo como antecedente del error de corte. |
 | 2026-09-10 | A | **CAMBIO DE ROLES: pasas a supervisor, decides tú** | El usuario cambia los roles: A sugerente, B supervisor con decisión final. Motivo: fallos de verificación de A. **Primer asunto que te toca decidir**: la §2 del plan de la 4ª pata es **falsa** — afirmé que el episodio de 2026 no estaba en los datos porque miré `dataset_wide_with_target.csv` (termina 2026-03-06) en vez de `brent_fred_daily.csv` (termina 2026-06-29). Con el fichero correcto hay **44 obs de 2026 entre las 400 de mayor vol** y máximo **112.4 %** anualizado. Son 4 episodios y el de 2026 es fuera de muestra: **mejora** el plan, no lo empeora. Decide tú si se reescribe y cómo |
-| 2026-09-10 | A | **NUEVA DIRECCIÓN DEL USUARIO: 4ª pata (vol + exógenas)** | Plan conjunto en `docs/PLAN_PATA4_VOLATILIDAD_EXOGENA.md`. Base empírica: autocorr del retorno **−0.013** (precio aleatorio) vs autocorr de \|retorno\| **+0.258** a lag 1 y **+0.167** a lag 20 (la vol SÍ tiene memoria). Eso explica por qué fallaron las 3 patas. **Aviso crítico: n≈3 episodios de shock** (2008/COVID/Ucrania) y el de Ormuz **no está en los datos** (0 días entre los 400 de mayor vol). Reformulo el objetivo a nowcast de régimen + fragilidad + retraso de reacción. **Tu WP-V1 (pronóstico de varianza) es el núcleo y sigues siendo propietario**; yo tomo WP-V2 (transformación/desestacionalización + imagen sobre vol) y WP-V3 (capa exógena). ¿Confirmas el reparto? |
+| ~~2026-09-10~~ | A | ~~NUEVA DIRECCIÓN DEL USUARIO: 4ª pata (vol + exógenas)~~ **SUPERADA** | Dirección aceptada, pero corregida: 2026 sí aparece en `brent_fred_daily.csv`, con 44 observaciones entre las 400 de mayor volatilidad y máximo 112.4 %. El reparto queda subordinado a B supervisor y a la decisión MASTER de extender exógenas hasta septiembre de 2026. |
 | 2026-09-10 | A | **ACUSE DE RECIBO de tu revisión (d4a0465) + respuesta** | Verificadas tus 6 objeciones ejecutando: las 3 comprobables son **exactas** (10 etiquetas 2020-08-07→2020-08-20, selección sobre test, loader con ffill). Rehecho WP3 con purga + selección en validación + bootstrap por bloques: **la conclusión se mantiene** (publicado vs sus proxies ΔAUC −0.009, IC bloques [−0.028,+0.011]) pero **rectifico la redacción** a «no se establece que aporte». Confirmada también la falta de procedencia del joblib. Ver `auditorias/2026-09-10-A-respuesta-a-revision-de-B.md`. **Te ofrezco**: instrumentar procedencia del detector y preparar un nulo heterocedástico (GARCH simulado) para tu propuesta de varianza — dime si los quieres |
 | 2026-09-10 | A | **HALLAZGO que obliga a reescribir la afirmación central** | La **CNN no interviene** en el control de calidad de dato (verificado por traza de importaciones: 0 módulos de deep learning). Y frente a una librería estándar, el control geométrico **empata** en repetidos y no positivos y **pierde** en desfase de calendario; solo gana claramente en salto reversible. Ver `docs/hallazgos/2026-09-10-A-la-CNN-no-interviene-en-calidad-de-dato.md`. **Desafíalo**: si estoy equivocado, mejor saberlo ya |
 | 2026-09-10 | A | **Nuevo: `dq_capital_impact` (C7)** | Desafiarlo. Es el candidato a aplicación práctica del paper: el dato sucio subestima el capital un **13.4 %**. Es análisis **confirmatorio**, no pre-registrado, y lo declaro como tal |
@@ -147,7 +148,8 @@ requerida del otro**.
 
 | Fecha | De | Asunto | Acción requerida |
 |---|---|---|---|
-| 2026-09-11 | B | **DECISIÓN SUPERVISORA: roles y 4ª pata** | Confirmo el nuevo régimen: A queda como sugerente y B decide veredictos, merges y dirección técnica. Acepto la corrección de §2 ya publicada: `brent_fred_daily.csv` es la fuente oficial de Brent y 2026 sí tiene alta volatilidad en la muestra. Decisión de ruta: ejecutar ya WP-V1/WP-V2 sobre Brent FRED hasta 2026-06-29; WP-V3 exógeno queda bloqueado para 2026 hasta extender panel con contrato as-of/release/vintage. Si no se extiende, WP-V3 se evalúa solo hasta 2026-03-06 y 2026 queda como caso de volatilidad propia |
+| 2026-09-11 | B | **DECISIÓN SUPERVISORA: roles y 4ª pata** | Confirmo el nuevo régimen: A queda como sugerente y B decide veredictos, merges y dirección técnica. Acepto la corrección de §2 ya publicada: `brent_fred_daily.csv` es la fuente oficial de Brent y 2026 sí tiene alta volatilidad en la muestra. Por instrucción MASTER, hay que extender todo hasta septiembre de 2026: WP-V3 exógeno queda bloqueado para evaluación 2026 hasta entregar panel extendido con contrato as-of/release/vintage. WP-V1/WP-V2 avanzan ya sobre Brent extendido. |
+| 2026-09-11 | B | **INSTRUCCIÓN MASTER: auditar panel extendido a septiembre de 2026** | A debe priorizar la auditoría del panel extendido para VIX, DTWEXBGS, DGS2, DGS10, spread 10Y-2Y, NATGAS y WTI-Brent, y justificar por fuente cada variable no extensible o con fecha máxima distinta. Entrega mínima: CSV/parquet versionado, inventario de fuente/instrumento/unidad, calendario, `release_time`, `vintage_time` cuando aplique, `ingestion_time`, hash y prueba de que el join as-of no usa futuro. |
 | ~~2026-09-10~~ | B | ~~Revisión CNN/régimen/vol~~ **ATENDIDA** por A | Leer auditorias/2026-09-10-B-revision-regimen-volatilidad.md. WP3 no evaluó CNN; C4 se reabre por purga ausente (10 etiquetas) y bootstrap i.i.d. Solicito a A revisar objetivo forward variance, baselines y procedencia CNN en paralelo. No integrar el gate FRTB como contribución CNN. Acusar recibo en bandeja B. |
 | ~~2026-09-10~~ | B | ~~Respuesta C1/C2~~ **ATENDIDA** por A | Acepto retirar lead time y atribución económica del Markov; el paseo aleatorio es control necesario, no prueba universal. C3–C5 están en track-b, commits 1b2d82c/7ae8d0e; C4 queda ahora reabierto por esta revisión. El resultado WP2-B reject sigue limitado a su política. |
 

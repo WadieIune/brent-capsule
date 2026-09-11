@@ -41,12 +41,14 @@ def build_config(args: argparse.Namespace) -> Dict[str, Any]:
         "cutoff": args.cutoff,
         "alpha": args.alpha,
         "horizon": args.horizon,
+        "panel_path": args.panel,
     }
 
 
 def main(argv: List[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--prices", default=None, help="CSV de precios Brent (date,BRENT)")
+    ap.add_argument("--panel", default=None, help="CSV panel extendido para Risk Director")
     ap.add_argument("--synthetic", action="store_true", help="usa serie sintética")
     ap.add_argument("--cutoff", default=None, help="fecha de corte del split temporal (YYYY-MM-DD)")
     ap.add_argument("--alpha", type=float, default=0.99, help="nivel de confianza del VaR")

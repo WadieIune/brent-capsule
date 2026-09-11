@@ -1,37 +1,49 @@
 {
-  "generado_utc": "2026-09-11T18:06:26Z",
+  "generado_utc": "2026-09-11T18:16:39Z",
   "fuente": "FRED (fredgraph.csv, sin API key)",
-  "series": {
-    "BRENT": "DCOILBRENTEU",
-    "WTI": "DCOILWTICO",
-    "NATGAS": "DHHNGSP",
-    "VIX": "VIXCLS",
-    "DTWEXBGS": "DTWEXBGS",
-    "DGS2": "DGS2",
-    "DGS10": "DGS10",
-    "DGS30": "DGS30",
-    "DFF": "DFF",
-    "SOFR": "SOFR"
-  },
   "frecuencia": "días hábiles (B), SIN forward-fill",
   "derivadas": {
     "SPREAD_US10Y_US2Y": "DGS10-DGS2",
-    "SPREAD_WTI_BRENT": "WTI-BRENT"
+    "SPREAD_WTI_BRENT": "WTI-BRENT",
+    "BRENT_EURUSD_RATIO": "BRENT/EURUSD",
+    "RATIO_WTI_BRENT": "WTI/BRENT"
   },
   "rango": [
     "2007-01-01",
     "2026-09-10"
   ],
   "filas": 5139,
-  "sha256": "aa56084b7c941607bc1b44c0b2235b7fe0988dde23f621ac3e6e1dc7cc6ac414",
-  "no_extendibles_desde_FRED": [
-    "GOLD",
-    "SILVER",
-    "COPPER",
-    "SP500",
-    "DAX",
-    "EUROSTOXX50",
-    "EURUSD"
-  ],
-  "nota": "GOLD/SILVER/COPPER e indices de equity proceden de Yahoo en el panel original y NO se han podido extender desde FRED."
+  "sha256": "15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8",
+  "fuentes": {
+    "FRED": {
+      "BRENT": "DCOILBRENTEU",
+      "WTI": "DCOILWTICO",
+      "NATGAS": "DHHNGSP",
+      "VIX": "VIXCLS",
+      "DTWEXBGS": "DTWEXBGS",
+      "DGS2": "DGS2",
+      "DGS10": "DGS10",
+      "DGS30": "DGS30",
+      "DFF": "DFF",
+      "SOFR": "SOFR"
+    },
+    "Yahoo_chart_api": {
+      "GOLD": "GC=F",
+      "SILVER": "SI=F",
+      "COPPER": "HG=F",
+      "SP500": "^GSPC",
+      "DAX": "^GDAXI",
+      "EURUSD": "EURUSD=X",
+      "EUROSTOXX50": "^STOXX50E"
+    }
+  },
+  "validacion_solape_vs_panel_original": {
+    "corr": "1.0000 en todas salvo EURUSD 0.9989",
+    "error_mediano": "0.00% salvo EURUSD 0.07%",
+    "n_solape": "~4.800 sesiones"
+  },
+  "columnas": 21,
+  "correcciones_aplicadas": [
+    "EURUSD=X (Yahoo) venía desfasado: la barra fechada en D contiene la sesion de D+1 (el FX abre domingo por la tarde en NY, y no hay barra etiquetada en viernes). Sin corregir introducia look-ahead de 1 dia. Corregido remapeando cada fecha al siguiente dia habil; error mediano contra dataset_wide_with_target.csv pasa de 0.071% a 0.0000% y la cobertura de 87.7% a ~99%."
+  ]
 }

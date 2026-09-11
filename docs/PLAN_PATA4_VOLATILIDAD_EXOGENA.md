@@ -44,28 +44,35 @@ sigue siendo limitado. Además, antes de contar episodios hay que fijar la fuent
 de precio: el panel ancho corta antes que la serie FRED separada, y mezclar ambos
 artefactos cambia la conclusión sobre 2026.
 
-Fuente mandante para cualquier afirmación sobre 2026: `data/brent_fred_daily.csv`
-(`sha256=f6f80761627e99b897325bbe7485e6f2463d8d6dd429df4ec5cec7c30f328ef9`),
-con muestra 1987-05-20 a 2026-06-29. Volatilidad descriptiva: desviación muestral
-móvil de 20 log-retornos × raíz de 252, sin relleno de calendario.
+Fuentes mandantes para afirmaciones sobre 2026:
 
-| Episodio descriptivo | Días entre los 400 de mayor volatilidad | Vol. máxima |
-|---|---|---|
-| Crisis 2008 | 139 | 107 % |
-| COVID 2020 | 78 | 170 % |
-| Ucrania 2022 | 43 | 92 % |
-| **2026 reciente, sin atribución causal cerrada** | **44** | **112.4 %** |
+- `data/brent_fred_daily.csv` (`sha256=f6f80761627e99b897325bbe7485e6f2463d8d6dd429df4ec5cec7c30f328ef9`): serie larga 1987-05-20 a 2026-06-29.
+- `data/panel_extendido_2026-09-09.csv` (`sha256=15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8`): panel FRED 2007-01-01 a 2026-09-10; Brent observado hasta 2026-09-09.
+
+Volatilidad descriptiva: desviación muestral móvil de 20 log-retornos × raíz de
+252, sin relleno de calendario. Con la serie larga combinada y el panel extendido
+para julio-septiembre, 2026 no es marginal: aporta 63 días al top-400 histórico
+1987-2026, de los cuales 20 caen entre julio y septiembre. En el universo del
+panel exógeno 2007-2026, las cifras son 89 y 32, respectivamente.
+
+| Episodio descriptivo | Lectura de volatilidad |
+|---|---|
+| Crisis 2008 | episodio histórico de volatilidad extrema |
+| COVID 2020 | episodio histórico de volatilidad extrema |
+| Ucrania 2022 | episodio histórico de volatilidad elevada |
+| **2026 reciente, sin atribución causal cerrada** | máximo anualizado 112.4 % el 2026-04-17; nuevo tramo julio-septiembre con máximo 93.3 % el 2026-08-04 y Brent de 71.59 a 109.51 entre 2026-06-29 y 2026-09-09 |
 
 Dos consecuencias que hay que asumir antes de escribir una línea de código:
 
 1. **Un modelo de «anticipación de shocks» no puede entrenarse como si unos pocos
    conflictos fueran miles de episodios independientes.** Las ventanas solapadas
    ayudan a medir demora y fragilidad, pero no multiplican los shocks.
-2. **2026 sí aparece en la serie FRED disponible, pero no como prueba causal de
-   Ormuz por sí sola.** La muestra termina el 2026-06-29: cubre parte de 2026, no
-   un supuesto periodo de septiembre. El máximo anualizado de 2026 es 112.4 % el
-   2026-04-17 y hay 44 observaciones de 2026 entre las 400 más volátiles. La
-   atribución a Ormuz, Ucrania, demanda u otra causa exige fechas externas y
+2. **2026 sí aparece en los datos disponibles, incluido el tramo de septiembre,
+   pero no como prueba causal de Ormuz por sí solo.** La serie larga FRED corta el
+   2026-06-29, pero el panel extendido llega a 2026-09-10 y contiene Brent hasta
+   2026-09-09. El máximo anualizado de 2026 sigue siendo 112.4 % el 2026-04-17;
+   julio-septiembre añade otro tramo de estrés con máximo 93.3 % el 2026-08-04.
+   La atribución a Ormuz, Ucrania, demanda u otra causa exige fechas externas y
    contraste específico.
 
 **Reformulación honesta del objetivo.** No perseguimos predecir el evento
