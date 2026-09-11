@@ -1,0 +1,87 @@
+{
+  "status": "provisional_scientific_battery",
+  "panel_path": "data/panel_extendido_2026-09-09.csv",
+  "panel_sha256": "3b351ce135fccd9d958aaca3d13617daf453ba0194c318523000b16ed7dbdf68",
+  "n_forecasts": 671,
+  "date_min": "2024-01-02",
+  "date_max": "2026-08-25",
+  "delta_qlike_external_minus_base": 0.047286055918276476,
+  "block_ci_95": {
+    "10": [
+      -0.017505361784572022,
+      0.12752860782902337
+    ],
+    "20": [
+      -0.020903828302822076,
+      0.13224764226319644
+    ],
+    "60": [
+      -0.01823543145019712,
+      0.12543270761943467
+    ]
+  },
+  "event_metrics": {
+    "event_threshold_train_q90": 0.0008904911357166785,
+    "event_rate": 0.21311475409836064,
+    "base_alert_rate": 0.10134128166915052,
+    "base_precision": 0.7941176470588235,
+    "base_capture": 0.3776223776223776,
+    "base_avg_target_alert_over_rest": 4.3340502171321775,
+    "base_joint_event_alert_rate": 0.08047690014903129,
+    "external_alert_rate": 0.10134128166915052,
+    "external_precision": 0.8088235294117647,
+    "external_capture": 0.38461538461538464,
+    "external_avg_target_alert_over_rest": 4.450917150892278,
+    "external_joint_event_alert_rate": 0.08196721311475409
+  },
+  "folds": [
+    {
+      "year": 2024,
+      "selected": "EWMA",
+      "validation_qlike": {
+        "EWMA": -6.622919886511461,
+        "HAR": -6.600506170876371
+      },
+      "train_n": 1180,
+      "validation_n": 252,
+      "test_n": 254,
+      "test_start": "2024-01-02",
+      "refit_end_label": "2023-12-29",
+      "purged_before_test": 10
+    },
+    {
+      "year": 2025,
+      "selected": "HAR",
+      "validation_qlike": {
+        "EWMA": -7.133121071168117,
+        "HAR": -7.1394508427823435
+      },
+      "train_n": 1434,
+      "validation_n": 252,
+      "test_n": 253,
+      "test_start": "2025-01-02",
+      "refit_end_label": "2024-12-31",
+      "purged_before_test": 10
+    },
+    {
+      "year": 2026,
+      "selected": "EWMA",
+      "validation_qlike": {
+        "EWMA": -6.839745669350896,
+        "HAR": -6.81373046854894
+      },
+      "train_n": 1687,
+      "validation_n": 252,
+      "test_n": 164,
+      "test_start": "2026-01-02",
+      "refit_end_label": "2025-12-31",
+      "purged_before_test": 10
+    }
+  ],
+  "limitations": [
+    "First battery for external information; CNN representation is evaluated separately.",
+    "External panel is dated by observation; per-variable publication lags still need policy delays.",
+    "No hyperparameter search beyond fixed ridge log-QLIKE bridge.",
+    "Close-to-close squared returns are noisy proxies of realized variance."
+  ]
+}

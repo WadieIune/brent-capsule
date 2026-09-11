@@ -1,0 +1,69 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "risk_director_scientific_eval",
+  "title": "Evaluacion cientifica: informacion externa sobre riesgo Brent a 10 sesiones",
+  "timestamp_utc": "2026-09-11T18:50:47Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": null,
+    "alpha": 0.99,
+    "horizon": 10,
+    "panel_path": "data/panel_extendido_2026-09-09.csv"
+  },
+  "seed": 42,
+  "command": "python code/applications/run_all.py --only risk_director_scientific_eval --panel data/panel_extendido_2026-09-09.csv --out code/applications/outputs_scientific",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "status": "provisional_scientific_battery",
+    "panel_path": "data/panel_extendido_2026-09-09.csv",
+    "panel_sha256": "3b351ce135fccd9d958aaca3d13617daf453ba0194c318523000b16ed7dbdf68",
+    "n_forecasts": 671,
+    "date_min": "2024-01-02",
+    "date_max": "2026-08-25",
+    "delta_qlike_external_minus_base": 0.047286055918276476,
+    "block_ci_95": {
+      "10": [
+        -0.017505361784572022,
+        0.12752860782902337
+      ],
+      "20": [
+        -0.020903828302822076,
+        0.13224764226319644
+      ],
+      "60": [
+        -0.01823543145019712,
+        0.12543270761943467
+      ]
+    },
+    "event_metrics": {
+      "event_threshold_train_q90": 0.0008904911357166785,
+      "event_rate": 0.21311475409836064,
+      "base_alert_rate": 0.10134128166915052,
+      "base_precision": 0.7941176470588235,
+      "base_capture": 0.3776223776223776,
+      "base_avg_target_alert_over_rest": 4.3340502171321775,
+      "base_joint_event_alert_rate": 0.08047690014903129,
+      "external_alert_rate": 0.10134128166915052,
+      "external_precision": 0.8088235294117647,
+      "external_capture": 0.38461538461538464,
+      "external_avg_target_alert_over_rest": 4.450917150892278,
+      "external_joint_event_alert_rate": 0.08196721311475409
+    }
+  },
+  "baseline": {},
+  "artifacts": [
+    "code/applications/outputs_scientific/risk_director_scientific_eval/summary.json",
+    "code/applications/outputs_scientific/risk_director_scientific_eval/forecasts.csv",
+    "code/applications/outputs_scientific/risk_director_scientific_eval/per_year.csv"
+  ],
+  "decision": "review",
+  "notes": "delta QLIKE externo-base=0.047286; pendiente challenge",
+  "error": null,
+  "elapsed_seconds": 0.26
+}

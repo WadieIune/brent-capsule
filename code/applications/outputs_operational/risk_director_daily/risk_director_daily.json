@@ -1,7 +1,7 @@
 {
   "as_of": "2026-09-09",
   "panel_path": "data/panel_extendido_2026-09-09.csv",
-  "panel_sha256": "15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8",
+  "panel_sha256": "3b351ce135fccd9d958aaca3d13617daf453ba0194c318523000b16ed7dbdf68",
   "panel_rows": 5139,
   "panel_columns": 22,
   "panel_date_range": [
@@ -123,14 +123,14 @@
       "change_5_obs": -0.017801493075339847
     },
     "EURUSD": {
-      "latest_date": "2026-09-10",
-      "latest": 1.1633858680725098,
-      "change_5_obs": 0.004188204231420745
+      "latest_date": "2026-03-06",
+      "latest": 1.1635618209838867,
+      "change_5_obs": -0.014183878558947982
     },
     "BRENT_EURUSD_RATIO": {
-      "latest_date": "2026-09-09",
-      "latest": 94.18297737217164,
-      "change_5_obs": 0.11907281430970573
+      "latest_date": "2026-03-06",
+      "latest": 82.2818334818205,
+      "change_5_obs": 0.3617148466994988
     }
   },
   "limits": [
