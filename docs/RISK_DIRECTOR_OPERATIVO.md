@@ -9,8 +9,8 @@ Para la cuarta pata integrada se usa `data/panel_extendido_2026-09-09.csv`.
 
 - Rango del panel: 2007-01-01 a 2026-09-10.
 - Brent observado hasta 2026-09-09, ultimo valor 109.51.
-- Hash actual: `15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8`.
-- Fuente declarada: FRED + Yahoo chart API, sin forward-fill.
+- Hash actual: `3b351ce135fccd9d958aaca3d13617daf453ba0194c318523000b16ed7dbdf68`.
+- Fuente declarada: FRED + Yahoo chart API, sin forward-fill; EURUSD de Yahoo rechazado por desfase/look-ahead y pendiente de extension fiable.
 
 `data/brent_fred_daily.csv` queda como historico largo de Brent hasta 2026-06-29.
 No manda para decisiones que dependan del tramo julio-septiembre de 2026.

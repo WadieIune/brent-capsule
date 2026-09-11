@@ -47,7 +47,7 @@ artefactos cambia la conclusión sobre 2026.
 Fuentes mandantes para afirmaciones sobre 2026:
 
 - `data/brent_fred_daily.csv` (`sha256=f6f80761627e99b897325bbe7485e6f2463d8d6dd429df4ec5cec7c30f328ef9`): serie larga 1987-05-20 a 2026-06-29.
-- `data/panel_extendido_2026-09-09.csv` (`sha256=15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8`): panel FRED 2007-01-01 a 2026-09-10; Brent observado hasta 2026-09-09.
+- `data/panel_extendido_2026-09-09.csv` (`sha256=3b351ce135fccd9d958aaca3d13617daf453ba0194c318523000b16ed7dbdf68`): panel FRED 2007-01-01 a 2026-09-10; Brent observado hasta 2026-09-09.
 
 Volatilidad descriptiva: desviación muestral móvil de 20 log-retornos × raíz de
 252, sin relleno de calendario. Con la serie larga combinada y el panel extendido

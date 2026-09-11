@@ -14,6 +14,7 @@ from .breakout_detection import BreakoutDetectionExperiment
 from .regime_markov import RegimeMarkovExperiment
 from .channel_vol_audit import ChannelVolAuditExperiment
 from .risk_director_daily import RiskDirectorDailyExperiment
+from .risk_director_scientific_eval import RiskDirectorScientificEvalExperiment
 
 ALL_EXPERIMENTS = [
     # A · calidad de dato
@@ -36,6 +37,7 @@ ALL_EXPERIMENTS = [
     ChannelVolAuditExperiment,
     # E · monitor operativo diario
     RiskDirectorDailyExperiment,
+    RiskDirectorScientificEvalExperiment,
 ]
 
 __all__ = [c.__name__ for c in ALL_EXPERIMENTS] + ["ALL_EXPERIMENTS"]

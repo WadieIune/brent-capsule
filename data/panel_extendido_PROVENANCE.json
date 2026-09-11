@@ -1,5 +1,5 @@
 {
-  "generado_utc": "2026-09-11T18:16:39Z",
+  "generado_utc": "2026-09-11T18:44:22Z",
   "fuente": "FRED (fredgraph.csv, sin API key)",
   "frecuencia": "días hábiles (B), SIN forward-fill",
   "derivadas": {
@@ -13,7 +13,7 @@
     "2026-09-10"
   ],
   "filas": 5139,
-  "sha256": "15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8",
+  "sha256": "3b351ce135fccd9d958aaca3d13617daf453ba0194c318523000b16ed7dbdf68",
   "fuentes": {
     "FRED": {
       "BRENT": "DCOILBRENTEU",
@@ -33,7 +33,6 @@
       "COPPER": "HG=F",
       "SP500": "^GSPC",
       "DAX": "^GDAXI",
-      "EURUSD": "EURUSD=X",
       "EUROSTOXX50": "^STOXX50E"
     }
   },
@@ -44,6 +43,11 @@
   },
   "columnas": 21,
   "correcciones_aplicadas": [
-    "EURUSD=X (Yahoo) venía desfasado: la barra fechada en D contiene la sesion de D+1 (el FX abre domingo por la tarde en NY, y no hay barra etiquetada en viernes). Sin corregir introducia look-ahead de 1 dia. Corregido remapeando cada fecha al siguiente dia habil; error mediano contra dataset_wide_with_target.csv pasa de 0.071% a 0.0000% y la cobertura de 87.7% a ~99%."
-  ]
+    "EURUSD: Yahoo EURUSD=X RECHAZADO como fuente. Sus barras diarias estan fechadas un dia antes de la sesion que contienen (no hay barra etiquetada en viernes; si la hay en domingo). Usarlo sin corregir introduce look-ahead de 1 dia. El remapeo al siguiente dia habil deja aun 20-50 dias/ano con error >0.5% frente a dataset_wide_with_target.csv, y error mediano 0.206% en 2026. EURUSD se mantiene en su valor original (hasta 2026-03-06) y su extension queda PENDIENTE de FRED DEXUSEU, inaccesible en el momento de la descarga.",
+    "Los otros 6 instrumentos de Yahoo (GOLD, SILVER, COPPER, SP500, DAX, EUROSTOXX50) validan con error mediano 0.0000% y desplazamiento optimo 0 en el solape de ~4.800 sesiones."
+  ],
+  "pendiente": {
+    "EURUSD": "extender desde FRED DEXUSEU cuando el servicio responda; DTWEXBGS (dolar amplio) SI esta extendido a 2026-09-04 y cubre la variable dolar de WP-V3"
+  },
+  "ingestion_date": "2026-09-11"
 }

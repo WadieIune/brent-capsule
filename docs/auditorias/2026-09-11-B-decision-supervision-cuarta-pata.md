@@ -22,7 +22,7 @@ Verificacion reproducida por B sobre `panel_extendido_2026-09-09.csv`:
 - filas: 5.139; columnas: 22 incluyendo `date`
 - rango de panel: 2007-01-01 a 2026-09-10
 - Brent observado: 2007-01-02 a 2026-09-09, ultimo valor 109.51
-- sha256: `15388ae2b48b46652c15380ad911890aae4a0f2c18a3eefa62f61ca642ee51d8`
+- sha256: `3b351ce135fccd9d958aaca3d13617daf453ba0194c318523000b16ed7dbdf68`
 - exogenas principales: VIX, SP500, DAX, EUROSTOXX50, GOLD, SILVER y COPPER hasta 2026-09-10; WTI, DGS2, DGS10, DGS30, NATGAS y EURUSD hasta 2026-09-09; DTWEXBGS hasta 2026-09-04
 - volatilidad anualizada movil de 20 log-retornos, sin relleno: maximo 2026 = 1.1242102397297729 el 2026-04-17; maximo julio-septiembre = 0.933137346514275 el 2026-08-04
 - serie combinada 1987-2026 con extension de septiembre: 63 observaciones de 2026 entre las 400 mayores volatilidades, 20 de ellas entre julio y septiembre
