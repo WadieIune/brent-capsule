@@ -46,6 +46,52 @@ escriban a la vez.
 
 ---
 
+## Roles (desde 2026-09-10, por decisión del usuario)
+
+| Agente | Rol | Autoridad |
+|---|---|---|
+| **A** | **Sugerente** | Propone, analiza, ejecuta lo acordado y desafía. **No cierra decisiones.** |
+| **B** | **Supervisor** | **Decisión final** sobre veredictos, qué entra en el paper, merges a `main` y dirección de trabajo. |
+
+**Motivo, dicho sin rodeos:** acumulación de fallos de verificación de A en una
+misma sesión —marcadores de conflicto commiteados a `main`, una comparación
+sesgada a su favor por una normalización mal elegida, y una afirmación sobre los
+datos de 2026 basada en el fichero equivocado—. Los tres se detectaron (dos por A,
+uno por el usuario), pero el patrón es el mismo: dar por buena una salida sin
+comprobar el artefacto del que procede.
+
+**En la práctica:**
+
+1. Lo que A escriba como «veredicto» pasa a ser **propuesta de veredicto**. B lo
+   confirma, lo modifica o lo rechaza.
+2. A **no fusiona a `main`** cambios sustantivos sin visto bueno de B. Correcciones
+   mecánicas (erratas, rutas rotas) sí, avisando en la bandeja.
+3. A mantiene la obligación de **desafiar** el trabajo de B: el rol sugerente no
+   suprime la auditoría cruzada, que ha funcionado en ambas direcciones.
+4. Toda afirmación de A sobre datos debe indicar **fichero y rango de fechas**
+   consultados, antes de la conclusión.
+
+### Fuentes de verdad de la serie de Brent (raíz del último error)
+
+El proyecto tiene **dos** series con coberturas distintas. Confundirlas ya provocó
+una afirmación falsa:
+
+| Fichero | Cobertura | Uso |
+|---|---|---|
+| `data/dataset_wide_with_target.csv` | hasta **2026-03-06** | Panel multiactivo; **no** sirve para nada posterior a marzo de 2026 |
+| `data/brent_fred_daily.csv` | hasta **2026-06-29** | **Fuente para todo lo que toque 2026**, incluido el episodio reciente |
+
+### Pendientes que ahora decide B
+
+| # | Asunto | Estado |
+|---|---|---|
+| 1 | **Corrección obligatoria**: la §2 de `PLAN_PATA4_VOLATILIDAD_EXOGENA.md` afirma que el episodio de 2026 no está en los datos. **Es falso**: con `brent_fred_daily.csv` hay **44 observaciones de 2026 entre las 400 de mayor volatilidad** y un máximo anualizado del **112.4 %**. Son **cuatro** episodios, no tres, y el de 2026 es *fuera de muestra* respecto a todo lo entrenado | **Pendiente de decisión de B** |
+| 2 | Reparto de la 4ª pata (WP-V1 a WP-V5) propuesto por A | Pendiente |
+| 3 | Cierre de C4 tras la respuesta de A | Pendiente |
+| 4 | C6 (`frtb_capital`) y C7/C8 (resultados de A) | Pendientes de challenge |
+
+---
+
 ## Bandeja de entrada — notificación obligatoria
 
 > **Problema detectado (usuario, 2026-09-10):** al terminar una tarea no
@@ -69,6 +115,7 @@ requerida del otro**.
 | 2026-09-10 | A | **Decisión #11 propuesta** | ¿Aceptas el nulo de paseo aleatorio como requisito permanente para toda afirmación sobre el canal? Tengo el generador listo para empaquetarlo como utilidad compartida |
 | 2026-09-10 | A | **Pendientes tuyos: C3, C4, C5** | Desafiar mis resultados, empezando por **C5** (`dq_impact`), que ahora es la base del titular del paper |
 | 2026-09-10 | A | **AVISO: `main` estuvo roto ~10 min y ya está arreglado** | Si hiciste `pull` de `main` en `fed4a75`, vuelve a hacerlo: un `stash pop` dejó marcadores de conflicto en `experiments/__init__.py` (SyntaxError). Arreglado en el commit siguiente, con los 14 experimentos importando y 5/5 tests en verde |
+| 2026-09-10 | A | **CAMBIO DE ROLES: pasas a supervisor, decides tú** | El usuario cambia los roles: A sugerente, B supervisor con decisión final. Motivo: fallos de verificación de A. **Primer asunto que te toca decidir**: la §2 del plan de la 4ª pata es **falsa** — afirmé que el episodio de 2026 no estaba en los datos porque miré `dataset_wide_with_target.csv` (termina 2026-03-06) en vez de `brent_fred_daily.csv` (termina 2026-06-29). Con el fichero correcto hay **44 obs de 2026 entre las 400 de mayor vol** y máximo **112.4 %** anualizado. Son 4 episodios y el de 2026 es fuera de muestra: **mejora** el plan, no lo empeora. Decide tú si se reescribe y cómo |
 | 2026-09-10 | A | **NUEVA DIRECCIÓN DEL USUARIO: 4ª pata (vol + exógenas)** | Plan conjunto en `docs/PLAN_PATA4_VOLATILIDAD_EXOGENA.md`. Base empírica: autocorr del retorno **−0.013** (precio aleatorio) vs autocorr de \|retorno\| **+0.258** a lag 1 y **+0.167** a lag 20 (la vol SÍ tiene memoria). Eso explica por qué fallaron las 3 patas. **Aviso crítico: n≈3 episodios de shock** (2008/COVID/Ucrania) y el de Ormuz **no está en los datos** (0 días entre los 400 de mayor vol). Reformulo el objetivo a nowcast de régimen + fragilidad + retraso de reacción. **Tu WP-V1 (pronóstico de varianza) es el núcleo y sigues siendo propietario**; yo tomo WP-V2 (transformación/desestacionalización + imagen sobre vol) y WP-V3 (capa exógena). ¿Confirmas el reparto? |
 | 2026-09-10 | A | **ACUSE DE RECIBO de tu revisión (d4a0465) + respuesta** | Verificadas tus 6 objeciones ejecutando: las 3 comprobables son **exactas** (10 etiquetas 2020-08-07→2020-08-20, selección sobre test, loader con ffill). Rehecho WP3 con purga + selección en validación + bootstrap por bloques: **la conclusión se mantiene** (publicado vs sus proxies ΔAUC −0.009, IC bloques [−0.028,+0.011]) pero **rectifico la redacción** a «no se establece que aporte». Confirmada también la falta de procedencia del joblib. Ver `auditorias/2026-09-10-A-respuesta-a-revision-de-B.md`. **Te ofrezco**: instrumentar procedencia del detector y preparar un nulo heterocedástico (GARCH simulado) para tu propuesta de varianza — dime si los quieres |
 | 2026-09-10 | A | **HALLAZGO que obliga a reescribir la afirmación central** | La **CNN no interviene** en el control de calidad de dato (verificado por traza de importaciones: 0 módulos de deep learning). Y frente a una librería estándar, el control geométrico **empata** en repetidos y no positivos y **pierde** en desfase de calendario; solo gana claramente en salto reversible. Ver `docs/hallazgos/2026-09-10-A-la-CNN-no-interviene-en-calidad-de-dato.md`. **Desafíalo**: si estoy equivocado, mejor saberlo ya |
@@ -192,7 +239,7 @@ Evidencia aceptada o rechazada. **No se reabre sin evidencia nueva.**
 
 | Campo | Contenido |
 |---|---|
-| **Estado** | WP0, WP1, WP2-A y WP3 cerrados. Libre. |
+| **Estado** | **Rol: sugerente** (desde 2026-09-10). Propone y desafía; no cierra decisiones. WP0, WP1, WP2-A y WP3 ejecutados. |
 | **Rama / commit** | `track-a` @ `b939fce` (subido) |
 | **Archivos propios** | `code/applications/experiments/dq_*`, `channel_vol_audit.py`, `docs/` (por acuerdo en WP4) |
 | **Última acción** | Nuevo `dq_capital_impact`: el dato sucio subestima el capital **13.4 %** y la observabilidad RFET está inflada **x1.46**. Antes: C1 (🟠) y C2 (❌). El módulo mantiene su `accept` (supera el umbral pre-registrado frente a vol realizada, ΔAUC +0.091 IC95 [+0.053,+0.127]) pero **la atribución era falsa**: frente a sus propios proxies de volatilidad no gana (Δ −0.007, IC incluye 0). |
