@@ -1,0 +1,37 @@
+{
+  "generado_utc": "2026-09-11T18:06:26Z",
+  "fuente": "FRED (fredgraph.csv, sin API key)",
+  "series": {
+    "BRENT": "DCOILBRENTEU",
+    "WTI": "DCOILWTICO",
+    "NATGAS": "DHHNGSP",
+    "VIX": "VIXCLS",
+    "DTWEXBGS": "DTWEXBGS",
+    "DGS2": "DGS2",
+    "DGS10": "DGS10",
+    "DGS30": "DGS30",
+    "DFF": "DFF",
+    "SOFR": "SOFR"
+  },
+  "frecuencia": "días hábiles (B), SIN forward-fill",
+  "derivadas": {
+    "SPREAD_US10Y_US2Y": "DGS10-DGS2",
+    "SPREAD_WTI_BRENT": "WTI-BRENT"
+  },
+  "rango": [
+    "2007-01-01",
+    "2026-09-10"
+  ],
+  "filas": 5139,
+  "sha256": "aa56084b7c941607bc1b44c0b2235b7fe0988dde23f621ac3e6e1dc7cc6ac414",
+  "no_extendibles_desde_FRED": [
+    "GOLD",
+    "SILVER",
+    "COPPER",
+    "SP500",
+    "DAX",
+    "EUROSTOXX50",
+    "EURUSD"
+  ],
+  "nota": "GOLD/SILVER/COPPER e indices de equity proceden de Yahoo en el panel original y NO se han podido extender desde FRED."
+}
