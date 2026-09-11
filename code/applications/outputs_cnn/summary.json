@@ -1,0 +1,21 @@
+{
+  "task_id": "risk_applications",
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": null,
+    "alpha": 0.99,
+    "horizon": 10,
+    "panel_path": "data/panel_extendido_2026-09-09.csv"
+  },
+  "experiments": [
+    {
+      "id": "risk_director_temporal_cnn",
+      "title": "CNN temporal con incertidumbre para Risk Director",
+      "decision": "review",
+      "notes": "delta CNN-tabular=2.107858; pendiente challenge",
+      "error": null,
+      "manifest": "code/applications/outputs_cnn/risk_director_temporal_cnn/run_manifest.json"
+    }
+  ]
+}

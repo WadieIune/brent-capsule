@@ -1,0 +1,71 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "risk_director_temporal_cnn",
+  "title": "CNN temporal con incertidumbre para Risk Director",
+  "timestamp_utc": "2026-09-11T20:00:50Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": null,
+    "alpha": 0.99,
+    "horizon": 10,
+    "panel_path": "data/panel_extendido_2026-09-09.csv"
+  },
+  "seed": 42,
+  "command": "python code/applications/run_all.py --only risk_director_temporal_cnn --panel data/panel_extendido_2026-09-09.csv --out code/applications/outputs_cnn",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "status": "provisional_temporal_cnn_mc_dropout",
+    "panel_path": "data/panel_extendido_2026-09-09.csv",
+    "panel_sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
+    "window": 64,
+    "n_forecasts": 671,
+    "date_min": "2024-01-02",
+    "date_max": "2026-08-25",
+    "delta_qlike_cnn_minus_tabular": 2.1078584582441313,
+    "delta_qlike_cnn_minus_base": 2.1551445140513326,
+    "block_ci_95_cnn_minus_tabular": {
+      "10": [
+        1.1109837427332765,
+        3.336217526355351
+      ],
+      "20": [
+        0.8241515261828847,
+        3.7890669475729233
+      ],
+      "60": [
+        0.25208631765813,
+        4.446029580637361
+      ]
+    },
+    "block_ci_95_cnn_minus_base": {
+      "10": [
+        1.1617423674854823,
+        3.365335241849359
+      ],
+      "20": [
+        0.868413978490147,
+        3.8499722678460775
+      ],
+      "60": [
+        0.30239901045970613,
+        4.5260603730986695
+      ]
+    }
+  },
+  "baseline": {},
+  "artifacts": [
+    "code/applications/outputs_cnn/risk_director_temporal_cnn/summary.json",
+    "code/applications/outputs_cnn/risk_director_temporal_cnn/forecasts.csv",
+    "code/applications/outputs_cnn/risk_director_temporal_cnn/per_year.csv"
+  ],
+  "decision": "review",
+  "notes": "delta CNN-tabular=2.107858; pendiente challenge",
+  "error": null,
+  "elapsed_seconds": 3.07
+}

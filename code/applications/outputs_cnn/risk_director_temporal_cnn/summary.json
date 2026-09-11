@@ -1,0 +1,147 @@
+{
+  "status": "provisional_temporal_cnn_mc_dropout",
+  "panel_path": "data/panel_extendido_2026-09-09.csv",
+  "panel_sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
+  "window": 64,
+  "features": [
+    "rv1",
+    "rv5",
+    "rv22",
+    "ret5",
+    "ret20",
+    "vol20",
+    "x_WTI_level",
+    "x_WTI_chg5",
+    "x_WTI_age",
+    "x_SPREAD_WTI_BRENT_level",
+    "x_SPREAD_WTI_BRENT_chg5",
+    "x_SPREAD_WTI_BRENT_age",
+    "x_RATIO_WTI_BRENT_level",
+    "x_RATIO_WTI_BRENT_chg5",
+    "x_RATIO_WTI_BRENT_age",
+    "x_VIX_level",
+    "x_VIX_chg5",
+    "x_VIX_age",
+    "x_DTWEXBGS_level",
+    "x_DTWEXBGS_chg5",
+    "x_DTWEXBGS_age",
+    "x_DGS2_level",
+    "x_DGS2_chg5",
+    "x_DGS2_age",
+    "x_DGS10_level",
+    "x_DGS10_chg5",
+    "x_DGS10_age",
+    "x_DGS30_level",
+    "x_DGS30_chg5",
+    "x_DGS30_age",
+    "x_SPREAD_US10Y_US2Y_level",
+    "x_SPREAD_US10Y_US2Y_chg5",
+    "x_SPREAD_US10Y_US2Y_age",
+    "x_DFF_level",
+    "x_DFF_chg5",
+    "x_DFF_age",
+    "x_SOFR_level",
+    "x_SOFR_chg5",
+    "x_SOFR_age",
+    "x_NATGAS_level",
+    "x_NATGAS_chg5",
+    "x_NATGAS_age",
+    "x_GOLD_level",
+    "x_GOLD_chg5",
+    "x_GOLD_age",
+    "x_SILVER_level",
+    "x_SILVER_chg5",
+    "x_SILVER_age",
+    "x_COPPER_level",
+    "x_COPPER_chg5",
+    "x_COPPER_age",
+    "x_SP500_level",
+    "x_SP500_chg5",
+    "x_SP500_age",
+    "x_DAX_level",
+    "x_DAX_chg5",
+    "x_DAX_age",
+    "x_EUROSTOXX50_level",
+    "x_EUROSTOXX50_chg5",
+    "x_EUROSTOXX50_age"
+  ],
+  "n_forecasts": 671,
+  "date_min": "2024-01-02",
+  "date_max": "2026-08-25",
+  "delta_qlike_cnn_minus_tabular": 2.1078584582441313,
+  "delta_qlike_cnn_minus_base": 2.1551445140513326,
+  "block_ci_95_cnn_minus_tabular": {
+    "10": [
+      1.1109837427332765,
+      3.336217526355351
+    ],
+    "20": [
+      0.8241515261828847,
+      3.7890669475729233
+    ],
+    "60": [
+      0.25208631765813,
+      4.446029580637361
+    ]
+  },
+  "block_ci_95_cnn_minus_base": {
+    "10": [
+      1.1617423674854823,
+      3.365335241849359
+    ],
+    "20": [
+      0.868413978490147,
+      3.8499722678460775
+    ],
+    "60": [
+      0.30239901045970613,
+      4.5260603730986695
+    ]
+  },
+  "folds": [
+    {
+      "year": 2024,
+      "selected_tabular_base": "EWMA",
+      "validation_qlike_base": {
+        "EWMA": -6.6228823725806585,
+        "HAR": -6.600922249697558
+      },
+      "train_n": 1127,
+      "validation_n": 252,
+      "test_n": 254,
+      "best_valid_qlike": -6.665496349334717,
+      "epochs": 18
+    },
+    {
+      "year": 2025,
+      "selected_tabular_base": "HAR",
+      "validation_qlike_base": {
+        "EWMA": -7.133834393254341,
+        "HAR": -7.140273904228237
+      },
+      "train_n": 1381,
+      "validation_n": 252,
+      "test_n": 253,
+      "best_valid_qlike": -7.140190601348877,
+      "epochs": 11
+    },
+    {
+      "year": 2026,
+      "selected_tabular_base": "EWMA",
+      "validation_qlike_base": {
+        "EWMA": -6.8398991317517055,
+        "HAR": -6.814005957909087
+      },
+      "train_n": 1634,
+      "validation_n": 252,
+      "test_n": 164,
+      "best_valid_qlike": -6.889570713043213,
+      "epochs": 12
+    }
+  ],
+  "limitations": [
+    "First CPU temporal CNN; architecture and training budget fixed before this run but not preregistered historically.",
+    "MC dropout is approximate Bayesian uncertainty, not a full Bayesian network.",
+    "External variables are dated by observation; operational lags still require deployment policy."
+  ]
+}

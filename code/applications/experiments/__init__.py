@@ -16,6 +16,7 @@ from .channel_vol_audit import ChannelVolAuditExperiment
 from .risk_director_daily import RiskDirectorDailyExperiment
 from .risk_director_scientific_eval import RiskDirectorScientificEvalExperiment
 from .risk_director_policy_lab import RiskDirectorPolicyLabExperiment
+from .risk_director_temporal_cnn import RiskDirectorTemporalCNNExperiment
 
 ALL_EXPERIMENTS = [
     # A · calidad de dato
@@ -40,6 +41,7 @@ ALL_EXPERIMENTS = [
     RiskDirectorDailyExperiment,
     RiskDirectorScientificEvalExperiment,
     RiskDirectorPolicyLabExperiment,
+    RiskDirectorTemporalCNNExperiment,
 ]
 
 __all__ = [c.__name__ for c in ALL_EXPERIMENTS] + ["ALL_EXPERIMENTS"]
