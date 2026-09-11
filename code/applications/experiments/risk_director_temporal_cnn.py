@@ -98,32 +98,33 @@ def _standardize(x_train: np.ndarray, *others: np.ndarray) -> Tuple[np.ndarray, 
     return tuple(out)
 
 
-def _fit_cnn(x_train: np.ndarray, y_train: np.ndarray, x_valid: np.ndarray, y_valid: np.ndarray) -> Tuple[TemporalCNN, Dict[str, float]]:
+def _fit_cnn(x_train: np.ndarray, y_train: np.ndarray, off_train: np.ndarray, x_valid: np.ndarray, y_valid: np.ndarray, off_valid: np.ndarray) -> Tuple[TemporalCNN, Dict[str, float]]:
     torch.manual_seed(SEED)
     np.random.seed(SEED)
     torch.set_num_threads(2)
     model = TemporalCNN(x_train.shape[1])
     with torch.no_grad():
-        model.head.bias.fill_(float(np.log(max(float(np.mean(y_train)), 1e-12))))
+        model.head.bias.zero_()
     opt = torch.optim.AdamW(model.parameters(), lr=2e-3, weight_decay=1e-4)
-    ds = TensorDataset(torch.tensor(x_train), torch.tensor(y_train))
+    ds = TensorDataset(torch.tensor(x_train), torch.tensor(y_train), torch.tensor(off_train.astype(np.float32)))
     loader = DataLoader(ds, batch_size=BATCH, shuffle=True, generator=torch.Generator().manual_seed(SEED))
     xv = torch.tensor(x_valid)
     yv = torch.tensor(y_valid)
+    ov = torch.tensor(off_valid.astype(np.float32))
     best_state = None
     best = float("inf")
     bad = 0
     hist: List[float] = []
     for _epoch in range(EPOCHS):
         model.train()
-        for xb, yb in loader:
+        for xb, yb, ob in loader:
             opt.zero_grad()
-            loss = _qlike_loss(model(xb), yb)
+            loss = _qlike_loss(ob + model(xb), yb)
             loss.backward()
             opt.step()
         model.eval()
         with torch.no_grad():
-            val = float(_qlike_loss(model(xv), yv).item())
+            val = float(_qlike_loss(ov + model(xv), yv).item())
         hist.append(val)
         if val < best - 1e-5:
             best = val
@@ -138,13 +139,14 @@ def _fit_cnn(x_train: np.ndarray, y_train: np.ndarray, x_valid: np.ndarray, y_va
     return model, {"best_valid_qlike": best, "epochs": len(hist)}
 
 
-def _predict_mc(model: TemporalCNN, x: np.ndarray, draws: int = 30) -> Dict[str, np.ndarray]:
+def _predict_mc(model: TemporalCNN, x: np.ndarray, offset: np.ndarray, draws: int = 30) -> Dict[str, np.ndarray]:
     xt = torch.tensor(x)
+    off = torch.tensor(offset.astype(np.float32))
     preds = []
     model.train()  # keep dropout active for MC uncertainty.
     with torch.no_grad():
         for _ in range(draws):
-            preds.append(torch.exp(model(xt)).cpu().numpy())
+            preds.append(torch.exp(off + model(xt)).cpu().numpy())
     arr = np.stack(preds)
     return {
         "mean": arr.mean(axis=0),
@@ -178,11 +180,6 @@ def run_temporal_cnn(panel_path: Path, out_dir: Path) -> Dict[str, object]:
         if len(train_idx) < 900:
             continue
 
-        x_train, x_valid, x_test = _standardize(x_all[train_idx], x_all[valid_idx], x_all[test_idx])
-        y_train, y_valid, y_test = y_all[train_idx], y_all[valid_idx], y_all[test_idx]
-        model, fit = _fit_cnn(x_train, y_train, x_valid, y_valid)
-        mc = _predict_mc(model, x_test)
-
         # Tabular same-period comparator from current scientific evaluation.
         frame_test = frame.loc[dates[test_idx]].dropna(subset=cols)
         frame_available = frame[(frame.index < start) & (frame["label_end"] < start)].dropna(subset=cols)
@@ -190,6 +187,14 @@ def run_temporal_cnn(panel_path: Path, out_dir: Path) -> Dict[str, object]:
         frame_train = frame_available.iloc[:-252]
         scores = {fam: float(np.mean(qlike(frame_valid["target"].to_numpy(), predict(frame_train, frame_valid, fam, [])))) for fam in ["EWMA", "HAR"]}
         selected = min(scores, key=scores.get)
+        offset_col = "ewma" if selected == "EWMA" else "rv22"
+        offsets = np.log(frame.loc[dates, offset_col].clip(lower=1e-12).to_numpy(dtype=float))
+
+        x_train, x_valid, x_test = _standardize(x_all[train_idx], x_all[valid_idx], x_all[test_idx])
+        y_train, y_valid, y_test = y_all[train_idx], y_all[valid_idx], y_all[test_idx]
+        model, fit = _fit_cnn(x_train, y_train, offsets[train_idx], x_valid, y_valid, offsets[valid_idx])
+        mc = _predict_mc(model, x_test, offsets[test_idx])
+
         tabular = predict(frame_available, frame_test, selected, cols[6:])  # external cols only; risk cols are in EWMA/HAR.
         base = predict(frame_available, frame_test, selected, [])
 
@@ -246,7 +251,7 @@ def run_temporal_cnn(panel_path: Path, out_dir: Path) -> Dict[str, object]:
         "block_ci_95_cnn_minus_base": {str(b): block_interval(d_base, b) for b in [10, 20, 60]},
         "folds": folds,
         "limitations": [
-            "First CPU temporal CNN; architecture and training budget fixed before this run but not preregistered historically.",
+            "First CPU temporal CNN; implemented as multiplicative adjustment over EWMA/HAR to avoid free-scale variance drift.",
             "MC dropout is approximate Bayesian uncertainty, not a full Bayesian network.",
             "External variables are dated by observation; operational lags still require deployment policy.",
         ],

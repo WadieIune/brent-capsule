@@ -68,34 +68,34 @@
   "n_forecasts": 671,
   "date_min": "2024-01-02",
   "date_max": "2026-08-25",
-  "delta_qlike_cnn_minus_tabular": 2.1078584582441313,
-  "delta_qlike_cnn_minus_base": 2.1551445140513326,
+  "delta_qlike_cnn_minus_tabular": 0.03524428814252473,
+  "delta_qlike_cnn_minus_base": 0.08253034394972666,
   "block_ci_95_cnn_minus_tabular": {
     "10": [
-      1.1109837427332765,
-      3.336217526355351
+      -0.06494722919147833,
+      0.1371338991039218
     ],
     "20": [
-      0.8241515261828847,
-      3.7890669475729233
+      -0.07238427429874182,
+      0.15358662879714563
     ],
     "60": [
-      0.25208631765813,
-      4.446029580637361
+      -0.09042666297594883,
+      0.14818007794512217
     ]
   },
   "block_ci_95_cnn_minus_base": {
     "10": [
-      1.1617423674854823,
-      3.365335241849359
+      0.013149012945992251,
+      0.16982881402694106
     ],
     "20": [
-      0.868413978490147,
-      3.8499722678460775
+      0.007050588145163668,
+      0.17704145851936726
     ],
     "60": [
-      0.30239901045970613,
-      4.5260603730986695
+      0.002661950679829843,
+      0.15182500833239726
     ]
   },
   "folds": [
@@ -109,8 +109,8 @@
       "train_n": 1127,
       "validation_n": 252,
       "test_n": 254,
-      "best_valid_qlike": -6.665496349334717,
-      "epochs": 18
+      "best_valid_qlike": -6.630290508270264,
+      "epochs": 13
     },
     {
       "year": 2025,
@@ -122,8 +122,8 @@
       "train_n": 1381,
       "validation_n": 252,
       "test_n": 253,
-      "best_valid_qlike": -7.140190601348877,
-      "epochs": 11
+      "best_valid_qlike": -7.142627716064453,
+      "epochs": 15
     },
     {
       "year": 2026,
@@ -135,12 +135,12 @@
       "train_n": 1634,
       "validation_n": 252,
       "test_n": 164,
-      "best_valid_qlike": -6.889570713043213,
+      "best_valid_qlike": -6.846183776855469,
       "epochs": 12
     }
   ],
   "limitations": [
-    "First CPU temporal CNN; architecture and training budget fixed before this run but not preregistered historically.",
+    "First CPU temporal CNN; implemented as multiplicative adjustment over EWMA/HAR to avoid free-scale variance drift.",
     "MC dropout is approximate Bayesian uncertainty, not a full Bayesian network.",
     "External variables are dated by observation; operational lags still require deployment policy."
   ]

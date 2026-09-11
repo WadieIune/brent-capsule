@@ -19,3 +19,8 @@ lifelines>=0.27
 # Baseline GARCH(1,1) de la auditoría WP3 (channel_vol_audit).
 arch>=6.0
 
+
+# CNN temporal de la 4a pata / Risk Director. CPU wheel instalada desde
+# https://download.pytorch.org/whl/cpu cuando no haya GPU.
+torch>=2.14
+torchvision>=0.29

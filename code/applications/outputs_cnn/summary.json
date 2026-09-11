@@ -13,7 +13,7 @@
       "id": "risk_director_temporal_cnn",
       "title": "CNN temporal con incertidumbre para Risk Director",
       "decision": "review",
-      "notes": "delta CNN-tabular=2.107858; pendiente challenge",
+      "notes": "delta CNN-tabular=0.035244; pendiente challenge",
       "error": null,
       "manifest": "code/applications/outputs_cnn/risk_director_temporal_cnn/run_manifest.json"
     }
