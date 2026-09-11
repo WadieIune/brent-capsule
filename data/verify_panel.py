@@ -65,25 +65,13 @@ def main() -> int:
     # La prueba decisiva no es contar repeticiones —que dependen de la rejilla
     # de cotización— sino comprobar que los festivos SIGUEN siendo NaN: un
     # ffill los habría eliminado por construcción.
-    # DFF y EURUSD no cierran en los festivos bursátiles y por tanto no tienen
-    # huecos: para ellos la comprobación se hace por dispersión de repeticiones.
-    SIN_CALENDARIO_BURSATIL = {"DFF", "EURUSD"}
-    for col in sorted(set(panel.columns) - DERIVED - SIN_CALENDARIO_BURSATIL):
+    # DFF no cierra en festivo y por tanto no tiene huecos.
+    for col in sorted(set(panel.columns) - DERIVED - {"DFF"}):
         s = panel[col]
         lo, hi = s.first_valid_index(), s.last_valid_index()
         gaps = int(s.loc[lo:hi].isna().sum())
         check(f"{col}: conserva festivos como NaN (no hay ffill)", gaps > 0,
               f"{gaps} NaN internos")
-
-    # EURUSD: mercado 24/5, cotiza en festivos de EE.UU. La ausencia de huecos
-    # es esperada. La señal de ffill sería que las repeticiones se concentraran
-    # en los días de cierre real (25-dic, 26-dic, 1-ene); se comprueba que no.
-    s = panel["EURUSD"].dropna()
-    reps = s.index[(s.diff() == 0).to_numpy()]
-    cierre = sum(d.strftime("%m-%d") in ("12-25", "12-26", "01-01") for d in reps)
-    frac = cierre / max(1, len(reps))
-    check("EURUSD: repeticiones NO concentradas en días de cierre (no hay ffill)",
-          frac < 0.25, f"{cierre}/{len(reps)} = {100 * frac:.0f} % en cierres")
     print("      (DFF se excluye: la Fed publica el tipo efectivo también en"
           " festivo, así que no tiene huecos)")
     print("\n      Informativo — las repeticiones exactas se explican por la")
@@ -104,11 +92,51 @@ def main() -> int:
         check(f"{col}: huecos internos < 6 %", frac < 0.06,
               f"{gaps} días ({100 * frac:.1f} %)")
 
+    print("\n4bis. Ausencia de saltos diarios imposibles")
+    # Este control se añade porque la serie EURUSD del panel original llegó a
+    # producción con 10 saltos superiores al 5 % —imposibles en ese cruce— y
+    # ninguna comprobación anterior los veía. Umbrales por instrumento, con
+    # holgura para los episodios reales conocidos (WTI negativo en abril 2020).
+    MAX_SALTO = {"EURUSD": 5, "GOLD": 12, "SILVER": 20, "COPPER": 15,
+                 "SP500": 13, "DAX": 13, "EUROSTOXX50": 13, "BRENT": 25,
+                 "VIX": 120}
+    # Excepciones revisadas una a una. No se relajan los umbrales para que el
+    # test pase: cada fecha se admite con motivo, y cualquier salto NO listado
+    # falla. Criterio usado: un print defectuoso revierte al día siguiente; un
+    # evento real persiste.
+    EVENTOS_REALES = {
+        ("BRENT", "2020-04-02"): "acuerdo OPEP+ anunciado; +35 %",
+        ("BRENT", "2020-04-21"): "crisis de almacenamiento COVID; Brent a 9,12 USD",
+        ("BRENT", "2020-04-22"): "rebote tras el mínimo; el nivel no revierte",
+        ("COPPER", "2025-07-31"): "EE.UU. exime al cobre refinado del arancel 232",
+        ("SILVER", "2026-01-30"): "fin del estrechamiento; 114→78 y se mantiene en 76-84",
+    }
+    for col, lim in sorted(MAX_SALTO.items()):
+        s = panel[col].dropna()
+        jumps = (s.pct_change(fill_method=None).abs() * 100).dropna()
+        bad = [d for d in jumps[jumps > lim].index
+               if (col, str(d.date())) not in EVENTOS_REALES]
+        n_exc = int((jumps > lim).sum()) - len(bad)
+        check(f"{col}: sin saltos diarios > {lim} % no justificados", not bad,
+              (f"{n_exc} excepción(es) documentada(s)" if n_exc else "")
+              + ("" if not bad else
+                 f" · {len(bad)} SIN justificar: "
+                 f"{', '.join(str(d.date()) for d in bad[:4])}"))
+    print("      Excluidos de este control, con motivo:")
+    print("        WTI     el 2020-04-20 el precio fue negativo de verdad.")
+    print("        NATGAS  Henry Hub al contado: durante las olas de frío se")
+    print("                multiplica de un día para otro (Uri 2021: 11,32→23,86;")
+    print("                enero 2024: 3,15→13,20). Ningún umbral porcentual")
+    print("                separa defecto de evento en un spot físico.")
+
     print("\n5. Alineación temporal contra la referencia auditada")
     print("     (dataset_wide_with_target.csv; un desplazamiento óptimo ≠ 0")
     print("      indicaría look-ahead o retraso de un día)")
+    # EURUSD queda fuera de este contraste: su serie en la referencia está
+    # corrupta (ver §4bis y el hallazgo de 2026-09-11), así que compararse con
+    # ella no informa. Su fuente actual es el BCE, independiente.
     ref = pd.read_csv(REF, parse_dates=["date"]).set_index("date")
-    for col in sorted((YAHOO | {"EURUSD"}) & set(ref.columns)):
+    for col in sorted(YAHOO & set(ref.columns)):
         errs = []
         for d in (-1, 0, 1):
             joined = pd.concat([panel[col].shift(d).rename("y"),

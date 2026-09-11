@@ -1,5 +1,5 @@
 {
-  "generado_utc": "2026-09-11T18:44:22Z",
+  "generado_utc": "2026-09-11T19:10:13Z",
   "fuente": "FRED (fredgraph.csv, sin API key)",
   "frecuencia": "días hábiles (B), SIN forward-fill",
   "derivadas": {
@@ -13,7 +13,7 @@
     "2026-09-10"
   ],
   "filas": 5139,
-  "sha256": "3b351ce135fccd9d958aaca3d13617daf453ba0194c318523000b16ed7dbdf68",
+  "sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
   "fuentes": {
     "FRED": {
       "BRENT": "DCOILBRENTEU",
@@ -34,6 +34,9 @@
       "SP500": "^GSPC",
       "DAX": "^GDAXI",
       "EUROSTOXX50": "^STOXX50E"
+    },
+    "ECB_data_portal": {
+      "EURUSD": "EXR.D.USD.EUR.SP00.A (tipo de referencia BCE, fixing 14:15 CET)"
     }
   },
   "validacion_solape_vs_panel_original": {
@@ -43,11 +46,10 @@
   },
   "columnas": 21,
   "correcciones_aplicadas": [
-    "EURUSD: Yahoo EURUSD=X RECHAZADO como fuente. Sus barras diarias estan fechadas un dia antes de la sesion que contienen (no hay barra etiquetada en viernes; si la hay en domingo). Usarlo sin corregir introduce look-ahead de 1 dia. El remapeo al siguiente dia habil deja aun 20-50 dias/ano con error >0.5% frente a dataset_wide_with_target.csv, y error mediano 0.206% en 2026. EURUSD se mantiene en su valor original (hasta 2026-03-06) y su extension queda PENDIENTE de FRED DEXUSEU, inaccesible en el momento de la descarga.",
-    "Los otros 6 instrumentos de Yahoo (GOLD, SILVER, COPPER, SP500, DAX, EUROSTOXX50) validan con error mediano 0.0000% y desplazamiento optimo 0 en el solape de ~4.800 sesiones."
+    "EURUSD: Yahoo EURUSD=X RECHAZADO (barras fechadas un dia antes de la sesion que contienen; introduce look-ahead de 1 dia).",
+    "EURUSD: la serie del panel original (dataset_wide_with_target.csv) esta CORRUPTA: 10 saltos diarios superiores al 5%, imposibles en este cruce, concentrados en 2008 y con patron de dia 8. El resto de variables de esa referencia estan limpias.",
+    "EURUSD: sustituida INTEGRAMENTE por el tipo de referencia del BCE (EXR.D.USD.EUR.SP00.A). Cero saltos imposibles. Nota: es el fixing de las 14:15 CET, convencion distinta de la del resto del panel; diferencia mediana 0.20% frente a la serie anterior.",
+    "Los 6 instrumentos de Yahoo (GOLD, SILVER, COPPER, SP500, DAX, EUROSTOXX50) reproducen la serie del panel original con error mediano 0.0000% y desplazamiento optimo 0."
   ],
-  "pendiente": {
-    "EURUSD": "extender desde FRED DEXUSEU cuando el servicio responda; DTWEXBGS (dolar amplio) SI esta extendido a 2026-09-04 y cubre la variable dolar de WP-V3"
-  },
   "ingestion_date": "2026-09-11"
 }

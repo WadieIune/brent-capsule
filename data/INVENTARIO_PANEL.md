@@ -7,7 +7,7 @@ de que el join as-of no usa futuro»*.
 
 **Artefacto:** `data/panel_extendido_2026-09-09.csv`
 **Rango:** 2007-01-01 → 2026-09-10 · 5.139 días hábiles × 21 variables
-**sha256:** `3b351ce135fccd9d...` (el valor completo está en el provenance; lo
+**sha256:** `b5512282a5e7d42d...` (el valor completo está en el provenance; lo
 verifica `data/verify_panel.py`)
 **`ingestion_time`:** 2026-09-11
 **Verificación:** `python data/verify_panel.py` → todas las comprobaciones pasan.
@@ -34,14 +34,15 @@ verifica `data/verify_panel.py`)
 | `SP500` | Yahoo | `^GSPC` | puntos de índice | bursátil EE.UU. | 2026-09-10 | ≥ 1 |
 | `DAX` | Yahoo | `^GDAXI` | puntos de índice | bursátil Alemania | 2026-09-10 | ≥ 1 |
 | `EUROSTOXX50` | Yahoo | `^STOXX50E` | puntos de índice | bursátil zona euro | 2026-09-10 | ≥ 1 |
-| **`EURUSD`** | **panel original** | — | USD por EUR | 24/5 | **2026-03-06** | **NO EXTENDIDA** |
+| `EURUSD` | **BCE** | `EXR.D.USD.EUR.SP00.A` | USD por EUR | TARGET | 2026-09-10 | ≥ 1 |
 
 **Derivadas** (calculadas en el propio panel, sin fuente externa):
 `SPREAD_US10Y_US2Y` = `DGS10 − DGS2` · `SPREAD_WTI_BRENT` = `WTI − BRENT` ·
 `RATIO_WTI_BRENT` = `WTI / BRENT` · `BRENT_EURUSD_RATIO` = `BRENT / EURUSD`.
 
-> `BRENT_EURUSD_RATIO` hereda el corte de `EURUSD`: **no está extendida más allá
-> de 2026-03-06.**
+> `EURUSD` es el **tipo de referencia del BCE, fijado a las 14:15 CET**. Es una
+> convención horaria distinta de la del resto del panel, y se elige a conciencia:
+> la serie anterior estaba corrupta (§4). Calendario TARGET, no bursátil de EE.UU.
 
 ## 2. `release_time` y `vintage_time`
 
@@ -56,7 +57,8 @@ su variable. `DTWEXBGS` es la más expuesta (≥ 5 días hábiles).
 
 ## 3. Prueba de que el join as-of no usa futuro
 
-`data/verify_panel.py` la ejecuta en tres piezas encadenadas:
+`data/verify_panel.py` la ejecuta en tres piezas encadenadas
+(más el control de saltos de §5):
 
 1. **No hay relleno hacia delante.** Los festivos siguen siendo `NaN`
    (160–211 por serie). Un `ffill` los habría eliminado por construcción.
@@ -64,31 +66,41 @@ su variable. `DTWEXBGS` es la más expuesta (≥ 5 días hábiles).
    cotización, no por relleno: la tasa de repetición sigue al cociente
    |Δ| mediano / tick (DGS2: ratio 3 → 19 %; BRENT: ratio 89 → 1,1 %;
    SP500: ratio 1.202 → 0,0 %).
-2. **El desplazamiento temporal óptimo es 0** para las 7 series no-FRED,
+2. **El desplazamiento temporal óptimo es 0** para las 6 series de Yahoo,
    contrastado contra `dataset_wide_with_target.csv` en ~4.800 sesiones de
    solape. Un óptimo en −1 o +1 delataría adelanto o retraso de un día.
+   `EURUSD` queda fuera de este contraste porque esa referencia está corrupta
+   justo en esa variable (§4); su fuente actual, el BCE, es independiente.
 3. **Ninguna variable contiene observaciones posteriores a la ingesta.**
 
 Como cada valor no nulo de la fila `t` procede de la observación de esa misma
 fecha `t` (1) y está correctamente fechado (2), la fila `t` no contiene
 información de fechas posteriores.
 
-## 4. EURUSD: por qué no se extiende
+## 4. EURUSD: dos fuentes rechazadas y una aceptada
 
-Yahoo `EURUSD=X` fue **descargado, validado y rechazado**. Sus barras diarias
-están fechadas un día antes de la sesión que contienen: no existe barra
-etiquetada en viernes y sí en domingo. Usarlo sin corregir mete un
-**look-ahead de un día**. El remapeo al siguiente día hábil deja todavía 20–50
-días por año con error superior al 0,5 % frente a la referencia, y error
-mediano de 0,206 % en 2026 —justo el tramo nuevo—.
+**Yahoo `EURUSD=X` — rechazado.** Sus barras están fechadas un día antes de la
+sesión que contienen (no hay barra en viernes y sí en domingo). Usarlo mete un
+**look-ahead de un día**.
+
+**La serie del panel original — rechazada, y esto es lo grave.** Contiene **10
+saltos diarios superiores al 5 %**, imposibles en el euro/dólar, concentrados en
+2008 y con patrón de día 8 (8-ene, 8-feb, 8-sep, 8-oct, 8-dic). El mayor es
+1,4918 → 1,2926 el 2008-12-08, un 13,8 % que nunca ocurrió. **Ninguna otra
+variable de esa referencia presenta el defecto.**
+
+**BCE `EXR.D.USD.EUR.SP00.A` — aceptado.** Tipo de referencia oficial,
+2007-01-02 → 2026-09-10, 98,1 % de cobertura, **cero saltos imposibles**.
+Sustituye a la serie anterior en **toda** la historia, no solo en la cola.
 
 Detalle y reproducción en
 [`docs/hallazgos/2026-09-11-A-eurusd-yahoo-desfase-de-un-dia.md`](../docs/hallazgos/2026-09-11-A-eurusd-yahoo-desfase-de-un-dia.md).
 
-**Impacto acotado para WP-V3:** la variable «dólar» de la capa exógena es
-`DTWEXBGS` (dólar amplio), que **sí** está extendida a 2026-09-04. El hueco de
-`EURUSD` no bloquea WP-V3.
+## 5. Control de saltos imposibles
 
-**Vía de resolución:** FRED `DEXUSEU`, que no respondió durante la ingesta
-(cuatro intentos, `TimeoutError`; Yahoo respondía con normalidad en el mismo
-momento).
+Se añade a raíz de lo anterior: umbral por instrumento y **lista explícita de
+excepciones justificadas** (Brent en abril de 2020, arancel del cobre de julio
+de 2025, desplome de la plata de enero de 2026). No se relajan los umbrales para
+que el test pase; un salto no listado hace fallar la verificación. `NATGAS` queda
+excluido con motivo: el Henry Hub al contado se multiplica de un día para otro
+en las olas de frío y ningún umbral porcentual separa defecto de evento.
