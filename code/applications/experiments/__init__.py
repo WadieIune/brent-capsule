@@ -15,6 +15,7 @@ from .regime_markov import RegimeMarkovExperiment
 from .channel_vol_audit import ChannelVolAuditExperiment
 from .risk_director_daily import RiskDirectorDailyExperiment
 from .risk_director_scientific_eval import RiskDirectorScientificEvalExperiment
+from .risk_director_policy_lab import RiskDirectorPolicyLabExperiment
 
 ALL_EXPERIMENTS = [
     # A · calidad de dato
@@ -38,6 +39,7 @@ ALL_EXPERIMENTS = [
     # E · monitor operativo diario
     RiskDirectorDailyExperiment,
     RiskDirectorScientificEvalExperiment,
+    RiskDirectorPolicyLabExperiment,
 ]
 
 __all__ = [c.__name__ for c in ALL_EXPERIMENTS] + ["ALL_EXPERIMENTS"]

@@ -1,0 +1,21 @@
+{
+  "task_id": "risk_applications",
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": null,
+    "alpha": 0.99,
+    "horizon": 10,
+    "panel_path": "data/panel_extendido_2026-09-09.csv"
+  },
+  "experiments": [
+    {
+      "id": "risk_director_policy_lab",
+      "title": "Laboratorio offline de politicas Risk Director",
+      "decision": "review",
+      "notes": "diagnostico offline; no es RL entrenado",
+      "error": null,
+      "manifest": "code/applications/outputs_policy/risk_director_policy_lab/run_manifest.json"
+    }
+  ]
+}

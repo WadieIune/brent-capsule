@@ -1,0 +1,43 @@
+{
+  "task_id": "risk_applications",
+  "experiment_id": "risk_director_policy_lab",
+  "title": "Laboratorio offline de politicas Risk Director",
+  "timestamp_utc": "2026-09-11T19:08:17Z",
+  "inputs": [],
+  "config": {
+    "prices_path": null,
+    "synthetic": false,
+    "cutoff": null,
+    "alpha": 0.99,
+    "horizon": 10,
+    "panel_path": "data/panel_extendido_2026-09-09.csv"
+  },
+  "seed": 42,
+  "command": "python code/applications/run_all.py --only risk_director_policy_lab --panel data/panel_extendido_2026-09-09.csv --out code/applications/outputs_policy",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39"
+  },
+  "preflight_issues": [],
+  "metrics": {
+    "status": "diagnostic_offline_policy_lab",
+    "forecasts_path": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs_scientific/risk_director_scientific_eval/forecasts.csv",
+    "n": 671,
+    "event_threshold": 0.0005586306201038402,
+    "event_rate": 0.2965722801788376,
+    "best_external_advantage": -4.608216764346836e-06,
+    "median_external_advantage": -1.820112410570306e-06,
+    "share_cost_grids_external_better": 1.0,
+    "max_capture_gain": 0.0
+  },
+  "baseline": {},
+  "artifacts": [
+    "code/applications/outputs_policy/risk_director_policy_lab/summary.json",
+    "code/applications/outputs_policy/risk_director_policy_lab/policy_grid.csv",
+    "code/applications/outputs_policy/risk_director_policy_lab/policy_comparison.csv"
+  ],
+  "decision": "review",
+  "notes": "diagnostico offline; no es RL entrenado",
+  "error": null,
+  "elapsed_seconds": 0.007
+}

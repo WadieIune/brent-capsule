@@ -1,0 +1,16 @@
+{
+  "status": "diagnostic_offline_policy_lab",
+  "forecasts_path": "/home/wadie/Escritorio/brent-capsule/code/applications/outputs_scientific/risk_director_scientific_eval/forecasts.csv",
+  "n": 671,
+  "event_threshold": 0.0005586306201038402,
+  "event_rate": 0.2965722801788376,
+  "best_external_advantage": -4.608216764346836e-06,
+  "median_external_advantage": -1.820112410570306e-06,
+  "share_cost_grids_external_better": 1.0,
+  "max_capture_gain": 0.0,
+  "limitations": [
+    "Diagnostic ranking/policy evaluation, not trained RL.",
+    "Alert budgets are equalized ex post for sensitivity; deployable thresholds must be validation-frozen.",
+    "Proxy cost is not business P&L; it needs exposure and hedge cost from the user."
+  ]
+}
