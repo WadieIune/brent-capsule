@@ -156,11 +156,13 @@ def run(config_path: str | None = None) -> dict:
         folds = [ref]
 
     # Reestandarización por fold: la escala se ajusta solo con el tramo de
-    # entrenamiento del fold, nunca con validación ni test. Se activa por
-    # defecto en modo bundle; `cv.refit_zscore_per_fold: false` recupera el
-    # comportamiento anterior (escala global) para reproducir lo publicado.
+    # entrenamiento del fold, nunca con validación ni test.
+    # DESACTIVADA POR DEFECTO: el capsule debe reproducir los `results/`
+    # publicados, que usan la escala global del bundle. Es una mejora OPT-IN
+    # y aún SIN VALIDAR (ver docs/ESTADO_2026-09-11_CONTINUAR.md); actívala con
+    # `cv.refit_zscore_per_fold: true` solo en experimentos, no en la repro.
     refit_per_fold = (
-        bool(config["cv"].get("refit_zscore_per_fold", True))
+        bool(config["cv"].get("refit_zscore_per_fold", False))
         and is_series_bundle_mode(config)
     )
     scaling_log: List[dict] = []
