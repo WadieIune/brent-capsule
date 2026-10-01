@@ -21,6 +21,54 @@ from .series_bundle import load_series_bundle, validate_series_bundle
 from .torch_model import train_torch_pipeline
 
 
+def refit_zscore(
+    frame: pd.DataFrame,
+    raw_wide: pd.DataFrame,
+    feature_cols: List[str],
+    fit_until: pd.Timestamp,
+) -> tuple[pd.DataFrame, dict]:
+    """Reestandariza las features usando SOLO datos hasta ``fit_until``.
+
+    El bundle publicado traía un z-score calculado sobre la muestra completa, de
+    modo que la escala del test se estimaba con datos del test. Aquí la media y
+    la desviación se ajustan únicamente sobre las filas anteriores o iguales al
+    último día de entrenamiento del fold, y se aplican después a todas las filas.
+
+    Devuelve el frame reestandarizado y los estadísticos, para dejar constancia
+    de la ventana de ajuste en el informe de cada fold.
+    """
+    out = frame.copy()
+    dates = pd.to_datetime(frame["date"])
+    fit_mask = (dates <= pd.Timestamp(fit_until)).to_numpy()
+    if int(fit_mask.sum()) < 30:
+        raise ValueError(
+            f"Ventana de ajuste demasiado corta ({int(fit_mask.sum())} filas) hasta {fit_until}."
+        )
+
+    means: dict[str, float] = {}
+    stds: dict[str, float] = {}
+    for col in feature_cols:
+        raw_name = col[3:] if col.startswith("z__") else col
+        if raw_name not in raw_wide.columns:
+            continue
+        values = raw_wide[raw_name].to_numpy(dtype=float)
+        mu = float(np.nanmean(values[fit_mask]))
+        sd = float(np.nanstd(values[fit_mask], ddof=0))
+        if not np.isfinite(sd) or sd < 1e-12:
+            sd = 1.0  # constante en el tramo de ajuste: se deja sin escalar
+        out[col] = (values - mu) / sd
+        means[raw_name] = mu
+        stds[raw_name] = sd
+
+    return out, {
+        "fit_until": str(pd.Timestamp(fit_until).date()),
+        "fit_rows": int(fit_mask.sum()),
+        "n_features": len(means),
+        "means": means,
+        "stds": stds,
+    }
+
+
 def _set_split(window_table: pd.DataFrame, train, valid, test) -> pd.DataFrame:
     wt = window_table.copy().reset_index(drop=True)
     split = np.full(len(wt), "none", dtype=object)
@@ -72,6 +120,20 @@ def run(config_path: str | None = None) -> dict:
     )
     ref_table = _set_split(window_table, ref.train, ref.valid, ref.test)
     window_table.to_csv(os.path.join(metadata_dir, output_cfg["window_table_name"]), index=False)
+    # Las fechas de cada partición no se estaban guardando y hubo que
+    # reconstruirlas casando tensores contra la matriz z-score. En una cápsula
+    # reproducible tienen que constar en el manifiesto.
+    if "end_date" in window_table.columns:
+        wt_dates = pd.to_datetime(window_table["end_date"])
+        extra = dict(extra)
+        extra["window_first_date"] = str(wt_dates.min().date())
+        extra["window_last_date"] = str(wt_dates.max().date())
+        n_tr = extra.get("precomputed_train_count")
+        if isinstance(n_tr, int) and 0 < n_tr <= len(wt_dates):
+            extra["train_date_range"] = [str(wt_dates.iloc[0].date()),
+                                         str(wt_dates.iloc[n_tr - 1].date())]
+            extra["test_date_range"] = [str(wt_dates.iloc[n_tr].date()),
+                                        str(wt_dates.iloc[-1].date())]
     save_json(os.path.join(metadata_dir, "dataset_metadata.json"), build_metadata_payload(feature_cols, config, extra=extra))
     if validation:
         save_json(os.path.join(metadata_dir, output_cfg.get("validation_name", "bundle_validation.json")), validation)
@@ -93,17 +155,37 @@ def run(config_path: str | None = None) -> dict:
     else:
         folds = [ref]
 
+    # Reestandarización por fold: la escala se ajusta solo con el tramo de
+    # entrenamiento del fold, nunca con validación ni test. Se activa por
+    # defecto en modo bundle; `cv.refit_zscore_per_fold: false` recupera el
+    # comportamiento anterior (escala global) para reproducir lo publicado.
+    refit_per_fold = (
+        bool(config["cv"].get("refit_zscore_per_fold", True))
+        and is_series_bundle_mode(config)
+    )
+    scaling_log: List[dict] = []
+
     fold_reports: List[dict] = []
     oos_frames: List[pd.DataFrame] = []
     for fold in folds:
         wt = _set_split(window_table, fold.train, fold.valid, fold.test)
         fid = None if scheme == "single" else fold.fold_id
+
+        fold_frame = frame
+        if refit_per_fold:
+            fit_until = pd.to_datetime(wt.loc[wt["split"] == "train", "end_date"]).max()
+            fold_frame, stats = refit_zscore(frame, bundle.raw_wide, feature_cols, fit_until)
+            stats["fold_id"] = fold.fold_id
+            scaling_log.append({k: v for k, v in stats.items() if k not in ("means", "stds")})
+            print(f"[zscore] fold {fold.fold_id}: escala ajustada con "
+                  f"{stats['fit_rows']} filas hasta {stats['fit_until']}")
+
         report = train_torch_pipeline(
-            frame=frame, table=wt, feature_cols=feature_cols, config=config,
+            frame=fold_frame, table=wt, feature_cols=feature_cols, config=config,
             output_dir=model_dir, fold_id=fid,
         )
         fold_reports.append(report)
-        merged = predict_indices(report["model_path"], frame, wt, fold.test, feature_cols, config)
+        merged = predict_indices(report["model_path"], fold_frame, wt, fold.test, feature_cols, config)
         merged["fold_id"] = fold.fold_id
         oos_frames.append(merged)
 
@@ -116,6 +198,8 @@ def run(config_path: str | None = None) -> dict:
         "n_folds": len(folds),
         "embargo": embargo,
         "max_future": max_future,
+        "zscore_refit_per_fold": bool(refit_per_fold),
+        "zscore_scaling_windows": scaling_log,
         "evaluation": eval_summary,
         "folds": [
             {"fold_id": r.get("fold_id"), "best_valid_fine": r.get("best_valid_fine"),

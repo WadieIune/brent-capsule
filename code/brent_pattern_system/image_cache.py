@@ -42,6 +42,21 @@ def _cache_key(
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
 
 
+def _data_fingerprint(frame: pd.DataFrame, feature_cols: Sequence[str]) -> str:
+    """Huella del CONTENIDO de las features, no solo de sus nombres.
+
+    Sin esto la caché colisiona cuando los mismos nombres de columna contienen
+    valores distintos —por ejemplo al reestandarizar por fold—, y devuelve
+    silenciosamente las imágenes de la ejecución anterior.
+    """
+    cols = [c for c in feature_cols if c in frame.columns]
+    if not cols:
+        return "nodata"
+    arr = np.ascontiguousarray(frame[cols].to_numpy(dtype=np.float64))
+    arr = np.nan_to_num(arr, nan=0.0, posinf=0.0, neginf=0.0)
+    return hashlib.sha1(arr.tobytes()).hexdigest()[:16]
+
+
 def precompute_window_images(
     frame: pd.DataFrame,
     window_table: pd.DataFrame,
@@ -56,7 +71,8 @@ def precompute_window_images(
     Si `cache_dir` se proporciona y existe un fichero compatible, lo carga.
     """
     n = len(window_table)
-    key = _cache_key(feature_cols, image_size, target_col, n)
+    key = _cache_key(feature_cols, image_size, target_col, n,
+                     extra=_data_fingerprint(frame, feature_cols))
     cache_path = None
     if cache_dir:
         os.makedirs(cache_dir, exist_ok=True)
