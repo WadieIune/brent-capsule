@@ -6,6 +6,18 @@
   situación puedo tener ventaja con el reconocimiento de imágenes en la
   optimización de capital?»
 
+> ## DECISIÓN DEL MASTER (2026-09-11)
+>
+> El MASTER aprueba perseguir **H1** y **H3**, y **consolidar la supervivencia
+> de canal** (decisión #3, C-index 0.664 ± 0.007) como el positivo robusto que
+> **ya pasó el backtest**. **H2 queda despriorizada.**
+>
+> **Estándar de presentación, innegociable:** solo se presenta lo que pase
+> *nuestro* backtest — walk-forward purgado (embargo ≥ horizonte), DSR/PBO y el
+> **nulo de paseo aleatorio** (decisión #11). La supervivencia de canal ya lo
+> cumple. **H1 y H3 son hipótesis: no se presentan hasta pasar ese mismo gate**,
+> y si no lo pasan se publican como negativo, igual que el resto del trabajo.
+
 ## 1. El reencuadre
 
 Hemos demostrado con rigor que la CNN no bate al azar en **dirección** (DSR≈0)
