@@ -1,0 +1,155 @@
+{
+  "status": "exploratory_idealized_capital_optimizer",
+  "seed": 42,
+  "panel_sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
+  "script_sha256": "0c1fe2469e80254f7f2fa9b45e65600340b0dd4dbda6c9fe277e412d23f43e97",
+  "exposure_eur": 1000000.0,
+  "budget_eur": 150000,
+  "max_combined_hedge_fraction": 1.0,
+  "horizon_common_observations": 10,
+  "information_delay_observations": 1,
+  "metrics": {
+    "cnn_1d": {
+      "n": 67,
+      "mean_total_cost_eur": 1117.7149964463397,
+      "mean_reserve_eur": 59328.35820895522,
+      "shortfall_rate": 0.0,
+      "mean_shortfall_eur": 0.0,
+      "realized_tail95_eur": 21745.53902464523,
+      "mean_hedge_cost_eur": 1000.0,
+      "action_counts": {
+        "(1.0, 0.0)": 67
+      }
+    },
+    "cnn_visual": {
+      "n": 67,
+      "mean_total_cost_eur": 1119.047619047619,
+      "mean_reserve_eur": 60000.0,
+      "shortfall_rate": 0.0,
+      "mean_shortfall_eur": 0.0,
+      "realized_tail95_eur": 21745.53902464523,
+      "mean_hedge_cost_eur": 1000.0,
+      "action_counts": {
+        "(1.0, 0.0)": 67
+      }
+    },
+    "historical": {
+      "n": 67,
+      "mean_total_cost_eur": 1119.047619047619,
+      "mean_reserve_eur": 60000.0,
+      "shortfall_rate": 0.0,
+      "mean_shortfall_eur": 0.0,
+      "realized_tail95_eur": 21745.53902464523,
+      "mean_hedge_cost_eur": 1000.0,
+      "action_counts": {
+        "(1.0, 0.0)": 67
+      }
+    },
+    "tabular": {
+      "n": 67,
+      "mean_total_cost_eur": 1118.899549869699,
+      "mean_reserve_eur": 59925.37313432836,
+      "shortfall_rate": 0.0,
+      "mean_shortfall_eur": 0.0,
+      "realized_tail95_eur": 21745.53902464523,
+      "mean_hedge_cost_eur": 1000.0,
+      "action_counts": {
+        "(1.0, 0.0)": 67
+      }
+    }
+  },
+  "folds": [
+    {
+      "year": 2024,
+      "train_n": 2015,
+      "validation_n": 241,
+      "test_n": 26,
+      "train_label_end_max": "2022-12-30",
+      "validation_label_end_max": "2023-12-29",
+      "training": {
+        "cnn_1d": {
+          "epochs": 23,
+          "validation_logloss": 1.3669778108596802
+        },
+        "cnn_visual": {
+          "epochs": 12,
+          "validation_logloss": 1.3735495805740356
+        }
+      }
+    },
+    {
+      "year": 2025,
+      "train_n": 2266,
+      "validation_n": 243,
+      "test_n": 25,
+      "train_label_end_max": "2023-12-29",
+      "validation_label_end_max": "2024-12-31",
+      "training": {
+        "cnn_1d": {
+          "epochs": 10,
+          "validation_logloss": 1.3254566192626953
+        },
+        "cnn_visual": {
+          "epochs": 6,
+          "validation_logloss": 1.3026773929595947
+        }
+      }
+    },
+    {
+      "year": 2026,
+      "train_n": 2519,
+      "validation_n": 242,
+      "test_n": 16,
+      "train_label_end_max": "2024-12-31",
+      "validation_label_end_max": "2025-12-31",
+      "training": {
+        "cnn_1d": {
+          "epochs": 13,
+          "validation_logloss": 1.3208534717559814
+        },
+        "cnn_visual": {
+          "epochs": 9,
+          "validation_logloss": 1.3222665786743164
+        }
+      }
+    }
+  ],
+  "comparisons": {
+    "historical": {
+      "mean_delta_cost_eur": 0.0,
+      "block_ci95": [
+        0.0,
+        0.0
+      ]
+    },
+    "tabular": {
+      "mean_delta_cost_eur": 0.14806917791992447,
+      "block_ci95": [
+        -1.4806917791992447,
+        1.628760957119169
+      ]
+    },
+    "cnn_1d": {
+      "mean_delta_cost_eur": 1.33262260127932,
+      "block_ci95": [
+        0.29613835583984893,
+        2.66524520255864
+      ]
+    }
+  },
+  "cnn_minus_historical_cost_eur": 0.0,
+  "block_ci95_cost_eur": [
+    0.0,
+    0.0
+  ],
+  "assumptions": [
+    "Idealized spot-index hedges, not executable futures/options P&L.",
+    "5% annual funding, 10bp hedge cost, shortage penalty 2, fixed before execution.",
+    "Funding uses fixed ten-business-session convention 10/252, not actual calendar accrual.",
+    "Budget constrains reserve plus hedge fees; margin requirements unavailable.",
+    "One-observation delay is not a verified publication/vintage calendar.",
+    "Common observed sessions drop missing price dates; report actual label dates.",
+    "2024-2026 historical evaluation is exploratory; no prospective confirmation.",
+    "No regulatory capital savings claim; no calibrated ES reserve claim."
+  ]
+}

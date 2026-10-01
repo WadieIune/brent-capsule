@@ -1,0 +1,301 @@
+{
+  "status": "diagnostic_not_predictive_validation",
+  "rows": [
+    {
+      "year": 2024,
+      "distribution": "historical",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 60000.0,
+      "objective": 1130.8138813205428,
+      "second_gap": 1.710511622735794,
+      "different_hedge_gap": 559.0833899068518,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2024,
+      "distribution": "vertex_0",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 70000.0,
+      "objective": 1138.888888888889,
+      "second_gap": 7.2632826092537925,
+      "different_hedge_gap": 29.249295515320227,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2024,
+      "distribution": "vertex_1",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1111.4959270948223,
+      "second_gap": 1.5540559951937212,
+      "different_hedge_gap": 56.24293062132665,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2024,
+      "distribution": "vertex_2",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1111.4959270948223,
+      "second_gap": 1.5540559951937212,
+      "different_hedge_gap": 56.24293062132665,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2024,
+      "distribution": "vertex_3",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1111.4959270948223,
+      "second_gap": 1.5540559951937212,
+      "different_hedge_gap": 56.24293062132665,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2024,
+      "distribution": "vertex_4",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1111.4959270948223,
+      "second_gap": 1.5540559951937212,
+      "different_hedge_gap": 75013.78702611686,
+      "best_alternative_hedge": [
+        0.75,
+        0.25
+      ]
+    },
+    {
+      "year": 2024,
+      "distribution": "vertex_5",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1111.4959270948223,
+      "second_gap": 1.5540559951937212,
+      "different_hedge_gap": 56.24293062132665,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2025,
+      "distribution": "historical",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 60000.0,
+      "objective": 1129.5105574765428,
+      "second_gap": 2.619929516721868,
+      "different_hedge_gap": 488.1440334813133,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2025,
+      "distribution": "vertex_0",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1110.1346366932305,
+      "second_gap": 0.2830288902189295,
+      "different_hedge_gap": 39.52183099308809,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2025,
+      "distribution": "vertex_1",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 70000.0,
+      "objective": 1138.888888888889,
+      "second_gap": 4.659490583976776,
+      "different_hedge_gap": 11.157758533857987,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2025,
+      "distribution": "vertex_2",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1110.1346366932305,
+      "second_gap": 0.2830288902189295,
+      "different_hedge_gap": 39.52183099308809,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2025,
+      "distribution": "vertex_3",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1110.1346366932305,
+      "second_gap": 0.2830288902189295,
+      "different_hedge_gap": 39.52183099308809,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2025,
+      "distribution": "vertex_4",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 50000.0,
+      "objective": 1110.1346366932305,
+      "second_gap": 0.2830288902189295,
+      "different_hedge_gap": 39.52183099308809,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2025,
+      "distribution": "vertex_5",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 60000.0,
+      "objective": 1121.1402067334038,
+      "second_gap": 8.460493839852234,
+      "different_hedge_gap": 65651.29151718592,
+      "best_alternative_hedge": [
+        0.75,
+        0.25
+      ]
+    },
+    {
+      "year": 2026,
+      "distribution": "historical",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 60000.0,
+      "objective": 1128.4596946649042,
+      "second_gap": 3.321179541478614,
+      "different_hedge_gap": 430.9460224939685,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2026,
+      "distribution": "vertex_0",
+      "hp": 0.75,
+      "hf": 0.0,
+      "reserve": 130000.0,
+      "objective": 1135.773576644653,
+      "second_gap": 1.9809763259545434,
+      "different_hedge_gap": 3.115312244235838,
+      "best_alternative_hedge": [
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "year": 2026,
+      "distribution": "vertex_1",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 45000.0,
+      "objective": 1108.295242527345,
+      "second_gap": 0.741793239255685,
+      "different_hedge_gap": 25.265863269306692,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2026,
+      "distribution": "vertex_2",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 60000.0,
+      "objective": 1120.9300341710762,
+      "second_gap": 8.607145564122902,
+      "different_hedge_gap": 65639.91214034818,
+      "best_alternative_hedge": [
+        0.75,
+        0.25
+      ]
+    },
+    {
+      "year": 2026,
+      "distribution": "vertex_3",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 45000.0,
+      "objective": 1108.295242527345,
+      "second_gap": 0.741793239255685,
+      "different_hedge_gap": 25.265863269306692,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2026,
+      "distribution": "vertex_4",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 45000.0,
+      "objective": 1108.295242527345,
+      "second_gap": 0.741793239255685,
+      "different_hedge_gap": 25.265863269306692,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    },
+    {
+      "year": 2026,
+      "distribution": "vertex_5",
+      "hp": 1.0,
+      "hf": 0.0,
+      "reserve": 45000.0,
+      "objective": 1108.295242527345,
+      "second_gap": 0.741793239255685,
+      "different_hedge_gap": 25.265863269306692,
+      "best_alternative_hedge": [
+        0.75,
+        0.0
+      ]
+    }
+  ],
+  "tail_probability_implied": 0.000992063492063492,
+  "interpretation": "Vertices cover extrema of fixed-mixture class probabilities, not plausible forecasts; policy changes here do not prove achievable CNN advantage."
+}
