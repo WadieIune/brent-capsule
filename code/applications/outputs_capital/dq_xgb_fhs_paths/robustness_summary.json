@@ -1,0 +1,221 @@
+{
+  "status": "exploratory_no_robust_xgb_advantage",
+  "injection_seeds": [
+    71,
+    123,
+    2026
+  ],
+  "model_seed": 42,
+  "paired_cost": [
+    {
+      "quality": "dirty",
+      "n_unique_dates": 67,
+      "seed_averaged_delta_cost": 2.3592355681907975,
+      "block_ci95": [
+        -0.3960850509357981,
+        6.258884150675198
+      ]
+    },
+    {
+      "quality": "dq",
+      "n_unique_dates": 67,
+      "seed_averaged_delta_cost": -0.5824054331517073,
+      "block_ci95": [
+        -7.798556819079213,
+        6.238894811655997
+      ]
+    },
+    {
+      "quality": "reference",
+      "n_unique_dates": 67,
+      "seed_averaged_delta_cost": 1.066098081023451,
+      "block_ci95": [
+        -0.5922767116797012,
+        3.9386401326699803
+      ]
+    }
+  ],
+  "protection": [
+    {
+      "seed": 71,
+      "quality": "dirty",
+      "model": "fhs_ewma",
+      "cost": 1764.0947281488193,
+      "reserve": 130000.0,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 71,
+      "quality": "dirty",
+      "model": "xgb_fhs",
+      "cost": 1769.0402386913445,
+      "reserve": 128731.34328358209,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 71,
+      "quality": "dq",
+      "model": "fhs_ewma",
+      "cost": 1771.2612763601435,
+      "reserve": 129850.74626865672,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 71,
+      "quality": "dq",
+      "model": "xgb_fhs",
+      "cost": 1769.1883078692645,
+      "reserve": 128805.97014925373,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 71,
+      "quality": "reference",
+      "model": "fhs_ewma",
+      "cost": 1771.2612763601435,
+      "reserve": 129850.74626865672,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 71,
+      "quality": "reference",
+      "model": "xgb_fhs",
+      "cost": 1772.3273744411667,
+      "reserve": 128507.46268656716,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 123,
+      "quality": "dirty",
+      "model": "fhs_ewma",
+      "cost": 1781.5668911433702,
+      "reserve": 129402.98507462686,
+      "tail95": 112261.37598719835,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 123,
+      "quality": "dirty",
+      "model": "xgb_fhs",
+      "cost": 1782.4849200464737,
+      "reserve": 127985.07462686567,
+      "tail95": 112261.37598719835,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 123,
+      "quality": "dq",
+      "model": "fhs_ewma",
+      "cost": 1774.400342932046,
+      "reserve": 129552.23880597015,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 123,
+      "quality": "dq",
+      "model": "xgb_fhs",
+      "cost": 1773.6599970424463,
+      "reserve": 129179.10447761194,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 123,
+      "quality": "reference",
+      "model": "fhs_ewma",
+      "cost": 1771.2612763601435,
+      "reserve": 129850.74626865672,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 123,
+      "quality": "reference",
+      "model": "xgb_fhs",
+      "cost": 1772.3273744411667,
+      "reserve": 128507.46268656716,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 2026,
+      "quality": "dirty",
+      "model": "fhs_ewma",
+      "cost": 1770.9651380043038,
+      "reserve": 129701.49253731343,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 2026,
+      "quality": "dirty",
+      "model": "xgb_fhs",
+      "cost": 1772.179305263247,
+      "reserve": 128432.83582089552,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 2026,
+      "quality": "dq",
+      "model": "fhs_ewma",
+      "cost": 1771.4093455380637,
+      "reserve": 129925.37313432836,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 2026,
+      "quality": "dq",
+      "model": "xgb_fhs",
+      "cost": 1772.4754436190867,
+      "reserve": 128582.0895522388,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 2026,
+      "quality": "reference",
+      "model": "fhs_ewma",
+      "cost": 1771.2612763601435,
+      "reserve": 129850.74626865672,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    },
+    {
+      "seed": 2026,
+      "quality": "reference",
+      "model": "xgb_fhs",
+      "cost": 1772.3273744411667,
+      "reserve": 128507.46268656716,
+      "tail95": 117454.7633858259,
+      "max_deficit": 36456.30037711244,
+      "shortfall_rate": 0.014925373134328358
+    }
+  ],
+  "note": "Repeated market dates averaged across contamination seeds before temporal bootstrap; not 201 independent market decisions."
+}

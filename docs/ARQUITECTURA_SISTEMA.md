@@ -10,6 +10,9 @@
 Dos **gates en serie** sobre el dato, y dos **palancas de capital** que empujan en
 direcciones opuestas y por eso se complementan: medir el capital sobre el dato
 correcto (no infradotarse) y luego mantenerlo de forma eficiente (no sobredotarse).
+En **paralelo** a los modelos corre el **backtest**, que valida cada uno (CNN,
+XGB-AFT y VaR) y es lo que da credibilidad a lo que llega al Risk Director —ver
+[`BACKTEST_METODOLOGIA.md`](BACKTEST_METODOLOGIA.md).
 
 ## El flujo, de arriba abajo
 
@@ -43,6 +46,16 @@ XGB-AFT SUPERVIVENCIA ── C-index 0,664 (dec. #3)             │
           capital correcto (exactitud) + capital eficiente
           (eficiencia) + mapa de régimen + vida del canal
 ```
+
+## El backtest, en paralelo, valida los modelos
+
+La banda discontinua de la derecha de la figura **no es una etapa del flujo de
+datos**: es la capa de validación que se aplica sobre los tres modelos (CNN,
+XGB-AFT y VaR). Por eso se dibuja en paralelo, no en serie. El *gauntlet*
+—walk-forward purgado, DSR, PBO/CSCV, nulo de paseo aleatorio,
+Kupiec/Christoffersen, semáforo de Basilea— es lo que descartó las hipótesis de
+fantasía y aceptó las cuatro que sobreviven. Sin esa capa, los números de los
+modelos no significan nada ante un comité.
 
 ## Dónde está la CNN, y el matiz que NO puede faltar
 

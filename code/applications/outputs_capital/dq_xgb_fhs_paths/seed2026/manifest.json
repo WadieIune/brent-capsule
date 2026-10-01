@@ -1,0 +1,119 @@
+{
+  "status": "synthetic_stale_dynamic_fhs_exploratory",
+  "injection_seed": 2026,
+  "model_seed": 42,
+  "panel_sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
+  "script_sha256": "2b583eb90f11072f123ecb13538fda0d4a98d40760bb5ac623be322724c2bf75",
+  "folds": [
+    {
+      "year": 2024,
+      "quality": "dirty",
+      "train_n": 2015,
+      "validation_n": 241,
+      "test_n": 26,
+      "best_iteration": 18,
+      "train_label_end_max": "2022-12-30",
+      "validation_label_end_max": "2023-12-29"
+    },
+    {
+      "year": 2024,
+      "quality": "dq",
+      "train_n": 2015,
+      "validation_n": 241,
+      "test_n": 26,
+      "best_iteration": 40,
+      "train_label_end_max": "2022-12-30",
+      "validation_label_end_max": "2023-12-29"
+    },
+    {
+      "year": 2024,
+      "quality": "reference",
+      "train_n": 2015,
+      "validation_n": 241,
+      "test_n": 26,
+      "best_iteration": 17,
+      "train_label_end_max": "2022-12-30",
+      "validation_label_end_max": "2023-12-29"
+    },
+    {
+      "year": 2025,
+      "quality": "dirty",
+      "train_n": 2266,
+      "validation_n": 243,
+      "test_n": 25,
+      "best_iteration": 13,
+      "train_label_end_max": "2023-12-29",
+      "validation_label_end_max": "2024-12-31"
+    },
+    {
+      "year": 2025,
+      "quality": "dq",
+      "train_n": 2266,
+      "validation_n": 243,
+      "test_n": 25,
+      "best_iteration": 37,
+      "train_label_end_max": "2023-12-29",
+      "validation_label_end_max": "2024-12-31"
+    },
+    {
+      "year": 2025,
+      "quality": "reference",
+      "train_n": 2266,
+      "validation_n": 243,
+      "test_n": 25,
+      "best_iteration": 58,
+      "train_label_end_max": "2023-12-29",
+      "validation_label_end_max": "2024-12-31"
+    },
+    {
+      "year": 2026,
+      "quality": "dirty",
+      "train_n": 2519,
+      "validation_n": 242,
+      "test_n": 16,
+      "best_iteration": 2,
+      "train_label_end_max": "2024-12-31",
+      "validation_label_end_max": "2025-12-31"
+    },
+    {
+      "year": 2026,
+      "quality": "dq",
+      "train_n": 2519,
+      "validation_n": 242,
+      "test_n": 16,
+      "best_iteration": 16,
+      "train_label_end_max": "2024-12-31",
+      "validation_label_end_max": "2025-12-31"
+    },
+    {
+      "year": 2026,
+      "quality": "reference",
+      "train_n": 2519,
+      "validation_n": 242,
+      "test_n": 16,
+      "best_iteration": 5,
+      "train_label_end_max": "2024-12-31",
+      "validation_label_end_max": "2025-12-31"
+    }
+  ],
+  "cost_effects_eur": {
+    "dq_under_baseline": 0.4442075337594815,
+    "xgb_under_dirty": 1.2141672589432346,
+    "interaction": -0.148069177919524
+  },
+  "flags": {
+    "injected_cells": 114,
+    "flagged_cells": 86,
+    "true_flagged_cells": 83
+  },
+  "limitations": [
+    "Synthetic stale injection; no claim of equivalent natural corruption.",
+    "DQ is causal repeated-price masking, not complete geometric detector and not CNN.",
+    "Both inputs and reference outcome library retain same calendar and future reference target.",
+    "Reference historical outcome library assumed separately audited; isolates input conditioning only.",
+    "Joint reference daily innovations use variance known before each return; simulate daily dynamic EWMA paths from decision variance.",
+    "Model missings supported by XGBoost; no oracle price recovery.",
+    "Idealized hedges, fixed hypothetical costs, capital economic proxy, no regulatory claim.",
+    "Each run one injection/model seed; combined seeds require paired temporal aggregation, not treating repeated dates as independent."
+  ]
+}
