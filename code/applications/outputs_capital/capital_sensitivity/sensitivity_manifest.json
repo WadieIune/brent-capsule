@@ -1,0 +1,826 @@
+{
+  "status": "exploratory_full_grid_no_confirmatory_selection",
+  "grid_cells": 27,
+  "calibration": [
+    {
+      "model": "cnn_1d",
+      "stage": "mixed",
+      "logloss": 1.3996741590062103,
+      "brier": 0.7180850236390354
+    },
+    {
+      "model": "cnn_1d",
+      "stage": "raw",
+      "logloss": 1.425576986661598,
+      "brier": 0.7255196636675377
+    },
+    {
+      "model": "cnn_visual",
+      "stage": "mixed",
+      "logloss": 1.3705467648746592,
+      "brier": 0.7085541041032678
+    },
+    {
+      "model": "cnn_visual",
+      "stage": "raw",
+      "logloss": 1.378933537362227,
+      "brier": 0.7114832630157331
+    },
+    {
+      "model": "historical",
+      "stage": "mixed",
+      "logloss": 1.351352170366595,
+      "brier": 0.7013307399633639
+    },
+    {
+      "model": "historical",
+      "stage": "raw",
+      "logloss": 1.351352170366595,
+      "brier": 0.7013307399633639
+    },
+    {
+      "model": "tabular",
+      "stage": "mixed",
+      "logloss": 1.4473534837512274,
+      "brier": 0.7425172126655485
+    },
+    {
+      "model": "tabular",
+      "stage": "raw",
+      "logloss": 1.524284386812751,
+      "brier": 0.762094540222023
+    }
+  ],
+  "comparisons": [
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 128.03875185091738
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 23.320641739328266
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -18.123667377398647
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -11.901610399847868
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 184.51596194361696
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -3534.8505680440403
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.01,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -8534.850568044041
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": -166.133617626155
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 55.85169391139539
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -19.485903814262088
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -164.14949064202813
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 762.1550074036695
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -2406.0662610026607
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -1211.162406529466
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -1159.9909476406133
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 1032.6336854606052
+    },
+    {
+      "funding": 0.01,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -4246.54512931902
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": -78.8912579957356
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 128.19829424307045
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -9.624496564795095
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -74.92300402748174
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 435.262697824252
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -192.1178826844489
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 75.57450841032914
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -781.0071434455904
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 1486.8781266291799
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -4848.7648366227095
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -2459.2828798677456
+    },
+    {
+      "funding": 0.01,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -2391.1439421895448
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 263.44603062640647
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 35.69922501343376
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -12.319355602937549
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": 144.45944148359217
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 184.63441728595285
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -3391.993425186898
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -8391.993425186896
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": -0.29613835583973014
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 102.01966358682796
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 25.290215588723186
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -10.216773276474669
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 762.1550074036691
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -2409.264555245732
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -1264.7634489364787
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -1025.070312719979
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 1033.2259621722842
+    },
+    {
+      "funding": 0.05,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -4103.687986461875
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.14806917791997876
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 1.332622601279354
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 435.262697824252
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -192.11788268444707
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 63.817815683487424
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -646.0865085249543
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 1486.4043052598363
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -4852.436952235125
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -2531.1556588300764
+    },
+    {
+      "funding": 0.05,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -2256.6971286382513
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 57.68984880851349
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -51.08752004730991
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -3.2325417062327233
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -26.413444250003295
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 184.78248646387283
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -3213.4219966154706
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.1,
+      "penalty": 0.25,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -8213.42199661547
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": -4.738213693437501
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -0.2961383558399575
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 1.1845534233596027
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -44.420753375977256
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 762.1550074036695
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -1619.050743007866
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -1262.2462729118397
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -856.4195190691862
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.0
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 1033.9663080618839
+    },
+    {
+      "funding": 0.1,
+      "penalty": 1.0,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -3925.11655789045
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": -0.5922767116796877
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": 0.8884150675194178
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 1.4806917791993328
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 10,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -20.433546552949565
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 435.2626978242515
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -192.11788268444798
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": 71.96162046908285
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 50,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -477.43571487416284
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "historical",
+      "cnn_minus_comparator_cost_eur": 1485.8120285481573
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "tabular",
+      "cnn_minus_comparator_cost_eur": -4857.027096750643
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "cnn_1d",
+      "cnn_minus_comparator_cost_eur": -2565.0635005737395
+    },
+    {
+      "funding": 0.1,
+      "penalty": 2.0,
+      "hedge_bps": 100,
+      "comparator": "fixed_hedge_reference",
+      "cnn_minus_comparator_cost_eur": -2088.6386116991407
+    }
+  ],
+  "limitations": [
+    "Historical design already inspected.",
+    "One seed; uncalibrated classifier probabilities.",
+    "Costs hypothetical, instruments idealized, no regulatory capital claim.",
+    "Fixed reference introduced after original backtest; exploratory only.",
+    "Class Brier/logloss evaluates fold-specific classes, not tail calibration."
+  ],
+  "seed": 42,
+  "files_sha256": {
+    "data/panel_extendido_2026-09-09.csv": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
+    "code/applications/experiments/risk_director_capital_sensitivity_run.py": "f053df62ee9808eb790a9963a58895530b310ffc2257b9f9901b0db03da8c590",
+    "code/applications/experiments/capital_sensitivity.py": "532dcbfab3c3116680b251e297fb9ea6797eb5943c51aa979fde8d9342647511"
+  },
+  "serialization_note": "Training completed; manifest regenerated from saved CSV after scalar serialization correction."
+}

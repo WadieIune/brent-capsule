@@ -1,0 +1,61 @@
+<svg width="100%" viewBox="0 0 680 500" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Sistema productivo: dos gates en serie y dos palancas de capital</title>
+<desc>El dato crudo pasa por el Gate 1 de calidad de dato (control geométrico, no la CNN), que corrige una infradotación de capital del 13,4%. El dato limpio alimenta dos ramas: el Gate 2 de detección de canal (la CNN, AUC 0,97, gate de entrada al modelo) que produce episodios para el XGB-AFT de supervivencia (C-index 0,664); y en paralelo el VaR condicional a volatilidad (FHS-EWMA) que reduce el capital un 22,7%. Ambas ramas alimentan al Risk Director.</desc>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#8a8a8a"/>
+</marker>
+</defs>
+
+<rect x="280" y="40" width="120" height="36" rx="8" fill="#eceff1" stroke="#90a4ae"/>
+<text x="340" y="63" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#37474f">Dato crudo</text>
+<line x1="340" y1="76" x2="340" y2="94" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<rect x="200" y="96" width="250" height="46" rx="8" fill="#eceff1" stroke="#90a4ae"/>
+<text x="325" y="116" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#263238">Gate 1 · Calidad de dato</text>
+<text x="325" y="133" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#546e7a">control geométrico — no la CNN</text>
+<line x1="450" y1="119" x2="468" y2="119" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<rect x="470" y="96" width="166" height="46" rx="8" fill="#e3f0e6" stroke="#6ba378"/>
+<text x="553" y="116" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#2f5c3a">+13,4% capital</text>
+<text x="553" y="133" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4a7d57">por dato (exactitud)</text>
+<line x1="325" y1="142" x2="325" y2="162" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<rect x="200" y="164" width="250" height="30" rx="8" fill="#eceff1" stroke="#90a4ae"/>
+<text x="325" y="183" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#37474f">Dato limpio → alimenta todo</text>
+<line x1="300" y1="194" x2="200" y2="220" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="360" y1="194" x2="468" y2="220" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<rect x="100" y="222" width="180" height="48" rx="8" fill="#e4eef7" stroke="#6b9bd1"/>
+<text x="190" y="242" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#1a4971">Gate 2 · Detección canal</text>
+<text x="190" y="259" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#3a6a9a">CNN · AUC 0,97 (gate)</text>
+
+<rect x="380" y="222" width="180" height="48" rx="8" fill="#eceff1" stroke="#90a4ae"/>
+<text x="470" y="242" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#263238">VaR FHS-EWMA</text>
+<text x="470" y="259" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#546e7a">condicional a volatilidad</text>
+<line x1="470" y1="270" x2="470" y2="282" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<rect x="380" y="284" width="180" height="42" rx="8" fill="#e3f0e6" stroke="#6ba378"/>
+<text x="470" y="303" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#2f5c3a">−22,7% capital</text>
+<text x="470" y="319" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#4a7d57">por modelo (eficiencia)</text>
+
+<line x1="190" y1="270" x2="190" y2="290" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="110" y="292" width="160" height="28" rx="8" fill="#eceff1" stroke="#90a4ae"/>
+<text x="190" y="310" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#37474f">Episodios de canal</text>
+<line x1="190" y1="320" x2="190" y2="340" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+
+<rect x="100" y="342" width="180" height="48" rx="8" fill="#e4eef7" stroke="#6b9bd1"/>
+<text x="190" y="362" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#1a4971">XGB-AFT supervivencia</text>
+<text x="190" y="379" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#3a6a9a">C-index 0,664 · vida canal</text>
+
+<rect x="312" y="350" width="12" height="12" rx="3" fill="#6b9bd1"/>
+<text x="330" y="360" text-anchor="start" font-family="sans-serif" font-size="12" fill="#546e7a">componente IA / ML</text>
+<rect x="312" y="372" width="12" height="12" rx="3" fill="#7bbf8e"/>
+<text x="330" y="382" text-anchor="start" font-family="sans-serif" font-size="12" fill="#546e7a">efecto en capital</text>
+
+<line x1="200" y1="390" x2="300" y2="432" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+<line x1="460" y1="326" x2="400" y2="432" stroke="#8a8a8a" stroke-width="1.5" marker-end="url(#ar)"/>
+<rect x="200" y="434" width="280" height="50" rx="8" fill="#eceff1" stroke="#90a4ae"/>
+<text x="340" y="455" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#263238">Risk Director</text>
+<text x="340" y="472" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#546e7a">capital correcto + eficiente + régimen</text>
+</svg>
