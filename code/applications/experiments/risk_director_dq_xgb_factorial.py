@@ -45,6 +45,10 @@ def features(prices):
 
 def run(panel,out,seed):
     ref=pd.read_csv(panel,parse_dates=['date']).set_index('date')[['BRENT','EURUSD']].dropna()
+    if not ref.index.is_monotonic_increasing or ref.index.has_duplicates:
+        raise ValueError('Reference dates must be sorted and unique')
+    if not np.isfinite(ref.to_numpy()).all() or (ref<=0).any().any():
+        raise ValueError('Reference Brent/EURUSD prices must be finite and positive')
     dirty,truth=contaminate(ref,seed)
     cleaned,flags=audit(dirty)
     datasets={'dirty':dirty,'dq':cleaned,'reference':ref}
@@ -78,6 +82,8 @@ def run(panel,out,seed):
                 for j,idx in enumerate(te):
                     weights=mixed[j,labels[tr]]/counts[labels[tr]]
                     # Shared reference library; observation-quality changes conditioning only.
+                    if not np.isfinite(v[idx]).all():
+                        raise ValueError('Conditional variance forecast is unavailable')
                     vol_ratio=np.sqrt(np.maximum(v[idx],1e-12)/np.maximum(hist_daily,1e-12))
                     vol_ratio=np.clip(vol_ratio,.25,4)  # fixed safety bound, not selected in test.
                     scenario=y[tr]*vol_ratio

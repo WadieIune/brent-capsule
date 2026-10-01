@@ -115,5 +115,7 @@
     "Model missings supported by XGBoost; no oracle price recovery.",
     "Idealized hedges, fixed hypothetical costs, capital economic proxy, no regulatory claim.",
     "Single injection seed/model seed; no robust attribution or prospectively confirmed gain."
-  ]
+  ],
+  "reviewed_script_sha256": "857d84333118b4ac4d13add1fbacb4ff1351f495e493fda6e74dd3c0dc8d1f4d",
+  "review_note": "Post-run finite/unique/date/variance guards added; training script hash preserved; classifier scores do not calibrate EWMA-rescaled scenario distribution."
 }
