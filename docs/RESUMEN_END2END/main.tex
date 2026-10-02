@@ -1,6 +1,6 @@
 % =============================================================================
-% Resumen end-to-end (<=10 pp.) del sistema CNN + riesgo sobre el Brent.
-% Pensado para que el equipo lo lea, lo corrija y lo transforme en paper.
+% Resumen end-to-end del sistema CNN + riesgo sobre el Brent.
+% Versión ampliada para el equipo: explica qué, por qué, cómo y las reservas.
 % Autocontenido: la figura del proceso es TikZ (editable, sin ficheros externos).
 % Compilar en Overleaf:  pdflatex main  ->  pdflatex main   (sin bibtex)
 % =============================================================================
@@ -10,7 +10,7 @@
 \usepackage[spanish,es-nodecimaldot]{babel}
 \usepackage{lmodern}
 \usepackage{microtype}
-\usepackage[margin=2.2cm]{geometry}
+\usepackage[margin=2.3cm]{geometry}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{amsmath,amssymb,mathtools,bm}
@@ -28,36 +28,44 @@
 \hypersetup{colorlinks=true,linkcolor=burgundy,citecolor=burgundy,urlcolor=burgundy}
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \renewcommand{\arraystretch}{1.18}
+\newcommand{\cm}{\textcolor{cGreenD}{\ding{51}}}
+\newcommand{\xm}{\textcolor{burgundy}{\ding{55}}}
 
 \title{\vspace{-1.2cm}\textbf{Sistema CNN + riesgo sobre el Brent: un recorrido
 end-to-end}\\[2pt]\large Del reconocimiento de canales a la optimización de
 capital, con un backtest que descarta hipótesis de fantasía}
-\author{Proyecto \texttt{brent-capsule} — resumen para el equipo}
+\author{Proyecto \texttt{brent-capsule} --- documento para el equipo}
 \date{Octubre 2026 \quad(repositorio \texttt{WadieIune/brent-capsule})}
 
 \begin{document}
 \maketitle
-\vspace{-0.7cm}
+\vspace{-0.6cm}
 
 \begin{abstract}\noindent
 Documentamos, de principio a fin, un sistema que usa reconocimiento de imágenes
 (una red convolucional, CNN) sobre la geometría del precio del Brent al servicio
-de un director de riesgos. La tesis es deliberadamente sobria: el valor
-\emph{no} está en predecir el mercado ---lo probamos y no se puede--- sino en
-\textbf{medir el capital sobre el dato correcto y mantenerlo de forma
-eficiente}. Cada afirmación que presentamos ha superado un banco de pruebas
-diseñado para refutarla; las que no lo superaron se declaran como resultado
-negativo. Este documento resume el qué, el cómo y el porqué, con la formulación
-mínima necesaria y los punteros al código y a los artefactos reproducibles.
+de un director de riesgos. La tesis es deliberadamente sobria: el valor \emph{no}
+está en predecir el mercado ---lo probamos con rigor y no se puede--- sino en
+\textbf{medir el capital sobre el dato correcto y mantenerlo de forma eficiente}.
+Cada afirmación que presentamos ha superado un banco de pruebas diseñado para
+refutarla; las que no lo superaron se declaran como resultado negativo. Este
+documento está pensado para que cualquiera del equipo entienda lo hecho, pueda
+corregirlo y transformarlo en paper: cada sección explica \emph{qué} se hace,
+\emph{por qué}, \emph{cómo} y la \emph{reserva honesta} asociada.
 \end{abstract}
 
+\tableofcontents
+\vspace{3mm}
+
+% ---------------------------------------------------------------------------
 \section{Visión end-to-end}
-El sistema son \textbf{dos puertas en serie} sobre el dato y \textbf{dos palancas
-de capital} complementarias; en paralelo, un \textbf{backtest} valida cada
-modelo. La Figura~\ref{fig:arq} lo resume.
+El sistema son \textbf{dos puertas (gates) en serie} sobre el dato y \textbf{dos
+palancas de capital} complementarias; en paralelo, un \textbf{backtest} valida
+cada modelo. La Figura~\ref{fig:arq} lo resume y el resto del documento la
+desarrolla caja por caja.
 
 \begin{figure}[H]\centering
-\resizebox{\textwidth}{!}{%
+\resizebox{0.96\textwidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,>={Stealth[length=2mm]},node distance=4mm,
   box/.style={rounded corners=3pt,draw,align=center,inner sep=3pt,minimum height=8mm},
   gray/.style={box,fill=cGray,draw=cGrayD!40,text=cGrayD},
@@ -92,112 +100,203 @@ backtest valida cada modelo: no es una etapa del flujo, es la capa de
 certificación.}\label{fig:arq}
 \end{figure}
 
-\noindent\textbf{Las dos palancas, en una frase.} (i)~El dato ``tal cual se
-recibe'' \emph{infradota} el capital; corregirlo lo sube a su nivel justo
-(exactitud: no quedarse corto). (ii)~Sobre el dato limpio, condicionar el VaR a
-la volatilidad \emph{reduce} el capital frente al modelo estático (eficiencia: no
-pasarse). La IA (CNN$\to$episodios$\to$XGBoost) no está en la caja del capital:
-da \emph{criterio} (régimen y horizonte) al director de riesgos.
+\paragraph{Las dos palancas, con cuidado.} Son opuestas a propósito:
+\begin{itemize}\itemsep1pt
+\item \textbf{Por dato (exactitud).} El dato ``tal cual se recibe'' \emph{infradota}
+el capital; depurarlo lo \emph{sube} a su nivel justo. Es un problema de no
+quedarse corto (riesgo de incumplimiento).
+\item \textbf{Por modelo (eficiencia).} Sobre el dato limpio, condicionar el VaR a
+la volatilidad \emph{reduce} el capital frente al modelo estático. Es un problema
+de no pasarse (capital ocioso).
+\end{itemize}
+La IA (CNN\,$\to$\,episodios\,$\to$\,XGBoost) \textbf{no está en la caja del
+capital}: da \emph{criterio} al director de riesgos ---qué régimen hay y cuánto
+puede durar--- pero los números de capital los mueven el control de dato y el
+modelo de volatilidad. Es importante no vender la CNN como un motor de capital:
+no lo es, y lo demostramos (§\ref{sec:nofunciona}).
 
+% ---------------------------------------------------------------------------
 \section{Datos y calidad del dato}
-El sustrato es un panel diario 2007--2026 (Brent y variables macro/mercado) más
-el histórico largo del Brent (1987--2026). Se versiona con su \texttt{sha256},
-se fecha \emph{por observación} (sin relleno hacia delante) y se somete a un
-verificador automático (\texttt{data/verify\_panel.py}): calendario,
-ausencia de \emph{ffill}, alineación temporal sin \emph{look-ahead} y control de
-saltos diarios imposibles.
+\paragraph{Qué.} El sustrato es un panel diario 2007--2026 con el Brent y
+variables macro/mercado (WTI, oro, plata, cobre, gas, índices, tipos, VIX, dólar,
+EUR/USD), más el histórico largo del Brent 1987--2026. El panel se versiona con
+su huella \texttt{sha256}, se fecha \emph{por observación} (sin relleno hacia
+delante, \emph{ffill}) y pasa un verificador automático
+(\texttt{data/verify\_panel.py}) que comprueba: calendario de días hábiles sin
+huecos de fila, ausencia de \emph{ffill} (los festivos siguen siendo \texttt{NaN}),
+alineación temporal sin \emph{look-ahead} (barrido de desplazamiento $-1/0/+1$
+contra una referencia) y un control de \textbf{saltos diarios imposibles}.
 
-\paragraph{La calidad del dato mueve capital.} Un control \emph{geométrico}
-(regresión lineal móvil, ATR, rachas) detecta defectos ---precios estancados,
-no positivos--- que un control estadístico de cola (Hampel, Tukey, iForest)
-\emph{no} ve, porque un retorno exactamente cero nunca es un atípico de la
-distribución. Consumir el panel sin depurar \textbf{infradota el VaR y el capital
-un 13{,}4\,\%}. Es una aplicación inmediata que \emph{no requiere predecir nada}.
+\paragraph{Por qué la calidad del dato mueve capital.} Un control
+\emph{geométrico} (regresión lineal móvil, ATR, detección de rachas) detecta
+defectos que un control estadístico de cola \emph{no} ve. En concreto, sobre
+precios estancados (\emph{stale}) y precios no positivos, los detectores de cola
+clásicos ---Hampel, Tukey, \emph{Isolation Forest}--- dan \textbf{recall
+$0{,}00$}: un retorno exactamente cero nunca es un atípico de la distribución de
+retornos, así que son estructuralmente ciegos a ese defecto. Consumir el panel
+sin depurar \textbf{infradota el VaR y el capital un 13{,}4\,\%} (el VaR medio sube
+un 15{,}5\,\% al depurar). Es una aplicación inmediata y \emph{no requiere
+predecir nada}: es higiene de dato con impacto regulatorio directo.
 
-\paragraph{Caso real, no sintético.} Durante el trabajo, un defecto auténtico
----diez saltos imposibles en la serie EUR/USD de 2008--- \emph{atravesó todo el
-pipeline sin que ningún control lo viera}, hasta que se detectó al contrastar con
-una fuente independiente (BCE). Es la tesis del capítulo de calidad de dato
-ocurriendo en nuestros propios datos.
+\paragraph{Caso real, no sintético.} Durante el trabajo apareció un defecto
+auténtico: la serie EUR/USD heredada contenía \textbf{diez saltos diarios
+superiores al 5\,\%} ---imposibles en ese cruce--- concentrados en 2008. El
+defecto \emph{atravesó todo el pipeline sin que ningún control lo detectara},
+hasta que se cazó al contrastar con una fuente independiente (el tipo de
+referencia del BCE, que da cero saltos imposibles). Se sustituyó la serie entera
+(5.097 valores) y se añadió al verificador el control de saltos. Es la tesis del
+capítulo de calidad de dato ocurriendo en nuestros propios datos: más convincente
+que cualquier defecto inyectado a mano.
 
+\paragraph{Reserva honesta.} El panel se fecha por observación; la fuente macro
+puede revisarse o publicarse con retraso (ver §\ref{sec:limites}, punto~i).
+
+% ---------------------------------------------------------------------------
 \section{Detección de canal con la CNN}
-Cada ventana de $L=32$ días se normaliza a $\tilde{x}_i\in[-1,1]$ y se codifica
-como campos angulares de Gram. Con $\phi_i=\arccos(\tilde{x}_i)$,
+\paragraph{Qué y cómo.} Cada ventana de $L=32$ días de negociación se normaliza a
+$\tilde{x}_i\in[-1,1]$ y se codifica como \emph{campos angulares de Gram}, que
+convierten una serie temporal en una imagen preservando la estructura temporal.
+Con $\phi_i=\arccos(\tilde{x}_i)$,
 \begin{equation}
 \mathrm{GASF}_{ij}=\cos(\phi_i+\phi_j),\qquad
-\mathrm{GADF}_{ij}=\sin(\phi_i-\phi_j),
+\mathrm{GADF}_{ij}=\sin(\phi_i-\phi_j).
 \end{equation}
-que forman una imagen (nivel, retornos y un mapa multivariante) procesada por un
-\emph{backbone} EfficientNet-B1, $f_\theta:\text{imagen}\to(\hat{y}_{\text{cls}},
-\hat{r})$, entrenado con $\mathcal{L}=\mathcal{L}_{\text{CE}}+\lambda\,
-\mathcal{L}_{\text{MSE}}$. El etiquetado es \emph{débil} y geométrico: sobre la
-ventana suavizada se ajusta una recta por mínimos cuadrados y se declara canal si
-$R^2\ge\tau$ y los residuos caben en una banda $\pm k\,\sigma$.
+Se construye una imagen de tres canales (GASF del nivel, GADF de los retornos y
+un mapa multivariante) y se procesa con un \emph{backbone} EfficientNet-B1,
+$f_\theta:\text{imagen}\to(\hat{y}_{\text{cls}},\hat{r})$, entrenado con una
+pérdida mixta $\mathcal{L}=\mathcal{L}_{\text{CE}}+\lambda\,\mathcal{L}_{\text{MSE}}$
+(clasificación del patrón + regresión auxiliar). El etiquetado es \emph{débil} y
+geométrico, no manual: sobre la ventana suavizada se ajusta una recta por mínimos
+cuadrados y se declara ``canal'' si el ajuste es bueno ($R^2\ge\tau$) y los
+residuos caben en una banda $\pm k\,\sigma$ alrededor de la tendencia.
 
-\paragraph{Resultado honesto.} La CNN \textbf{detecta} el canal con AUC
-$0{,}97$/$0{,}956$ fuera de muestra. Es un \emph{detector} fiable, no un
-predictor: no da ventaja direccional (ver §\ref{sec:bt}). Su papel es ser la
-\textbf{puerta de entrada al modelo} ---produce los episodios de canal--- y la
-capa de legibilidad del marco.
+\paragraph{Resultado.} La CNN \textbf{detecta} el canal con AUC $0{,}97$ (y
+$0{,}956$ fuera de muestra, \emph{out-of-time}). Es un detector fiable.
 
-\section{Persistencia del canal (supervivencia)}
-Definimos la duración $T$ de cada episodio hasta su ruptura, con indicador de
-evento $\delta\in\{0,1\}$ y \textbf{censura administrativa} en la fecha de corte
-(los episodios vivos al corte se censuran, sin inventar su final). Comparamos
-Kaplan--Meier, Cox, \emph{Random Survival Forest} y XGBoost-AFT. La métrica
-primaria es el índice de concordancia
+\paragraph{Reserva honesta, y es la clave del proyecto.} Detectar no es predecir.
+Que la CNN reconozca un canal al 97\,\% \emph{no} implica que ese canal anticipe
+nada: lo contrastamos y no da ventaja direccional (§\ref{sec:nofunciona}). El
+papel de la CNN es ser la \textbf{puerta de entrada al modelo} ---produce los
+episodios de canal que alimentan la fase de supervivencia--- y la capa de
+legibilidad del marco. Matiz técnico que conviene conocer: en el código actual la
+detección que alimenta a la supervivencia y al control de dato la realiza un
+detector geométrico \emph{de reglas}; la CNN es su versión \emph{aprendida},
+validada contra la misma definición de canal, y es el detector desplegable en
+producción (generaliza a más instrumentos sin reglas ajustadas a mano). Es
+correcto decir ``la CNN es el gate de detección''; es incorrecto decir ``la CNN
+limpia el dato'' (eso es el Gate~1, geométrico).
+
+% ---------------------------------------------------------------------------
+\section{Persistencia del canal (análisis de supervivencia)}
+\paragraph{Qué y por qué.} Una vez detectado un canal, la pregunta útil para
+riesgo no es ``¿hacia dónde irá?'' (no predecible) sino ``¿cuánto durará antes de
+romperse?''. Eso es \emph{análisis de supervivencia}: a cada episodio le asociamos
+una duración $T$ hasta la ruptura y un indicador de evento $\delta\in\{0,1\}$.
+
+\paragraph{Censura administrativa.} Los episodios que siguen \emph{vivos} en la
+fecha de corte no se descartan ni se les inventa un final: se \textbf{censuran}
+($\delta=0$) con la duración observada hasta el corte. Ignorar esto sesgaría las
+duraciones a la baja (solo verías los canales que ya rompieron).
+
+\paragraph{Modelos y métrica.} Comparamos Kaplan--Meier, Cox, \emph{Random
+Survival Forest} y XGBoost-AFT. La métrica primaria es el índice de concordancia
 \begin{equation}
 \text{C-index}=\Pr\!\big(\hat{\rho}_i>\hat{\rho}_j \,\big|\, T_i<T_j\big),
 \end{equation}
-con $\hat{\rho}$ el riesgo estimado. En \emph{walk-forward}, XGBoost-AFT alcanza
-\textbf{C-index $=0{,}664\pm0{,}007$} (mínimo $0{,}656$): la vida del canal
-\emph{es ordenable}. Es un positivo genuino y alimenta el horizonte de la
-posición (evidencia de apoyo para el horizonte de liquidez regulatorio).
+que mide con qué probabilidad el modelo ordena bien dos episodios (riesgo
+$\hat\rho$ mayor para el que rompe antes). Un $0{,}5$ es azar; un $1{,}0$ es orden
+perfecto. En \emph{walk-forward}, XGBoost-AFT alcanza \textbf{C-index
+$=0{,}664\pm0{,}007$} (mínimo $0{,}656$ entre orígenes): la vida del canal
+\emph{es ordenable} de forma estable. Es un positivo genuino y se traduce en el
+horizonte de la posición (y entra como evidencia de apoyo del horizonte de
+liquidez regulatorio).
 
+\paragraph{Reserva honesta.} El número de episodios independientes es limitado y
+la estadística de supervivencia es sensible a los parámetros de definición del
+canal; por eso se reporta la dispersión entre orígenes (el $\pm0{,}007$) y no un
+único número.
+
+% ---------------------------------------------------------------------------
 \section{VaR, \emph{Expected Shortfall} y capital}
-El VaR a nivel $\alpha$ es $\mathrm{VaR}^{\alpha}_t=-Q_{1-\alpha}(r\mid
-\mathcal{F}_{t-1})$. El \textbf{modelo condicional a volatilidad} (simulación
-histórica filtrada, FHS) usa una varianza EWMA
+\paragraph{Definiciones.} El \emph{Value at Risk} a nivel $\alpha$ es el cuantil
+de pérdida $\mathrm{VaR}^{\alpha}_t=-Q_{1-\alpha}(r\mid\mathcal{F}_{t-1})$; el
+\emph{Expected Shortfall} es la pérdida media más allá de ese cuantil,
+$\mathrm{ES}_\alpha=-\mathbb{E}[r\mid r<-\mathrm{VaR}_\alpha]$. El capital
+regulatorio por riesgo de mercado es proporcional a $m_c\cdot(\text{ES o VaR})$,
+donde el multiplicador $m_c$ \textbf{crece con el agrupamiento de excepciones}:
+por eso el clustering, y no solo el nivel del VaR, consume capital.
+
+\paragraph{Los dos modelos.} El \emph{incumbente} es una simulación histórica
+estática (cuantil de una ventana móvil de 250 días). El modelo \emph{condicional
+a volatilidad} (simulación histórica filtrada, FHS) usa una varianza EWMA
 \begin{equation}
 \sigma_t^2=\lambda\,\sigma_{t-1}^2+(1-\lambda)\,r_{t-1}^2,\qquad \lambda=0{,}94,
 \end{equation}
-estandariza $z_{t}=r_{t}/\sigma_{t}$ y reconstruye
-$\mathrm{VaR}^{\alpha}_t=-\sigma_t\,Q_{1-\alpha}(z)$; el \emph{Expected
-Shortfall} es $\mathrm{ES}_\alpha=-\mathbb{E}[r\mid r<-\mathrm{VaR}_\alpha]$. El
-capital regulatorio es proporcional a $m_c\cdot\text{(ES o VaR)}$, donde el
-multiplicador $m_c$ \emph{crece con el agrupamiento de excepciones}: por eso el
-clustering, y no solo el nivel, consume capital.
+estandariza los retornos $z_t=r_t/\sigma_t$ y reconstruye
+$\mathrm{VaR}^{\alpha}_t=-\sigma_t\,Q_{1-\alpha}(z)$. En román paladino: el
+estático reacciona tarde cuando sube la volatilidad; el condicional se adapta.
 
-\paragraph{Backtesting del VaR (batería completa).} Sobre el Brent, corte fuera
-de muestra 2020-08-20, el VaR condicional frente al estático:
+\paragraph{Batería completa de backtesting.} Sobre el Brent, corte fuera de
+muestra 2020-08-20, 1.527 sesiones de test:
 
 \begin{table}[H]\centering\footnotesize
 \begin{tabularx}{\linewidth}{L c c}
 \toprule
-Prueba & Estático (incumbente) & Condicional a vol.\ (FHS-EWMA)\\
+Prueba (qué mide) & Estático (incumbente) & Condicional a vol.\ (FHS-EWMA)\\
 \midrule
-Kupiec POF (cobertura)        & $p=0{,}163$ \checkmark & $p=0{,}246$ \checkmark\\
-Christoffersen (independencia)& $p=0{,}032$ \ding{55}\ (agrupa) & $p=0{,}262$ \checkmark\\
-Engle--Manganelli DQ          & $p=0{,}0004$ \ding{55} & $p=0{,}056$ \checkmark\\
-Capital (peor 250 d)          & $0{,}298$ & $\mathbf{0{,}230}$\\
+Kupiec POF (¿cobertura correcta?)        & $p=0{,}163$ \cm & $p=0{,}246$ \cm\\
+Christoffersen (¿excepciones independientes?)& $p=0{,}032$ \xm\ (agrupa) & $p=0{,}262$ \cm\\
+Cobertura condicional $\mathrm{LR}_{cc}$ & --- & $p=0{,}272$ \cm\\
+Engle--Manganelli DQ (¿sin estructura?)  & $p=0{,}0004$ \xm & $p=0{,}056$ \cm\\
+Capital (peor ventana de 250 d)          & $0{,}298$ & $\mathbf{0{,}230}$\\
+Multiplicador de Basilea                 & $3{,}75$ (ámbar) & $3{,}40$ (ámbar)\\
 \bottomrule
 \end{tabularx}
 \end{table}
-\noindent El condicional \textbf{ahorra $-22{,}7\%$ de capital} (IC\,95\% por
-bloques $[-28{,}9;\,-1{,}3]$) y, además, \textbf{corrige el fallo de
-independencia} del estático: éste cubre bien pero \emph{agrupa} las excepciones
----justo lo que infla el multiplicador---. El ahorro no viene de asumir más
-riesgo, sino de no reaccionar tarde.
 
+\paragraph{Lectura.} El condicional \textbf{ahorra $-22{,}7\%$ de capital}, con un
+intervalo de confianza del 95\,\% por bloques de $[-28{,}9;\,-1{,}3]\%$ (todo
+negativo, luego el ahorro es robusto; la magnitud, incierta ---ver
+§\ref{sec:limites}, punto~iii). Y el matiz que más pesa ante un comité: el VaR
+estático \textbf{pasa la cobertura} (Kupiec $p=0{,}163$) pero \textbf{falla la
+independencia} (Christoffersen $p=0{,}032$, DQ $p=0{,}0004$) ---\emph{agrupa} las
+excepciones, que es justo lo que infla el multiplicador---; el condicional las
+\emph{desagrupa} ($p=0{,}262$). Es el ejemplo de manual de que la cobertura sola
+no basta: el ahorro no viene de asumir más riesgo, sino de \textbf{no reaccionar
+tarde}.
+
+% ---------------------------------------------------------------------------
 \section{El backtest: el filtro que descarta la fantasía}\label{sec:bt}
-Sobre una serie casi aleatoria es fácil producir ``señal'' que es artefacto. El
-banco de pruebas ataca justo eso: \emph{walk-forward} purgado con embargo
-(López de Prado), corte fuera de muestra, \emph{Deflated Sharpe Ratio} (DSR) y
-\emph{Probability of Backtest Overfitting} (PBO/CSCV), un \textbf{nulo de paseo
-aleatorio} procesado con la misma maquinaria, \emph{bootstrap} por bloques, y la
-batería de VaR (Kupiec, Christoffersen, DQ) con el semáforo de Basilea. El DSR
-corrige el Sharpe por el número de pruebas; una estrategia solo cuenta si su DSR
-tiene un intervalo que excluye el cero.
+Sobre una serie de precios ---que es casi un paseo aleatorio--- es fácil producir
+``señal'' que en realidad es artefacto. El banco de pruebas está diseñado para
+\textbf{matar} esos artefactos, no para lucirlos. Sus componentes, con lo que
+ataca cada uno:
+
+\begin{itemize}\itemsep2pt
+\item \textbf{Walk-forward purgado + embargo} (López de Prado). Entrena en el
+pasado y evalúa en el futuro, \emph{purgando} las etiquetas que solapan en el
+tiempo con el test y añadiendo un \emph{embargo} de días después. Mata la fuga
+por solapamiento de ventanas y correlación serial.
+\item \textbf{Corte out-of-time.} Un tramo final nunca visto en entrenamiento,
+para medir generalización real.
+\item \textbf{Deflated Sharpe Ratio (DSR).} Corrige el Sharpe por el número de
+configuraciones probadas: un Sharpe alto deja de impresionar si salió de probar
+muchas variantes. Una estrategia solo cuenta si su DSR tiene intervalo que
+excluye el cero.
+\item \textbf{PBO / CSCV.} Probabilidad de que el ``mejor'' modelo lo sea por azar
+combinatorio; mide sobreajuste del propio proceso de selección.
+\item \textbf{Nulo de paseo aleatorio.} Se procesa un paseo aleatorio con la
+\emph{misma} maquinaria; si reproduce la ``señal'', la señal era mecánica. Varias
+hipótesis cayeron justo aquí.
+\item \textbf{Bootstrap por bloques.} Intervalos de confianza que respetan la
+dependencia temporal (no i.i.d.), imprescindibles con ventanas solapadas.
+\item \textbf{Batería de VaR + semáforo de Basilea.} Kupiec, Christoffersen y
+Engle--Manganelli traducidos a zona (verde/ámbar/roja) y capital.
+\end{itemize}
+
+\noindent La prueba de que el banco no está sesgado a rechazar: con las
+\emph{mismas} reglas, aceptó cuatro hipótesis y rechazó varias más. Esa asimetría
+es la credibilidad.
 
 \begin{table}[H]\centering\footnotesize
 \begin{tabularx}{\linewidth}{L l}
@@ -208,7 +307,8 @@ El canal da ventaja direccional            & DSR $\approx 0$\\
 Acertar la ruptura da dinero               & $67{,}8\%$ acierto pero Sharpe $-0{,}48$\\
 La fragilidad anticipa la cola del VaR     & \emph{lift} $0{,}00$ vs $3{,}19$ de la vol.\\
 La compresión anticipa la volatilidad      & aporte $+0{,}006$, IC incluye 0\\
-La CNN sobre vol.\ bate a la persistencia  & la persistencia gana\\
+La CNN sobre vol.\ bate a la persistencia  & la persistencia gana (corr $0{,}45$ vs $\approx 0$)\\
+La distancia al borde anticipa la ruptura  & AUC $0{,}677$, pero el nulo da $0{,}624$\\
 La geometría anticipa el clustering (H1)   & $\Delta$AUC-PR $-0{,}003$, dentro del nulo\\
 \midrule
 \textbf{Lo que SOBREVIVIÓ al mismo filtro} & \\
@@ -220,49 +320,103 @@ VaR condicional ahorra capital             & $-22{,}7\%$, batería completa\\
 \bottomrule
 \end{tabularx}
 \end{table}
-\noindent El mismo banco que rechazó seis hipótesis aceptó cuatro. Esa asimetría
----y no un resultado aislado--- es lo que da credibilidad a lo presentable.
 
-\section{Qué no funciona, y por qué importa}
-Que la CNN no prediga dirección ni volatilidad no es un fracaso: es el
-\emph{resultado}. No se puede afirmar ``la geometría no anticipa el riesgo'' sin
-detectar antes el canal casi perfectamente; el AUC $0{,}97$ es lo que da dientes
-al negativo. La hipótesis de incluir la CNN como predictor de capital (clustering
-de excepciones, ``H1'') se probó con un \emph{gate} barato y no lo superó: el
-ahorro de capital resultó ser $100\%$ volatilidad y $0\%$ geometría, de modo que
-no se invirtió en reentrenar la red.
+% ---------------------------------------------------------------------------
+\section{Qué no funciona, y por qué importa}\label{sec:nofunciona}
+Que la CNN no prediga dirección ni volatilidad \textbf{no es un fracaso: es el
+resultado}, y es publicable. No se puede afirmar ``la geometría del canal no
+anticipa el riesgo'' sin antes detectar el canal casi perfectamente; el AUC
+$0{,}97$ es precisamente lo que da \emph{dientes} al negativo. Dos ejemplos que el
+equipo debe poder defender:
+\begin{itemize}\itemsep2pt
+\item \textbf{Dirección y ruptura.} Aun con $67{,}8\%$ de acierto nominal en el
+signo de la ruptura, la estrategia da Sharpe $-0{,}48$ y DSR$\approx 0$: el
+acierto no se traduce en dinero porque llega tarde y con coste.
+\item \textbf{La CNN como motor de capital (hipótesis ``H1'').} Probamos si la
+geometría anticipa el \emph{agrupamiento} de excepciones (lo que movería el
+multiplicador). Con un \emph{gate} barato ---sin reentrenar la red--- el aporte de
+la geometría fue $\Delta$AUC-PR $=-0{,}003$, dentro de la banda del nulo, y el
+ahorro de capital de un \emph{overlay} resultó ser $100\%$ volatilidad y $0\%$
+geometría. Conclusión: no se invirtió en el reentreno. El principio ---\emph{gate
+barato antes que caro}--- ahorró tiempo y es buena praxis.
+\end{itemize}
 
-\section{Limitaciones y reproducibilidad}
-Todo vive en una cápsula \textbf{Code Ocean} (código, datos, resultados y entorno
-fijado por \texttt{Dockerfile}, con \texttt{torch==2.2.2}). Limitaciones que el
-equipo debe tener presentes: (i)~el panel se fecha por observación, no por
-publicación ---falta el \emph{vintage} ALFRED por variable---; (ii)~la
-estandarización del \emph{bundle} de la CNN es global y conviene documentarla o
-rehacerla por \emph{fold} (opción ya disponible, por defecto desactivada para
-reproducir lo publicado); (iii)~el ahorro de capital del VaR tiene un intervalo
-amplio ($[-28{,}9;\,-1{,}3]\%$) aunque enteramente negativo.
+% ---------------------------------------------------------------------------
+\section{Limitaciones y reproducibilidad}\label{sec:limites}
+\paragraph{Reproducibilidad (lo bueno).} Todo vive en una cápsula \textbf{Code
+Ocean}: código, datos, resultados y el \textbf{entorno fijado por
+\texttt{Dockerfile}} con \texttt{torch==2.2.2}. Cualquiera puede re-ejecutar y
+obtener los mismos números \emph{dentro de ese entorno}. Importante: al correr
+fuera de él (p.\,ej.\ con \texttt{torch 2.14}) los resultados \emph{no} coinciden
+---no es un \emph{bug}, el entrenamiento en CPU es sensible a la versión---, de
+modo que el \texttt{Dockerfile} pineado es la fuente de verdad de la reproducción.
 
+\paragraph{(i) El panel se fecha por observación, no por publicación.} Cada fila
+lleva la fecha a la que se \emph{refiere} el dato. Pero las series macro pueden
+\textbf{publicarse con retraso o revisarse} después; el \emph{vintage} (el dato
+``tal como se conocía ese día'', vía ALFRED) no lo tenemos, usamos los valores
+actuales.
+\textit{Por qué importa:} una decisión del día $t$ debería usar solo lo publicado
+en $t$; fechar por observación puede dar un \emph{look-ahead} leve en las
+variables macro revisables.
+\textit{Mitigación y estado:} sin \emph{ffill}, con controles de alineación y un
+retardo de publicación medido como cota inferior por variable
+(\texttt{data/INVENTARIO\_PANEL.md}). El arreglo completo requiere la API de
+ALFRED (con clave). Impacto en los titulares: pequeño, porque el motor principal
+---precio del Brent y VaR--- \emph{no} se revisa; la reserva es para la capa
+exógena.
+
+\paragraph{(ii) La estandarización de las \emph{features} de la CNN es global.}
+El z-score que alimenta a la red se calculó con la media y desviación de
+\emph{toda} la muestra, incluido el test.
+\textit{Por qué importa:} es una \textbf{fuga leve} ---la escala ``conoce'' la
+distribución del test---; estrictamente debería ajustarse solo con el tramo de
+entrenamiento.
+\textit{Mitigación y estado:} está implementada la reestandarización \emph{por
+fold} (ajustada solo con train), \textbf{opt-in y desactivada por defecto} para
+que la cápsula reproduzca lo publicado. Al compararla, el efecto es
+\textbf{marginal} (no cambia las conclusiones). Es decir: identificada, acotada y
+corregible.
+
+\paragraph{(iii) El ahorro de capital del VaR tiene un intervalo amplio.} El
+$-22{,}7\%$ es el valor puntual; el IC\,95\% por bloques es
+$[-28{,}9;\,-1{,}3]\%$.
+\textit{Por qué importa:} todo el intervalo es negativo (el ahorro es
+\emph{estadísticamente robusto}), pero la \emph{magnitud} es incierta: podría ser
+casi un $29\%$ o tan poco como $\sim 1{,}3\%$. No hay que prometer el $22{,}7\%$
+exacto como garantía; la \emph{dirección} es firme, el \emph{tamaño} depende de la
+ventana muestral.
+
+\paragraph{(iv) Otras reservas de alcance.} El número de episodios de canal
+independientes es limitado (supervivencia); las clases de patrón raras tienen
+soporte casi nulo y la CNN no las aprende (techo estructural de la macro-F1); y el
+etiquetado es \emph{débil} (geométrico, autogenerado), apropiado para detección
+pero no una verdad de mercado.
+
+% ---------------------------------------------------------------------------
 \section{Cómo leer, corregir y extender}
 \noindent\footnotesize
 \begin{tabularx}{\linewidth}{l L}
 \toprule
 Tema & Fichero en el repositorio\\
 \midrule
-Arquitectura (fuente única) & \texttt{docs/ARQUITECTURA\_SISTEMA.md} (+ figura SVG)\\
+Arquitectura (fuente única) & \texttt{docs/ARQUITECTURA\_SISTEMA.md} (+ figura SVG/PNG)\\
 Metodología del backtest & \texttt{docs/BACKTEST\_METODOLOGIA.md}\\
 Resumen ejecutivo (correo) & \texttt{docs/RESUMEN\_EJECUTIVO.md}\\
 Detección / CNN & \texttt{code/channel\_detector.py}, \texttt{code/brent\_pattern\_system/}\\
-Supervivencia & \texttt{code/part2\_channel\_survival/validation.py}\\
-VaR y capital & \texttt{code/applications/experiments/var\_vol\_conditional\_backtest.py}\\
+Supervivencia del canal & \texttt{code/part2\_channel\_survival/validation.py}\\
+VaR y capital (backtest completo) & \texttt{code/applications/experiments/var\_vol\_conditional\_backtest.py}\\
 Calidad de dato $\to$ capital & \texttt{code/applications/experiments/dq\_capital\_impact.py}\\
 Verificación del panel & \texttt{data/verify\_panel.py}, \texttt{data/INVENTARIO\_PANEL.md}\\
 Decisiones (aceptado/rechazado) & \texttt{docs/COORDINACION\_AGENTES.md}\\
+Hallazgos y auditorías & \texttt{docs/hallazgos/}, \texttt{docs/auditorias/}\\
 \bottomrule
 \end{tabularx}
 \normalsize
 
-\vspace{2mm}\noindent\emph{Nota.} Las cifras de este documento son reproducibles
-desde los artefactos en \texttt{results/reports/}. Toda afirmación marcada como
-presentable ha superado el backtest descrito en §\ref{sec:bt}.
+\vspace{2mm}\noindent\emph{Nota.} Todas las cifras de este documento son
+reproducibles desde los artefactos en \texttt{results/reports/}. Toda afirmación
+marcada como presentable ha superado el backtest descrito en §\ref{sec:bt}; las
+reservas de §\ref{sec:limites} son condiciones de contorno, no invalidaciones.
 
 \end{document}
