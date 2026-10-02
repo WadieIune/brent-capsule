@@ -23,7 +23,36 @@ Resumen de dónde quedó todo, qué está en `main` y qué falta. Lo escribe A.
   (gate barato pasado; **pendiente backtest completo — zona de B**).
 - H1 (clustering) y la geometría sobre la vol: **no pasan** el gate.
 
-## ⚠️ WIP sin validar — retomar aquí mañana
+## ✅ RESUELTO el 2026-10-02 — validación del refit por fold
+
+Ejecutados control (refit off) y refit (refit on) en el mismo entorno:
+
+| Métrica | Control (off) | Refit (on) | Publicado |
+|---|---|---|---|
+| Sharpe por fold | [−0,336, −0,553, 1,010] | [−0,317, −0,553, 0,930] | [0,286, −1,005, 0,235] |
+| DSR | 0,087 | 0,095 | 0,084 |
+| PBO | 0,830 | 0,821 | 0,729 |
+| macro-F1 | 0,145 | 0,145 | 0,181 |
+
+Dos conclusiones:
+
+1. **El control (refit off) NO reproduce lo publicado** — y como refit off es el
+   comportamiento original, la causa **no es mi cambio**: es **deriva de versión
+   de PyTorch**. El Dockerfile del capsule fija `torch==2.2.2` (el entorno que
+   generó `results/`); mi `.venv` local tiene 2.14.0. El entrenamiento CPU es
+   sensible a la versión. **El capsule reproduce bajo su Dockerfile pineado; mi
+   venv local no es ese entorno.** No hay nada que arreglar en el capsule.
+2. **El refit, comparado limpio (mismo venv, off vs on), es marginal**: DSR
+   0,087→0,095, PBO 0,83→0,82, macro-F1 idéntico. No desestabiliza, pero tampoco
+   cambia la historia.
+
+**Decisión:** el refit se queda **OPT-IN y por defecto OFF** (ya está así). No se
+promueve a la pipeline publicada. Una validación definitiva exigiría el entorno
+pineado (torch 2.2.2); no merece la pena porque el efecto es marginal y no es un
+resultado de titular. El `image_cache::_data_fingerprint` se mantiene (mejora de
+correctitud, sin efecto con el default).
+
+## ~~⚠️ WIP sin validar~~ (histórico, ya resuelto arriba)
 
 En `code/brent_pattern_system/` quedaron dos cambios de pipeline, ahora **seguros
 pero sin validar**:
