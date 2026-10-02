@@ -17,8 +17,8 @@ out-of-time 2020-08-20, 1.527 sesiones de test.
 | Prueba | Estático (incumbente) | Condicional a vol (FHS-EWMA) |
 |---|---|---|
 | Excepciones (99%) | 21 | 20 |
-| Kupiec POF (cobertura) | p=0,041 | **p=0,246 ✓** |
-| **Christoffersen (independencia)** | **p=0,038 ✗ (agrupa)** | **p=0,262 ✓** |
+| Kupiec POF (cobertura) | p=0,163 ✓ | **p=0,246 ✓** |
+| **Christoffersen (independencia)** | **p=0,032 ✗ (agrupa)** | **p=0,262 ✓** |
 | Cobertura condicional LR_cc | — | p=0,272 ✓ |
 | Engle-Manganelli DQ | p=0,0004 ✗ | p=0,056 ✓ (justo) |
 | Capital peor-250d | 0,29792 | **0,23026** |
@@ -34,10 +34,12 @@ ahorro podría ser tan pequeño como ~1,3 %). Mediana bootstrap −15,8 %.
 Dos cosas, y la segunda es la que vale ante un comité:
 
 1. El VaR condicional **ahorra un 22,7 % de capital** a cobertura correcta.
-2. Además **arregla el fallo de independencia** del incumbente: el VaR estático
-   **agrupa** las excepciones (Christoffersen p=0,038, DQ p=0,0004) —justo lo que
-   infla el multiplicador—, y el condicional las desagrupa (p=0,262). El ahorro
-   no sale de asumir más riesgo, sale de **no reaccionar tarde**.
+2. Además **arregla el fallo de independencia** del incumbente. Y el matiz es
+   fino: el VaR estático **pasa la cobertura** (Kupiec p=0,163) pero **falla la
+   independencia** (Christoffersen p=0,032, DQ p=0,0004) —**agrupa** las
+   excepciones, que es justo lo que infla el multiplicador—; el condicional las
+   desagrupa (p=0,262). Es el ejemplo de manual de que la cobertura sola no basta:
+   el ahorro no sale de asumir más riesgo, sale de **no reaccionar tarde**.
 
 Matiz honesto: el DQ de Engle-Manganelli del condicional queda en p=0,056, que
 pasa el 5 % por poco. No invalida la conclusión, pero se reporta.
