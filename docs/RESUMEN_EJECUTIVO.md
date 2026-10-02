@@ -25,7 +25,9 @@ se complementan, con el **backtest validando en paralelo** cada modelo:
 2. **Gate 2 · Detección de canal** (la CNN, AUC 0,97): es la **puerta de entrada
    al modelo**. Produce los episodios de canal que alimentan al modelo de
    supervivencia. En paralelo, el **VaR condicional a volatilidad** reduce el
-   capital **−22,7 %** a igual cobertura → **eficiencia**: no pasarse.
+   capital **−22,7 %** a igual cobertura → **eficiencia**: no pasarse. (Además
+   corrige el agrupamiento de excepciones del VaR estático, que es lo que inflaba
+   el multiplicador regulatorio.)
 3. **Backtest** (capa de validación, en paralelo): walk-forward purgado, DSR,
    PBO/CSCV, nulo de paseo aleatorio, Kupiec/Christoffersen, semáforo de Basilea.
 
@@ -36,7 +38,7 @@ se complementan, con el **backtest validando en paralelo** cada modelo:
 | La CNN detecta el canal con fiabilidad | AUC **0,97 / 0,956** fuera de muestra |
 | La vida del canal es ordenable (XGB-AFT) | C-index **0,664 ± 0,007** |
 | El dato sucio infradota el capital | **13,4 %** |
-| El VaR condicional a volatilidad ahorra capital | **−22,7 %** a igual cobertura |
+| El VaR condicional a volatilidad ahorra capital | **−22,7 %** (IC95 [−28,9; −1,3]), batería completa pasada |
 
 ## Lo que el backtest DESCARTÓ (y por qué eso da credibilidad)
 

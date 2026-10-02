@@ -1,0 +1,101 @@
+{
+  "fuente": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+  "alpha": 0.99,
+  "ventana": 250,
+  "lambda_ewma": 0.94,
+  "corte_out_of_time": "2020-08-20",
+  "incumbente_estatico": {
+    "spec": "historical_sim_estatico",
+    "n_test": 1527,
+    "exceptions": 21,
+    "avg_var": 0.07945,
+    "kupiec": {
+      "n": 1527,
+      "exceptions": 21,
+      "exception_rate": 0.01375,
+      "expected_rate": 0.01,
+      "LR_pof": 1.9443,
+      "p_value": 0.1632
+    },
+    "christoffersen": {
+      "LR_ind": 4.6088,
+      "p_value": 0.0318,
+      "transitions": {
+        "n00": 1486,
+        "n01": 19,
+        "n10": 19,
+        "n11": 2
+      }
+    },
+    "cond_coverage_lr_cc": {
+      "LR_cc": 6.5531,
+      "p_value": 0.0378
+    },
+    "dq_engle_manganelli": {
+      "DQ_stat": 24.6403,
+      "p_value": 0.0004,
+      "lags": 4,
+      "df": 6
+    },
+    "capital": {
+      "exceptions_per_250d_avg": 3.44,
+      "worst_250d_exceptions": 8,
+      "multiplier_worst": 3.75,
+      "zone_worst": "amarilla",
+      "capital_worst": 0.29792
+    }
+  },
+  "condicional_vol_fhs": {
+    "spec": "fhs_ewma_condicional_vol",
+    "n_test": 1527,
+    "exceptions": 20,
+    "avg_var": 0.06772,
+    "kupiec": {
+      "n": 1527,
+      "exceptions": 20,
+      "exception_rate": 0.0131,
+      "expected_rate": 0.01,
+      "LR_pof": 1.3485,
+      "p_value": 0.2455
+    },
+    "christoffersen": {
+      "LR_ind": 1.2584,
+      "p_value": 0.262,
+      "transitions": {
+        "n00": 1487,
+        "n01": 19,
+        "n10": 19,
+        "n11": 1
+      }
+    },
+    "cond_coverage_lr_cc": {
+      "LR_cc": 2.6069,
+      "p_value": 0.2716
+    },
+    "dq_engle_manganelli": {
+      "DQ_stat": 12.2925,
+      "p_value": 0.0558,
+      "lags": 4,
+      "df": 6
+    },
+    "capital": {
+      "exceptions_per_250d_avg": 3.27,
+      "worst_250d_exceptions": 5,
+      "multiplier_worst": 3.4,
+      "zone_worst": "amarilla",
+      "capital_worst": 0.23026
+    }
+  },
+  "delta_capital_pct": -22.71,
+  "delta_capital_ic95_bloques": [
+    -28.91,
+    -1.25
+  ],
+  "delta_capital_mediano_bloques": -15.84,
+  "veredicto": {
+    "cobertura_kupiec_ok": true,
+    "independencia_christoffersen_no_peor": true,
+    "ahorro_capital_robusto": true,
+    "resumen": "El VaR condicional a volatilidad reduce el capital -22.71 % (IC95 por bloques [-28.91, -1.25]) manteniendo cobertura; la independencia no empeora."
+  }
+}

@@ -106,5 +106,5 @@ pasa el backtest (ver `hallazgos/2026-09-11-A-H1-H3-gate-barato-capital.md`).
 | Detección de canal (CNN) | AUC 0,97 / 0,956 OOT | ✅ pasado (dec. #1) |
 | Supervivencia (XGB-AFT) | C-index 0,664 ± 0,007 | ✅ pasado (dec. #3) |
 | DQ → capital | infradotación 13,4 % | 🟡 confirmatorio (dec. #13) |
-| VaR vol-condicional | −22,7 % capital, Kupiec ok | 🟡 gate barato pasado; **pendiente backtest completo (zona de B)** |
+| VaR vol-condicional | −22,7 % capital (IC95 [−28,9; −1,3]) | ✅ **backtest completo pasado** (Kupiec + Christoffersen + DQ); además arregla la independencia |
 | CNN → predicción de capital (H1/H3) | sin señal sobre el nulo | ❌ no pasa el gate |
