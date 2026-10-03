@@ -341,6 +341,31 @@ geometría. Conclusión: no se invirtió en el reentreno. El principio ---\emph{
 barato antes que caro}--- ahorró tiempo y es buena praxis.
 \end{itemize}
 
+\paragraph{¿Puede la IA \emph{parametrizar} el motor de cálculo?} Es la pregunta
+natural: no predecir, sino ajustar los parámetros del cálculo de capital según el
+régimen. Se probaron tres vías y las tres caen ---todas porque el precio es casi
+un paseo aleatorio y el régimen no añade sobre la volatilidad:
+
+\begin{table}[H]\centering\footnotesize
+\begin{tabularx}{\linewidth}{L l}
+\toprule
+Lever probado & Resultado\\
+\midrule
+ES condicional a régimen (H3)                      & colapsa a la volatilidad\\
+Horizonte adaptativo por régimen (WP-AI1)          & estructura de término $\sqrt{h}$ en todo régimen\\
+Selección del periodo de estrés por régimen (WP-AI2)& la vol selecciona mejor el estrés\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\noindent \textbf{La IA no reescribe la fórmula de capital.} Su valor ---con
+evidencia--- es como \textbf{capa de soporte a la decisión}: mapa de régimen
+automático (AUC $0{,}97$), estimación de \emph{cuánto durará} el régimen
+(supervivencia, C-index $0{,}664$) y calidad de dato. El motor de cálculo lo
+gobiernan la volatilidad y Basilea; la IA aporta \emph{criterio}, no coeficientes.
+Esta es la forma honesta y defendible de incluir la IA como herramienta
+complementaria.
+
 % ---------------------------------------------------------------------------
 \section{Limitaciones y reproducibilidad}\label{sec:limites}
 \paragraph{Reproducibilidad (lo bueno).} Todo vive en una cápsula \textbf{Code

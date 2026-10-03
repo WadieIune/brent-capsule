@@ -99,6 +99,27 @@ mueven las dos cajas verdes. Esa es la razón defendible por la que la CNN está
 dentro del sistema sin fingir que predice capital — probamos esa vía (H1/H3) y no
 pasa el backtest (ver `hallazgos/2026-09-11-A-H1-H3-gate-barato-capital.md`).
 
+### La IA como capa de soporte a la decisión (conclusión afianzada)
+
+Se probó explícitamente si la IA puede **parametrizar el motor de cálculo** de
+capital. Tres levers, tres negativos consistentes, todos porque el precio del
+Brent es casi un paseo aleatorio y el régimen geométrico no añade sobre la
+volatilidad:
+
+| Lever probado | Resultado |
+|---|---|
+| ES condicional a régimen (H3) | colapsa a la volatilidad |
+| Horizonte adaptativo por régimen (WP-AI1) | estructura de término √h en todo régimen |
+| Selección del periodo de estrés por régimen (WP-AI2) | la vol selecciona mejor el estrés |
+
+Ver `hallazgos/2026-10-02-A-WPAI1-horizonte-adaptativo-gate.md`. **Conclusión:**
+la IA no reescribe la fórmula de capital; su valor ---con evidencia--- es como
+**capa de contexto para quien decide**: mapa de régimen automático (detección
+AUC 0,97), estimación de *cuánto durará* el régimen (supervivencia C-index 0,664)
+y calidad de dato (control geométrico, que sí mueve capital por la vía del dato).
+El motor de cálculo lo gobiernan la volatilidad y Basilea; la IA aporta criterio,
+no coeficientes.
+
 ## Estado de validación de cada pieza
 
 | Pieza | Métrica | Estado backtest |

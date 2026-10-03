@@ -53,9 +53,41 @@ fórmula:
 - y la **calidad de dato** (control geométrico) que sí mueve capital por la vía
   del dato.
 
-## Sugerencia a B (decide él)
-WP-AI2 (ventana de estrés por régimen) comparte la misma premisa de que el
-régimen aporta sobre la vol; dado el patrón, su prior es bajo. Recomiendo
-**cerrar la vía de "IA que parametriza el cálculo"** y reposicionar la capa de IA
-como **soporte a la decisión** (régimen + horizonte + calidad de dato), que es lo
-que de verdad sobrevive. Queda a tu criterio probar WP-AI2 o cerrar.
+---
+
+# WP-AI2 · selección del periodo de estrés por régimen vs vol (también NO pasa)
+
+- **Reproducción:** `code/applications/experiments/_wpai1_gate/wpai2_gate.py`.
+
+Para el ES estresado (FRTB) hay que elegir el periodo de estrés. Se comparó el ES
+de cola (97,5 %) que produce cada selector de los 250 días más estresados:
+
+| Selector | ES estresado | Jaccard vs vol |
+|---|---|---|
+| **Volatilidad** (EWMA, top-250) | **0,287** | — |
+| Calendario contiguo (max ES) | 0,268 | — |
+| Geometría (anchura de canal) | 0,262 | 0,397 |
+| Fragilidad (supervivencia) | 0,198 | 0,006 |
+
+**Veredicto: no pasa.** La **volatilidad encuentra el estrés mejor** que el
+régimen: su ES estresado (0,287) es el más alto, por encima del calendario y de
+los dos selectores geométricos. La fragilidad elige días casi disjuntos de los de
+vol (Jaccard 0,006) y **menos** estresados: no está localizando el estrés. El
+estrés es, a efectos prácticos, un fenómeno de volatilidad, y la geometría no
+aporta para seleccionarlo.
+
+# Cierre de la vía "IA que parametriza el cálculo"
+
+Tres levers probados, tres negativos consistentes:
+
+| Lever | Resultado |
+|---|---|
+| ES condicional a régimen (H3) | colapsa a la volatilidad |
+| Horizonte adaptativo por régimen (WP-AI1) | la estructura de término es √h en todo régimen |
+| Selección de estrés por régimen (WP-AI2) | la vol selecciona mejor el estrés |
+
+**Conclusión afianzada:** la IA **no mejora la fórmula de capital** sobre las
+líneas base (vol / √h). Su valor, con evidencia, es como **capa de soporte a la
+decisión**: mapa de régimen (detección AUC 0,97), estimación de persistencia
+(supervivencia C-index 0,664) y calidad de dato (control geométrico, que sí mueve
+capital por la vía del dato). Es la versión que sobrevive al backtest.
