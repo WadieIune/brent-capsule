@@ -343,28 +343,32 @@ barato antes que caro}--- ahorró tiempo y es buena praxis.
 
 \paragraph{¿Puede la IA \emph{parametrizar} el motor de cálculo?} Es la pregunta
 natural: no predecir, sino ajustar los parámetros del cálculo de capital según el
-régimen. Se probaron tres vías y las tres caen ---todas porque el precio es casi
-un paseo aleatorio y el régimen no añade sobre la volatilidad:
+régimen. Se exploraron tres vías; ninguna ha mostrado mejora sobre las líneas base
+(vol / $\sqrt{h}$), pero \textbf{con distinto nivel de evidencia}, y una está en
+disputa:
 
 \begin{table}[H]\centering\footnotesize
-\begin{tabularx}{\linewidth}{L l}
+\begin{tabularx}{\linewidth}{L L l}
 \toprule
-Lever probado & Resultado\\
+Vía & Lo observado & Evidencia\\
 \midrule
-ES condicional a régimen (H3)                      & colapsa a la volatilidad\\
-Horizonte adaptativo por régimen (WP-AI1)          & estructura de término $\sqrt{h}$ en todo régimen\\
-Selección del periodo de estrés por régimen (WP-AI2)& la vol selecciona mejor el estrés\\
+ES condicional a régimen (H3)        & no mejora sobre la vol & backtest completo (cerrado)\\
+Horizonte adaptativo (WP-AI1)        & sin diferencia detectable & \emph{exploratorio}; gate con \emph{look-ahead} y nulo no temporal (en revisión)\\
+Estrés por régimen (WP-AI2)          & la vol selecciona mejor & comparación descriptiva\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\noindent \textbf{La IA no reescribe la fórmula de capital.} Su valor ---con
-evidencia--- es como \textbf{capa de soporte a la decisión}: mapa de régimen
-automático (AUC $0{,}97$), estimación de \emph{cuánto durará} el régimen
-(supervivencia, C-index $0{,}664$) y calidad de dato. El motor de cálculo lo
+\noindent \textbf{Estado honesto.} Solo H3 está cerrado con backtest completo;
+WP-AI1 es un diagnóstico exploratorio con defectos de alineación y de nulo
+señalados en auditoría interna, pendiente de un test confirmatorio corregido
+(señal \emph{as-of}, nulo temporal por bloques y binomio capital-cobertura con la
+señal de supervivencia). Por tanto la vía de parametrización \textbf{no se declara
+cerrada}. \emph{Conclusión de trabajo} ---la más probable, sujeta a ese test---:
+la IA no reescribe la fórmula de capital sino que actúa como \textbf{capa de
+soporte a la decisión} (mapa de régimen AUC $0{,}97$, persistencia via
+supervivencia C-index $0{,}664$, y calidad de dato). El motor de cálculo lo
 gobiernan la volatilidad y Basilea; la IA aporta \emph{criterio}, no coeficientes.
-Esta es la forma honesta y defendible de incluir la IA como herramienta
-complementaria.
 
 % ---------------------------------------------------------------------------
 \section{Limitaciones y reproducibilidad}\label{sec:limites}

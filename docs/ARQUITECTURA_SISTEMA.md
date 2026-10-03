@@ -99,26 +99,31 @@ mueven las dos cajas verdes. Esa es la razón defendible por la que la CNN está
 dentro del sistema sin fingir que predice capital — probamos esa vía (H1/H3) y no
 pasa el backtest (ver `hallazgos/2026-09-11-A-H1-H3-gate-barato-capital.md`).
 
-### La IA como capa de soporte a la decisión (conclusión afianzada)
+### La IA como capa de soporte a la decisión (estado, con reservas del supervisor)
 
-Se probó explícitamente si la IA puede **parametrizar el motor de cálculo** de
-capital. Tres levers, tres negativos consistentes, todos porque el precio del
-Brent es casi un paseo aleatorio y el régimen geométrico no añade sobre la
-volatilidad:
+Se está probando si la IA puede **parametrizar el motor de cálculo** de capital.
+Estado actual, con el **nivel de evidencia de cada vía marcado explícitamente**
+(no todas están al mismo nivel, y una está en disputa):
 
-| Lever probado | Resultado |
-|---|---|
-| ES condicional a régimen (H3) | colapsa a la volatilidad |
-| Horizonte adaptativo por régimen (WP-AI1) | estructura de término √h en todo régimen |
-| Selección del periodo de estrés por régimen (WP-AI2) | la vol selecciona mejor el estrés |
+| Vía | Lo observado | Nivel de evidencia |
+|---|---|---|
+| ES condicional a régimen (H3) | no mejora sobre la vol | ✅ **backtest completo** (cerrado) |
+| Horizonte adaptativo (WP-AI1) | sin diferencia detectable | 🟠 **exploratorio**; el gate tiene defectos de alineación (look-ahead de 1 sesión) y nulo no temporal — *challenge* de B. **NO cierra la vía** |
+| Estrés por régimen (WP-AI2) | la vol selecciona mejor el estrés | 🟡 comparación **descriptiva**, no backtest pre-registrado |
 
-Ver `hallazgos/2026-10-02-A-WPAI1-horizonte-adaptativo-gate.md`. **Conclusión:**
-la IA no reescribe la fórmula de capital; su valor ---con evidencia--- es como
-**capa de contexto para quien decide**: mapa de régimen automático (detección
-AUC 0,97), estimación de *cuánto durará* el régimen (supervivencia C-index 0,664)
-y calidad de dato (control geométrico, que sí mueve capital por la vía del dato).
-El motor de cálculo lo gobiernan la volatilidad y Basilea; la IA aporta criterio,
-no coeficientes.
+**Lo que SÍ se puede afirmar hoy:** ninguna de las vías probadas ha mostrado que
+la IA mejore la fórmula de capital sobre las líneas base (vol / √h), pero **solo
+H3 está cerrado con backtest completo**. WP-AI1 requiere un test confirmatorio
+corregido (señal *as-of*, nulo temporal por bloques y binomio capital-cobertura
+con la señal de supervivencia) antes de poder cerrar la vía de parametrización;
+ver `auditorias/2026-10-03-B-challenge-wpai1-gate.md`.
+
+**Conclusión de trabajo (sujeta a ese test):** el valor con evidencia de la IA es
+como **capa de contexto para quien decide** ---mapa de régimen automático
+(detección AUC 0,97), estimación de *cuánto durará* el régimen (supervivencia
+C-index 0,664) y calidad de dato (control geométrico, que sí mueve capital por la
+vía del dato)---, no como coeficientes de la fórmula. Es la lectura más probable,
+pero **no se declara cerrada** hasta el test confirmatorio.
 
 ## Estado de validación de cada pieza
 

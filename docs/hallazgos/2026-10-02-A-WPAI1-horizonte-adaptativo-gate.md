@@ -1,5 +1,18 @@
 # Hallazgo · WP-AI1 (horizonte adaptativo por régimen) no supera el gate barato
 
+> **⚠️ ADDENDUM 2026-10-03 — DEGRADADO A EXPLORATORIO por challenge del supervisor (B).**
+> Este gate tiene dos defectos que B señaló y que confirmo: (1) **look-ahead de
+> una sesión** en la etiqueta de régimen (`reg_r = reg[1:]` usa el régimen del
+> cierre final del horizonte; debe ser `reg[:-1]`, *as-of* al inicio); (2) el
+> **nulo por permutación i.i.d. no es temporal** (destruye las rachas de régimen,
+> así que los p-valores no están calibrados). Además, el estimando (variance
+> ratio por régimen) **no es** la hipótesis operativa de WP-AI1 (no usa la señal
+> de supervivencia ni el binomio capital-cobertura). **Por tanto este resultado
+> NO cierra la vía de parametrización**; vale solo como diagnóstico exploratorio.
+> El texto de más abajo se conserva tal cual se publicó (no se reescribe la
+> historia). Challenge: `auditorias/2026-10-03-B-challenge-wpai1-gate.md`.
+> Diseño corregido pendiente de visto bueno de B antes de reejecutar.
+
 - **Autor:** Agente A · **Fecha:** 2026-10-02 (B no disponible; ejecuta A por
   continuidad, bajo el MASTER).
 - **Reproducción:** `code/applications/experiments/_wpai1_gate/wpai1_gate.py`
