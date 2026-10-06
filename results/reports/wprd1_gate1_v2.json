@@ -1,0 +1,144 @@
+{
+  "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+  "perspectiva": "posicion larga Brent",
+  "fit_end": "2016-12-31",
+  "val_end": "2020-08-20",
+  "theta_fit_worst_decile": -0.08203,
+  "H": 10,
+  "lead": 10,
+  "cooldown": 10,
+  "fa_star_year": 20,
+  "n_episodios_val": 13,
+  "n_episodios_test": 31,
+  "n_dias_test": 1527,
+  "calendario": {
+    "recall": 0.774,
+    "fa_year": 15.5,
+    "rev_year": 19.5
+  },
+  "curva_coste_cobertura": {
+    "solo_vol": [
+      {
+        "fa_objetivo": 5,
+        "recall": 0.387,
+        "fa_real": 6.1,
+        "rev_year": 8.1
+      },
+      {
+        "fa_objetivo": 10,
+        "recall": 0.613,
+        "fa_real": 12.4,
+        "rev_year": 15.5
+      },
+      {
+        "fa_objetivo": 20,
+        "recall": 0.71,
+        "fa_real": 14.2,
+        "rev_year": 17.8
+      },
+      {
+        "fa_objetivo": 40,
+        "recall": 0.71,
+        "fa_real": 14.2,
+        "rev_year": 17.8
+      }
+    ],
+    "regimen": [
+      {
+        "fa_objetivo": 5,
+        "recall": 0.258,
+        "fa_real": 4.5,
+        "rev_year": 5.8
+      },
+      {
+        "fa_objetivo": 10,
+        "recall": 0.548,
+        "fa_real": 9.9,
+        "rev_year": 12.7
+      },
+      {
+        "fa_objetivo": 20,
+        "recall": 0.742,
+        "fa_real": 12.7,
+        "rev_year": 16.5
+      },
+      {
+        "fa_objetivo": 40,
+        "recall": 0.742,
+        "fa_real": 12.7,
+        "rev_year": 16.5
+      }
+    ],
+    "supervivencia": [
+      {
+        "fa_objetivo": 5,
+        "recall": 0.226,
+        "fa_real": 3.0,
+        "rev_year": 4.1
+      },
+      {
+        "fa_objetivo": 10,
+        "recall": 0.29,
+        "fa_real": 5.9,
+        "rev_year": 7.4
+      },
+      {
+        "fa_objetivo": 20,
+        "recall": 0.613,
+        "fa_real": 10.4,
+        "rev_year": 13.5
+      },
+      {
+        "fa_objetivo": 40,
+        "recall": 0.613,
+        "fa_real": 10.4,
+        "rev_year": 13.5
+      }
+    ],
+    "combinacion": [
+      {
+        "fa_objetivo": 5,
+        "recall": 0.258,
+        "fa_real": 4.0,
+        "rev_year": 5.3
+      },
+      {
+        "fa_objetivo": 10,
+        "recall": 0.516,
+        "fa_real": 9.7,
+        "rev_year": 12.4
+      },
+      {
+        "fa_objetivo": 20,
+        "recall": 0.581,
+        "fa_real": 12.5,
+        "rev_year": 15.5
+      },
+      {
+        "fa_objetivo": 40,
+        "recall": 0.581,
+        "fa_real": 12.5,
+        "rev_year": 15.5
+      }
+    ]
+  },
+  "nulo_aleatorio_recall": {
+    "media": 0.456,
+    "p95": 0.581
+  },
+  "en_FA_star": {
+    "recall_combinacion": 0.581,
+    "mejor_baseline": "calendario",
+    "recall_baseline": 0.774,
+    "delta": -0.194,
+    "ic95_bloques": [
+      -0.419,
+      -0.064
+    ]
+  },
+  "veredicto": {
+    "combinacion_bate_baseline": false,
+    "supera_nulo": false,
+    "lectura": "Gate 1 NO pasa: la combinación no mejora de forma robusta sobre el mejor baseline a igual tasa de falsas alarmas."
+  }
+}
