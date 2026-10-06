@@ -1,0 +1,43 @@
+{
+  "EXPLORATORIO": true,
+  "cesta": "1/N BRENT+WTI+GOLD+SILVER+COPPER+NATGAS",
+  "fuente": "panel_extendido_2026-09-09.csv",
+  "wti_neg": "suelo -95%/día (provisional)",
+  "theta_fit_purgado": -0.05079,
+  "n_ep_test": 28,
+  "fa_target": 15.0,
+  "resultados": {
+    "vol_cartera": {
+      "recall": 1.0,
+      "fa_year": 20.4
+    },
+    "regimen_brent": {
+      "recall": 0.821,
+      "fa_year": 12.9
+    },
+    "superv_brent": {
+      "recall": 0.429,
+      "fa_year": 11.6
+    },
+    "combinacion": {
+      "recall": 0.857,
+      "fa_year": 18.7
+    },
+    "calendario": {
+      "recall": 0.643,
+      "fa_year": 13.8
+    }
+  },
+  "baseline_val": "calendario",
+  "contraste": {
+    "combinacion": 0.857,
+    "baseline": "calendario",
+    "baseline_recall": 0.643,
+    "delta": 0.214,
+    "ic95": [
+      0.036,
+      0.321
+    ]
+  },
+  "veredicto_exploratorio": "Señal mejora (revisar confirmatorio)"
+}
