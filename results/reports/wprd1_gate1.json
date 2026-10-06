@@ -1,0 +1,52 @@
+{
+  "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+  "cutoff": "2020-08-20",
+  "H": 10,
+  "lead": 10,
+  "theta_train_worst_decile": -0.08412,
+  "budget_rev_year": 20,
+  "n_test_days": 1517,
+  "n_episodios_test": 51,
+  "nulo_aleatorio": {
+    "captura_media": 0.513,
+    "captura_p95": 0.627
+  },
+  "resultados": {
+    "calendario": {
+      "captura": 0.804,
+      "rev_year": 19.3
+    },
+    "solo_vol": {
+      "captura": 0.196,
+      "rev_year": 23.8,
+      "precision": 0.238
+    },
+    "regimen": {
+      "captura": 0.216,
+      "rev_year": 23.3,
+      "precision": 0.193
+    },
+    "supervivencia": {
+      "captura": 0.118,
+      "rev_year": 14.5,
+      "precision": 0.023
+    },
+    "combinacion": {
+      "captura": 0.196,
+      "rev_year": 17.4,
+      "precision": 0.238
+    }
+  },
+  "mejor_baseline": "calendario",
+  "delta_captura_combinacion_vs_baseline": -0.608,
+  "ic95_bloques_delta": [
+    -0.804,
+    -0.49
+  ],
+  "veredicto": {
+    "combinacion_bate_a_solo_vol": false,
+    "ic_excluye_cero": false,
+    "supera_nulo": false,
+    "lectura": "Gate 1 NO pasa: la combinación no mejora de forma robusta sobre solo-vol."
+  }
+}
