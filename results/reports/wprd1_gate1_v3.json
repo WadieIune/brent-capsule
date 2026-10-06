@@ -1,0 +1,57 @@
+{
+  "source": "file:/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+  "perspectiva": "posicion larga Brent",
+  "H": 10,
+  "lead": 10,
+  "fit_end": "2016-12-31",
+  "val_end": "2020-08-20",
+  "theta_fit_purgado": -0.08206,
+  "fa_target": 15.0,
+  "n_episodios_val": 13,
+  "n_episodios_test": 31,
+  "purga": ">= 10 sesiones en cada frontera",
+  "cadencia_calendario_val": 14,
+  "recall_a_FA_target_interp": {
+    "solo_vol": 0.71,
+    "regimen": 0.742,
+    "supervivencia": 0.613,
+    "combinacion": 0.581,
+    "calendario": 0.774
+  },
+  "carga_realizada_test_FA_year": {
+    "solo_vol": 14.2,
+    "regimen": 12.7,
+    "supervivencia": 10.4,
+    "combinacion": 12.5,
+    "calendario": 14.2
+  },
+  "baseline_preseleccionado_en_val": {
+    "elegido": "calendario",
+    "recall_val": {
+      "solo_vol": 0.462,
+      "calendario": 0.615
+    }
+  },
+  "nulo_mismo_cooldown_n_alertas": {
+    "media": 0.598,
+    "p95": 0.742,
+    "n_alertas": 94
+  },
+  "contraste_primario": {
+    "combinacion_recall_test": 0.581,
+    "baseline": "calendario",
+    "baseline_recall_test": 0.774,
+    "delta": -0.194,
+    "ic95_bloques": [
+      -0.419,
+      -0.065
+    ],
+    "fa_combinacion": 12.5,
+    "fa_baseline": 14.2
+  },
+  "veredicto": {
+    "combinacion_bate_baseline": false,
+    "supera_nulo": false,
+    "lectura": "Gate 1 NO pasa: la combinación no bate al baseline preseleccionado con IC que excluya 0 ni supera el nulo con su misma política."
+  }
+}

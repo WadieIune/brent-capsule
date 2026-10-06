@@ -1,0 +1,302 @@
+{
+  "experiment": "wprd1_multiactive_policy",
+  "decision": "exploratory_proxy_not_book_backtest",
+  "source": {
+    "source": "panel_extendido_2026-09-09.csv",
+    "date_start": "2007-01-02",
+    "date_end": "2026-09-09",
+    "joint_weekday_sessions": 4887,
+    "nonpositive_prices": {
+      "BRENT": [],
+      "WTI": [
+        {
+          "date": "2020-04-20",
+          "price": -36.98
+        }
+      ],
+      "GOLD": [],
+      "SILVER": [],
+      "COPPER": [],
+      "NATGAS": []
+    }
+  },
+  "source_sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
+  "assets": [
+    "BRENT",
+    "WTI",
+    "GOLD",
+    "SILVER",
+    "COPPER",
+    "NATGAS"
+  ],
+  "portfolio_definition": "equal-weight of per-asset price changes scaled by train-only price-change SD; one risk unit per leg",
+  "wtinegative_handling": "retain negative settlement and observed delta-price P&L; no log returns; train-only scales; use translation-invariant absolute channel width; exclude WTI from ratio-based survival only after the nonpositive print becomes observable and renormalize weights",
+  "forecast_horizon_sessions": 10,
+  "event": "forward 10-session portfolio risk-unit loss below train q10; episodes merged within 10 sessions",
+  "signals": [
+    "solo_vol",
+    "fhs_ewma",
+    "vol_regimen",
+    "vol_supervivencia",
+    "vol_regimen_supervivencia"
+  ],
+  "fhs_baseline": "252-session rolling empirical 10-session overlapping-block lower quantile of EWMA-filtered portfolio residuals, scaled by current EWMA sigma; causal portfolio FHS approximation",
+  "operating_point": {
+    "validation_target_reviews_per_year": 20,
+    "cooldown_sessions": 10,
+    "exposure_after_alert": 0.5,
+    "reduced_exposure_sessions": 10,
+    "turn_cost_sensitivity_bps": [
+      2,
+      5,
+      10
+    ]
+  },
+  "walk_forward": "expanding historical fit, previous calendar year for alert-load calibration, next year test; labels purged by forward horizon",
+  "aggregates": [
+    {
+      "model": "fhs_ewma",
+      "pooled_episode_recall": 0.58,
+      "captured_episodes": 29,
+      "test_episodes": 50,
+      "mean_annual_episode_recall": 0.6505952380952381,
+      "mean_false_alarms_per_year": 12.23674880112839,
+      "mean_reviews_per_year": 14.71616524735425,
+      "mean_validation_reviews_per_year": 15.000622175661567
+    },
+    {
+      "model": "solo_vol",
+      "pooled_episode_recall": 0.74,
+      "captured_episodes": 37,
+      "test_episodes": 50,
+      "mean_annual_episode_recall": 0.6958333333333333,
+      "mean_false_alarms_per_year": 13.193985016916429,
+      "mean_reviews_per_year": 16.359085394894596,
+      "mean_validation_reviews_per_year": 16.10435689774774
+    },
+    {
+      "model": "vol_regimen",
+      "pooled_episode_recall": 0.66,
+      "captured_episodes": 33,
+      "test_episodes": 50,
+      "mean_annual_episode_recall": 0.6333333333333333,
+      "mean_false_alarms_per_year": 12.163639538368024,
+      "mean_reviews_per_year": 14.987605285861038,
+      "mean_validation_reviews_per_year": 16.099880669259516
+    },
+    {
+      "model": "vol_regimen_supervivencia",
+      "pooled_episode_recall": 0.74,
+      "captured_episodes": 37,
+      "test_episodes": 50,
+      "mean_annual_episode_recall": 0.7125,
+      "mean_false_alarms_per_year": 12.759164805357221,
+      "mean_reviews_per_year": 15.924290578502323,
+      "mean_validation_reviews_per_year": 16.01419929835758
+    },
+    {
+      "model": "vol_supervivencia",
+      "pooled_episode_recall": 0.78,
+      "captured_episodes": 39,
+      "test_episodes": 50,
+      "mean_annual_episode_recall": 0.775,
+      "mean_false_alarms_per_year": 13.527225974089736,
+      "mean_reviews_per_year": 16.861717600893375,
+      "mean_validation_reviews_per_year": 16.27101609740649
+    }
+  ],
+  "paired_two_year_block_bootstrap_recall_delta_vs_fhs": {
+    "vol_supervivencia": {
+      "n_years": 10,
+      "block_years": 2,
+      "delta_mean": 0.1244047619047619,
+      "ci95": [
+        -0.05,
+        0.32083333333333336
+      ]
+    },
+    "vol_regimen_supervivencia": {
+      "n_years": 10,
+      "block_years": 2,
+      "delta_mean": 0.06190476190476191,
+      "ci95": [
+        -0.2,
+        0.2833333333333333
+      ]
+    }
+  },
+  "exposure_policy_complete_year_aggregates": [
+    {
+      "model": "fhs_ewma",
+      "cost_bps": "10",
+      "mean_exposure": 0.7166106823640455,
+      "net_proxy_sharpe": 0.4448616315741771,
+      "net_cumulative_pnl_risk_units": 4.636958897454707,
+      "net_max_drawdown_risk_units": 7.321348533646777,
+      "oos_fwd10_q10_risk_units": -1.547565497409377,
+      "oos_fwd10_es10_risk_units": -2.285774962725529,
+      "turnover_units": 2.0833333333333335
+    },
+    {
+      "model": "fhs_ewma",
+      "cost_bps": "2",
+      "mean_exposure": 0.7166106823640455,
+      "net_proxy_sharpe": 0.44517692325522473,
+      "net_cumulative_pnl_risk_units": 4.638625564121373,
+      "net_max_drawdown_risk_units": 7.320815200313444,
+      "oos_fwd10_q10_risk_units": -1.547425497409377,
+      "oos_fwd10_es10_risk_units": -2.285669962725529,
+      "turnover_units": 2.0833333333333335
+    },
+    {
+      "model": "fhs_ewma",
+      "cost_bps": "5",
+      "mean_exposure": 0.7166106823640455,
+      "net_proxy_sharpe": 0.44505868936249365,
+      "net_cumulative_pnl_risk_units": 4.6380005641213735,
+      "net_max_drawdown_risk_units": 7.321015200313444,
+      "oos_fwd10_q10_risk_units": -1.547477997409377,
+      "oos_fwd10_es10_risk_units": -2.2857093377255286,
+      "turnover_units": 2.0833333333333335
+    },
+    {
+      "model": "solo_vol",
+      "cost_bps": "10",
+      "mean_exposure": 0.6864014321625672,
+      "net_proxy_sharpe": 0.3461277976628776,
+      "net_cumulative_pnl_risk_units": 3.1636482949350193,
+      "net_max_drawdown_risk_units": 7.4352974810465104,
+      "oos_fwd10_q10_risk_units": -1.4868652055622062,
+      "oos_fwd10_es10_risk_units": -2.124785792422818,
+      "turnover_units": 2.5
+    },
+    {
+      "model": "solo_vol",
+      "cost_bps": "2",
+      "mean_exposure": 0.6864014321625672,
+      "net_proxy_sharpe": 0.34646579317176335,
+      "net_cumulative_pnl_risk_units": 3.165648294935019,
+      "net_max_drawdown_risk_units": 7.434830814379843,
+      "oos_fwd10_q10_risk_units": -1.4867752055622063,
+      "oos_fwd10_es10_risk_units": -2.1247112368672627,
+      "turnover_units": 2.5
+    },
+    {
+      "model": "solo_vol",
+      "cost_bps": "5",
+      "mean_exposure": 0.6864014321625672,
+      "net_proxy_sharpe": 0.3463390458767477,
+      "net_cumulative_pnl_risk_units": 3.164898294935019,
+      "net_max_drawdown_risk_units": 7.435005814379843,
+      "oos_fwd10_q10_risk_units": -1.4868089555622064,
+      "oos_fwd10_es10_risk_units": -2.1247391952005956,
+      "turnover_units": 2.5
+    },
+    {
+      "model": "vol_regimen",
+      "cost_bps": "10",
+      "mean_exposure": 0.7109120595421405,
+      "net_proxy_sharpe": 0.29834483380759375,
+      "net_cumulative_pnl_risk_units": 2.98781511132481,
+      "net_max_drawdown_risk_units": 7.783514894543473,
+      "oos_fwd10_q10_risk_units": -1.5435927993650436,
+      "oos_fwd10_es10_risk_units": -2.3470215064776534,
+      "turnover_units": 3.25
+    },
+    {
+      "model": "vol_regimen",
+      "cost_bps": "2",
+      "mean_exposure": 0.7109120595421405,
+      "net_proxy_sharpe": 0.29875743324061604,
+      "net_cumulative_pnl_risk_units": 2.9904151113248094,
+      "net_max_drawdown_risk_units": 7.782814894543474,
+      "oos_fwd10_q10_risk_units": -1.5434627993650436,
+      "oos_fwd10_es10_risk_units": -2.3468630064776534,
+      "turnover_units": 3.25
+    },
+    {
+      "model": "vol_regimen",
+      "cost_bps": "5",
+      "mean_exposure": 0.7109120595421405,
+      "net_proxy_sharpe": 0.29860270882522283,
+      "net_cumulative_pnl_risk_units": 2.9894401113248095,
+      "net_max_drawdown_risk_units": 7.783077394543473,
+      "oos_fwd10_q10_risk_units": -1.5435115493650435,
+      "oos_fwd10_es10_risk_units": -2.3469224439776535,
+      "turnover_units": 3.25
+    },
+    {
+      "model": "vol_regimen_supervivencia",
+      "cost_bps": "10",
+      "mean_exposure": 0.6884254306456671,
+      "net_proxy_sharpe": 0.3795166859109958,
+      "net_cumulative_pnl_risk_units": 3.3595486060067294,
+      "net_max_drawdown_risk_units": 7.613612120575251,
+      "oos_fwd10_q10_risk_units": -1.405834576590258,
+      "oos_fwd10_es10_risk_units": -2.255935621142704,
+      "turnover_units": 3.6666666666666665
+    },
+    {
+      "model": "vol_regimen_supervivencia",
+      "cost_bps": "2",
+      "mean_exposure": 0.6884254306456671,
+      "net_proxy_sharpe": 0.38005058433757366,
+      "net_cumulative_pnl_risk_units": 3.3624819393400625,
+      "net_max_drawdown_risk_units": 7.612745453908585,
+      "oos_fwd10_q10_risk_units": -1.405741243256925,
+      "oos_fwd10_es10_risk_units": -2.255776232253815,
+      "turnover_units": 3.6666666666666665
+    },
+    {
+      "model": "vol_regimen_supervivencia",
+      "cost_bps": "5",
+      "mean_exposure": 0.6884254306456671,
+      "net_proxy_sharpe": 0.37985037083479645,
+      "net_cumulative_pnl_risk_units": 3.361381939340062,
+      "net_max_drawdown_risk_units": 7.613070453908585,
+      "oos_fwd10_q10_risk_units": -1.405776243256925,
+      "oos_fwd10_es10_risk_units": -2.2558360030871483,
+      "turnover_units": 3.6666666666666665
+    },
+    {
+      "model": "vol_supervivencia",
+      "cost_bps": "10",
+      "mean_exposure": 0.6722165174673395,
+      "net_proxy_sharpe": 0.3293911433396514,
+      "net_cumulative_pnl_risk_units": 3.1035409227817983,
+      "net_max_drawdown_risk_units": 7.356946459832529,
+      "oos_fwd10_q10_risk_units": -1.3590924629126357,
+      "oos_fwd10_es10_risk_units": -2.1489592559950466,
+      "turnover_units": 2.9166666666666665
+    },
+    {
+      "model": "vol_supervivencia",
+      "cost_bps": "2",
+      "mean_exposure": 0.6722165174673395,
+      "net_proxy_sharpe": 0.32979328938068797,
+      "net_cumulative_pnl_risk_units": 3.1058742561151322,
+      "net_max_drawdown_risk_units": 7.356579793165863,
+      "oos_fwd10_q10_risk_units": -1.3590591295793024,
+      "oos_fwd10_es10_risk_units": -2.1488506448839355,
+      "turnover_units": 2.9166666666666665
+    },
+    {
+      "model": "vol_supervivencia",
+      "cost_bps": "5",
+      "mean_exposure": 0.6722165174673395,
+      "net_proxy_sharpe": 0.32964248618872455,
+      "net_cumulative_pnl_risk_units": 3.104999256115132,
+      "net_max_drawdown_risk_units": 7.356717293165864,
+      "oos_fwd10_q10_risk_units": -1.3590716295793024,
+      "oos_fwd10_es10_risk_units": -2.1488913740506024,
+      "turnover_units": 2.9166666666666665
+    }
+  ],
+  "limitations": [
+    "Price-change risk units are an analytical proxy; they are not investable P&L or currency capital.",
+    "Equal 1/N risk-unit weights do not describe the user's actual holdings, futures multipliers or margin.",
+    "The logistic risk-score is a candidate prioritization model; no independent supervisory challenge has yet passed.",
+    "Gross-exposure and basis-point cost outputs are simulated sensitivities, not realized performance.",
+    "2026 is a partial-year case study; do not compare its annualized rates as if it were a full fold."
+  ]
+}

@@ -1,0 +1,1510 @@
+[
+  {
+    "year": 2014,
+    "date_start": "2014-01-02",
+    "date_end": "2014-12-31",
+    "n_train_labels": 1491,
+    "n_validation": 252,
+    "n_test": 252,
+    "tail_threshold_train": -2.3840941206309423,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.8175297689029253,
+      2.0267076222967684,
+      15.508801597872155,
+      0.5879660953315163,
+      0.06428552964705227,
+      0.19646868190974479
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.18352679900546845,
+      "WTI": 0.1804206778897766,
+      "GOLD": 0.1782696655519547,
+      "SILVER": 0.18896653634170274,
+      "COPPER": 0.17827422259755535,
+      "NATGAS": 0.09054209861354222
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.22392804949364783,
+      "WTI": 0.0,
+      "GOLD": 0.2175136203936336,
+      "SILVER": 0.2305652805577848,
+      "COPPER": 0.21751918061883416,
+      "NATGAS": 0.11047386893609965
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1472,
+        "positive_rate_train": 0.10122282608695653,
+        "coefficients": [
+          0.8169033027757872,
+          0.29055992381353585
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1472,
+        "positive_rate_train": 0.10122282608695653,
+        "coefficients": [
+          1.0480727932660607,
+          0.04724210584201102
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1472,
+        "positive_rate_train": 0.10122282608695653,
+        "coefficients": [
+          0.8112181235284782,
+          0.375154391182832,
+          0.15962947058113777
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 14.0,
+        "test_review_rate": 8.0,
+        "test_false_alarms_per_year": 7.0,
+        "test_episode_recall": 0.5
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 14.0,
+        "test_review_rate": 7.0,
+        "test_false_alarms_per_year": 6.0,
+        "test_episode_recall": 0.5
+      },
+      "vol_regimen": {
+        "validation_review_rate": 15.0,
+        "test_review_rate": 9.0,
+        "test_false_alarms_per_year": 8.0,
+        "test_episode_recall": 0.5
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 14.0,
+        "test_review_rate": 8.0,
+        "test_false_alarms_per_year": 7.0,
+        "test_episode_recall": 0.5
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 15.0,
+        "test_review_rate": 8.0,
+        "test_false_alarms_per_year": 7.0,
+        "test_episode_recall": 0.5
+      }
+    }
+  },
+  {
+    "year": 2015,
+    "date_start": "2015-01-02",
+    "date_end": "2015-12-31",
+    "n_train_labels": 1743,
+    "n_validation": 252,
+    "n_test": 251,
+    "tail_threshold_train": -2.4447809721405105,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.740916178061502,
+      1.923543521299572,
+      16.166878930966003,
+      0.5753104186296479,
+      0.06131277850335451,
+      0.18398528059234465
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.18290693647659748,
+      "WTI": 0.1797309364931789,
+      "GOLD": 0.17808967141446616,
+      "SILVER": 0.19085658308725953,
+      "COPPER": 0.1795588632417013,
+      "NATGAS": 0.08885700928679664
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.22298407268297088,
+      "WTI": 0.0,
+      "GOLD": 0.2171112862078398,
+      "SILVER": 0.23267558363265325,
+      "COPPER": 0.21890239584807666,
+      "NATGAS": 0.10832666162845934
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1724,
+        "positive_rate_train": 0.10150812064965198,
+        "coefficients": [
+          0.554892313060073,
+          0.1411920191999492
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1724,
+        "positive_rate_train": 0.10150812064965198,
+        "coefficients": [
+          0.7019342740644643,
+          0.13499790520334098
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1724,
+        "positive_rate_train": 0.10150812064965198,
+        "coefficients": [
+          0.5216009218840794,
+          0.2544939804877747,
+          0.20751074348608392
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 18.0,
+        "test_review_rate": 22.087649402390436,
+        "test_false_alarms_per_year": 20.0796812749004,
+        "test_episode_recall": 1.0
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 15.0,
+        "test_review_rate": 25.099601593625497,
+        "test_false_alarms_per_year": 23.09163346613546,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen": {
+        "validation_review_rate": 16.0,
+        "test_review_rate": 21.083665338645417,
+        "test_false_alarms_per_year": 19.07569721115538,
+        "test_episode_recall": 1.0
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 17.0,
+        "test_review_rate": 21.083665338645417,
+        "test_false_alarms_per_year": 19.07569721115538,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 16.0,
+        "test_review_rate": 19.07569721115538,
+        "test_false_alarms_per_year": 17.067729083665338,
+        "test_episode_recall": 1.0
+      }
+    }
+  },
+  {
+    "year": 2016,
+    "date_start": "2016-01-04",
+    "date_end": "2016-12-30",
+    "n_train_labels": 1995,
+    "n_validation": 251,
+    "n_test": 249,
+    "tail_threshold_train": -2.3740838507453237,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.6687726059422794,
+      1.8633873223726554,
+      15.628080356411424,
+      0.5469440131336567,
+      0.058279549845229976,
+      0.21498694729976256
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.18184321604435988,
+      "WTI": 0.1801940632790091,
+      "GOLD": 0.17983313243427884,
+      "SILVER": 0.1929853031093609,
+      "COPPER": 0.1794850834561143,
+      "NATGAS": 0.08565920167687709
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.22181251427829993,
+      "WTI": 0.0,
+      "GOLD": 0.21936061252930691,
+      "SILVER": 0.2354036418438875,
+      "COPPER": 0.21893606208074998,
+      "NATGAS": 0.10448716926775554
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1976,
+        "positive_rate_train": 0.10121457489878542,
+        "coefficients": [
+          0.6948907836382666,
+          0.02505081584507891
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1976,
+        "positive_rate_train": 0.10121457489878542,
+        "coefficients": [
+          0.7351091264687631,
+          0.07374716849411196
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1976,
+        "positive_rate_train": 0.10121457489878542,
+        "coefficients": [
+          0.674997639711954,
+          0.08317148295334595,
+          0.09745478774282014
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 15.0597609561753,
+        "test_review_rate": 8.096385542168674,
+        "test_false_alarms_per_year": 8.096385542168674,
+        "test_episode_recall": null
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 15.0597609561753,
+        "test_review_rate": 6.072289156626506,
+        "test_false_alarms_per_year": 6.072289156626506,
+        "test_episode_recall": null
+      },
+      "vol_regimen": {
+        "validation_review_rate": 15.0597609561753,
+        "test_review_rate": 9.108433734939759,
+        "test_false_alarms_per_year": 9.108433734939759,
+        "test_episode_recall": null
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 18.07171314741036,
+        "test_review_rate": 7.08433734939759,
+        "test_false_alarms_per_year": 7.08433734939759,
+        "test_episode_recall": null
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 17.067729083665338,
+        "test_review_rate": 9.108433734939759,
+        "test_false_alarms_per_year": 9.108433734939759,
+        "test_episode_recall": null
+      }
+    }
+  },
+  {
+    "year": 2017,
+    "date_start": "2017-01-03",
+    "date_end": "2017-12-29",
+    "n_train_labels": 1995,
+    "n_validation": 249,
+    "n_test": 249,
+    "tail_threshold_train": -2.4596183828581917,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.6713423250252382,
+      1.861258818762494,
+      15.863765119960854,
+      0.5496498497306408,
+      0.05496923193247449,
+      0.1940422276222804
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.18258427353950762,
+      "WTI": 0.1804679402279681,
+      "GOLD": 0.1776338180454112,
+      "SILVER": 0.1931197817116675,
+      "COPPER": 0.18249855626201117,
+      "NATGAS": 0.08369563021343436
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.22279088580170595,
+      "WTI": 0.0,
+      "GOLD": 0.2167502978404815,
+      "SILVER": 0.2356464026134467,
+      "COPPER": 0.2226862928495763,
+      "NATGAS": 0.10212612089478947
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1995,
+        "positive_rate_train": 0.10025062656641603,
+        "coefficients": [
+          0.6682232176858409,
+          0.056623095296326476
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1995,
+        "positive_rate_train": 0.10025062656641603,
+        "coefficients": [
+          0.7475240300176258,
+          0.17561462715458145
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1995,
+        "positive_rate_train": 0.10025062656641603,
+        "coefficients": [
+          0.5952255210042043,
+          0.20268164020522536,
+          0.22972721041873043
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 15.180722891566266,
+        "test_review_rate": 2.0240963855421685,
+        "test_false_alarms_per_year": 2.0240963855421685,
+        "test_episode_recall": null
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 14.168674698795181,
+        "test_review_rate": 1.0120481927710843,
+        "test_false_alarms_per_year": 1.0120481927710843,
+        "test_episode_recall": null
+      },
+      "vol_regimen": {
+        "validation_review_rate": 15.180722891566266,
+        "test_review_rate": 2.0240963855421685,
+        "test_false_alarms_per_year": 2.0240963855421685,
+        "test_episode_recall": null
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 15.180722891566266,
+        "test_review_rate": 6.072289156626506,
+        "test_false_alarms_per_year": 6.072289156626506,
+        "test_episode_recall": null
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 14.168674698795181,
+        "test_review_rate": 9.108433734939759,
+        "test_false_alarms_per_year": 9.108433734939759,
+        "test_episode_recall": null
+      }
+    }
+  },
+  {
+    "year": 2018,
+    "date_start": "2018-01-02",
+    "date_end": "2018-12-28",
+    "n_train_labels": 1992,
+    "n_validation": 249,
+    "n_test": 243,
+    "tail_threshold_train": -2.216959048871065,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.449678320306902,
+      1.501447627378613,
+      15.46562259506202,
+      0.5381911053160235,
+      0.04866054280348194,
+      0.17440375536907027
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.18061327493392434,
+      "WTI": 0.18460314758723514,
+      "GOLD": 0.1756199225833472,
+      "SILVER": 0.1973656349600453,
+      "COPPER": 0.18329807016336017,
+      "NATGAS": 0.0784999497720878
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.22150352236397336,
+      "WTI": 0.0,
+      "GOLD": 0.21537969157433787,
+      "SILVER": 0.2420485612325324,
+      "COPPER": 0.22479614634393047,
+      "NATGAS": 0.09627207848522583
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1992,
+        "positive_rate_train": 0.10040160642570281,
+        "coefficients": [
+          0.41275205505431933,
+          -0.09280134065757516
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1992,
+        "positive_rate_train": 0.10040160642570281,
+        "coefficients": [
+          0.36181926326290614,
+          0.15767098917743774
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1992,
+        "positive_rate_train": 0.10040160642570281,
+        "coefficients": [
+          0.36902625867522854,
+          -0.010114387113984819,
+          0.15477982078019115
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 17.204819277108435,
+        "test_review_rate": 25.925925925925924,
+        "test_false_alarms_per_year": 21.77777777777778,
+        "test_episode_recall": 1.0
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 16.19277108433735,
+        "test_review_rate": 24.88888888888889,
+        "test_false_alarms_per_year": 20.74074074074074,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen": {
+        "validation_review_rate": 17.204819277108435,
+        "test_review_rate": 24.88888888888889,
+        "test_false_alarms_per_year": 20.74074074074074,
+        "test_episode_recall": 1.0
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 16.19277108433735,
+        "test_review_rate": 25.925925925925924,
+        "test_false_alarms_per_year": 21.77777777777778,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 16.19277108433735,
+        "test_review_rate": 25.925925925925924,
+        "test_false_alarms_per_year": 21.77777777777778,
+        "test_episode_recall": 1.0
+      }
+    }
+  },
+  {
+    "year": 2019,
+    "date_start": "2019-01-02",
+    "date_end": "2019-12-31",
+    "n_train_labels": 1990,
+    "n_validation": 243,
+    "n_test": 250,
+    "tail_threshold_train": -2.292843453586787,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.355863501543358,
+      1.3947788956888212,
+      15.023641871026287,
+      0.5295986410828161,
+      0.04601959265787069,
+      0.1603688712388767
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.18018321695555692,
+      "WTI": 0.1857161291786256,
+      "GOLD": 0.1783384165319605,
+      "SILVER": 0.20156334755405012,
+      "COPPER": 0.17970681322873283,
+      "NATGAS": 0.0744920765510741
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.22127813581006425,
+      "WTI": 0.0,
+      "GOLD": 0.2190125863012234,
+      "SILVER": 0.2475344959869236,
+      "COPPER": 0.2206930772771677,
+      "NATGAS": 0.09148170462462109
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1990,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.6657612576485368,
+          -0.1659051155093912
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1990,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.5647457065882403,
+          0.17810634799382896
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1990,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.6268586419974232,
+          -0.0853128756188757,
+          0.1532263876456237
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 16.59259259259259,
+        "test_review_rate": 8.064,
+        "test_false_alarms_per_year": 8.064,
+        "test_episode_recall": 0.0
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 14.518518518518519,
+        "test_review_rate": 20.16,
+        "test_false_alarms_per_year": 18.144,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen": {
+        "validation_review_rate": 15.555555555555555,
+        "test_review_rate": 7.056,
+        "test_false_alarms_per_year": 7.056,
+        "test_episode_recall": 0.0
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 16.59259259259259,
+        "test_review_rate": 13.104,
+        "test_false_alarms_per_year": 12.096,
+        "test_episode_recall": 0.5
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 16.59259259259259,
+        "test_review_rate": 9.072,
+        "test_false_alarms_per_year": 9.072,
+        "test_episode_recall": 0.0
+      }
+    }
+  },
+  {
+    "year": 2020,
+    "date_start": "2020-01-02",
+    "date_end": "2020-12-31",
+    "n_train_labels": 1981,
+    "n_validation": 250,
+    "n_test": 249,
+    "tail_threshold_train": -2.2367326157835827,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.3435234836955354,
+      1.3761092306263407,
+      14.705043384845792,
+      0.5114842266942998,
+      0.04302795933551467,
+      0.18183628870816343
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.1777466880140107,
+      "WTI": 0.18380208376046306,
+      "GOLD": 0.18057535970165758,
+      "SILVER": 0.2043181846478569,
+      "COPPER": 0.17904908257898203,
+      "NATGAS": 0.07450860129702981
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.2177740036790853,
+      "WTI": 0.0,
+      "GOLD": 0.2212396725216124,
+      "SILVER": 0.25032921621413917,
+      "COPPER": 0.21936968842546625,
+      "NATGAS": 0.09128741915969692
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1981,
+        "positive_rate_train": 0.09994952044422009,
+        "coefficients": [
+          0.7205891108021115,
+          -0.2601672811038245
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1981,
+        "positive_rate_train": 0.09994952044422009,
+        "coefficients": [
+          0.5444856578781173,
+          0.2352077702298143
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1981,
+        "positive_rate_train": 0.09994952044422009,
+        "coefficients": [
+          0.6754779625152392,
+          -0.1728117444018057,
+          0.1963515266239885
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 15.12,
+        "test_review_rate": 23.277108433734938,
+        "test_false_alarms_per_year": 20.240963855421686,
+        "test_episode_recall": 0.75
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 15.12,
+        "test_review_rate": 22.265060240963855,
+        "test_false_alarms_per_year": 20.240963855421686,
+        "test_episode_recall": 0.5
+      },
+      "vol_regimen": {
+        "validation_review_rate": 18.144,
+        "test_review_rate": 22.265060240963855,
+        "test_false_alarms_per_year": 20.240963855421686,
+        "test_episode_recall": 0.5
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 17.136,
+        "test_review_rate": 25.301204819277107,
+        "test_false_alarms_per_year": 21.25301204819277,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 18.144,
+        "test_review_rate": 24.289156626506024,
+        "test_false_alarms_per_year": 20.240963855421686,
+        "test_episode_recall": 1.0
+      }
+    }
+  },
+  {
+    "year": 2021,
+    "date_start": "2021-01-04",
+    "date_end": "2021-12-31",
+    "n_train_labels": 1983,
+    "n_validation": 249,
+    "n_test": 246,
+    "tail_threshold_train": -2.3777088485682953,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.2402150136304326,
+      1.2508222069558455,
+      12.928725441046613,
+      0.3467190040027446,
+      0.03596747420044271,
+      0.18495237441754844
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.17410655211479817,
+      "WTI": 0.18164318372872157,
+      "GOLD": 0.18523778740841887,
+      "SILVER": 0.20574095736011805,
+      "COPPER": 0.17604998033093772,
+      "NATGAS": 0.07722153905700567
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.21275139236707147,
+      "WTI": 0.0,
+      "GOLD": 0.2263533262329596,
+      "SILVER": 0.2514073974449754,
+      "COPPER": 0.21512618558379384,
+      "NATGAS": 0.0943616983711997
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1983,
+        "positive_rate_train": 0.10035300050428643,
+        "coefficients": [
+          0.7093982229770348,
+          -0.4178081108288238
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1983,
+        "positive_rate_train": 0.10035300050428643,
+        "coefficients": [
+          0.46462766684975043,
+          0.22004150842774556
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1983,
+        "positive_rate_train": 0.10035300050428643,
+        "coefficients": [
+          0.682652272251012,
+          -0.36609527270919817,
+          0.11734199677705084
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 15.180722891566266,
+        "test_review_rate": 24.585365853658537,
+        "test_false_alarms_per_year": 17.414634146341463,
+        "test_episode_recall": 0.875
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 14.168674698795181,
+        "test_review_rate": 4.097560975609756,
+        "test_false_alarms_per_year": 3.073170731707317,
+        "test_episode_recall": 0.125
+      },
+      "vol_regimen": {
+        "validation_review_rate": 17.204819277108435,
+        "test_review_rate": 18.439024390243905,
+        "test_false_alarms_per_year": 13.317073170731708,
+        "test_episode_recall": 0.625
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 15.180722891566266,
+        "test_review_rate": 21.51219512195122,
+        "test_false_alarms_per_year": 15.365853658536587,
+        "test_episode_recall": 0.75
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 16.19277108433735,
+        "test_review_rate": 18.439024390243905,
+        "test_false_alarms_per_year": 13.317073170731708,
+        "test_episode_recall": 0.625
+      }
+    }
+  },
+  {
+    "year": 2022,
+    "date_start": "2022-01-03",
+    "date_end": "2022-12-30",
+    "n_train_labels": 1983,
+    "n_validation": 246,
+    "n_test": 244,
+    "tail_threshold_train": -2.115273987548395,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.2592955879492418,
+      2.0536646683392363,
+      14.147723876439988,
+      0.35205035372574917,
+      0.03424294801745062,
+      0.18889724219923298
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.17146361085919268,
+      "WTI": 0.14745947590438155,
+      "GOLD": 0.19487770915945873,
+      "SILVER": 0.215903119024634,
+      "COPPER": 0.17382184756336627,
+      "NATGAS": 0.09647423748896673
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.20112077492279046,
+      "WTI": 0.0,
+      "GOLD": 0.22858468735686965,
+      "SILVER": 0.2532467524094127,
+      "COPPER": 0.20388690349676672,
+      "NATGAS": 0.11316088181416051
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1983,
+        "positive_rate_train": 0.10035300050428643,
+        "coefficients": [
+          0.512949261506738,
+          -0.34724288378856494
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1983,
+        "positive_rate_train": 0.10035300050428643,
+        "coefficients": [
+          0.30494068815938763,
+          0.2848560773223821
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1983,
+        "positive_rate_train": 0.10035300050428643,
+        "coefficients": [
+          0.44980038355442137,
+          -0.21758212238838565,
+          0.21790169684964877
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 17.414634146341463,
+        "test_review_rate": 24.78688524590164,
+        "test_false_alarms_per_year": 16.524590163934427,
+        "test_episode_recall": 1.0
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 15.365853658536585,
+        "test_review_rate": 25.81967213114754,
+        "test_false_alarms_per_year": 17.557377049180328,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen": {
+        "validation_review_rate": 15.365853658536585,
+        "test_review_rate": 19.62295081967213,
+        "test_false_alarms_per_year": 12.39344262295082,
+        "test_episode_recall": 0.875
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 16.390243902439025,
+        "test_review_rate": 22.721311475409838,
+        "test_false_alarms_per_year": 14.459016393442623,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 16.390243902439025,
+        "test_review_rate": 19.62295081967213,
+        "test_false_alarms_per_year": 11.360655737704919,
+        "test_episode_recall": 1.0
+      }
+    }
+  },
+  {
+    "year": 2023,
+    "date_start": "2023-01-03",
+    "date_end": "2023-12-29",
+    "n_train_labels": 1978,
+    "n_validation": 244,
+    "n_test": 243,
+    "tail_threshold_train": -1.9176236463689325,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.2999832197559695,
+      2.083103315976022,
+      13.714476267136158,
+      0.35420572057418914,
+      0.04006734284619053,
+      0.5108894098056557
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.17662570307197606,
+      "WTI": 0.15445955608328094,
+      "GOLD": 0.18614829686954895,
+      "SILVER": 0.21467141077747012,
+      "COPPER": 0.17230567498683427,
+      "NATGAS": 0.09578935821088974
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.20889089852853057,
+      "WTI": 0.0,
+      "GOLD": 0.2201530372778756,
+      "SILVER": 0.25388662638426557,
+      "COPPER": 0.2037817069857458,
+      "NATGAS": 0.11328773082358251
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1978,
+        "positive_rate_train": 0.10010111223458039,
+        "coefficients": [
+          0.4832959168294229,
+          -0.20263048538025208
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1978,
+        "positive_rate_train": 0.10010111223458039,
+        "coefficients": [
+          0.36180007552691024,
+          0.27222741362439656
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1978,
+        "positive_rate_train": 0.10010111223458039,
+        "coefficients": [
+          0.3890994309779216,
+          -0.038329888819993704,
+          0.2610916062270761
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 15.491803278688524,
+        "test_review_rate": 0.0,
+        "test_false_alarms_per_year": 0.0,
+        "test_episode_recall": 0.0
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 15.491803278688524,
+        "test_review_rate": 0.0,
+        "test_false_alarms_per_year": 0.0,
+        "test_episode_recall": 0.0
+      },
+      "vol_regimen": {
+        "validation_review_rate": 16.524590163934427,
+        "test_review_rate": 0.0,
+        "test_false_alarms_per_year": 0.0,
+        "test_episode_recall": 0.0
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 16.524590163934427,
+        "test_review_rate": 1.037037037037037,
+        "test_false_alarms_per_year": 1.037037037037037,
+        "test_episode_recall": 0.0
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 16.524590163934427,
+        "test_review_rate": 1.037037037037037,
+        "test_false_alarms_per_year": 1.037037037037037,
+        "test_episode_recall": 0.0
+      }
+    }
+  },
+  {
+    "year": 2024,
+    "date_start": "2024-01-02",
+    "date_end": "2024-12-31",
+    "n_train_labels": 1970,
+    "n_validation": 243,
+    "n_test": 246,
+    "tail_threshold_train": -1.8081264053048218,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.6819451311370563,
+      2.291803476200356,
+      14.531732194367597,
+      0.373938535087173,
+      0.04593407764335012,
+      0.5254742407424576
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.18833873786555924,
+      "WTI": 0.16598154313887625,
+      "GOLD": 0.18480333479112784,
+      "SILVER": 0.20342370760427816,
+      "COPPER": 0.173438392517912,
+      "NATGAS": 0.08401428408224652
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.2258208272444987,
+      "WTI": 0.0,
+      "GOLD": 0.22158182864039455,
+      "SILVER": 0.24390792065906422,
+      "COPPER": 0.20795510110250712,
+      "NATGAS": 0.1007343223535353
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1970,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.4891128308997019,
+          0.10717656453551769
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1970,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.617877095555576,
+          0.19986318681120666
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1970,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.3577789045105545,
+          0.32667061166744615,
+          0.28101862178083503
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 16.59259259259259,
+        "test_review_rate": 25.609756097560975,
+        "test_false_alarms_per_year": 18.439024390243905,
+        "test_episode_recall": 1.0
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 15.555555555555555,
+        "test_review_rate": 21.51219512195122,
+        "test_false_alarms_per_year": 16.390243902439025,
+        "test_episode_recall": 0.7142857142857143
+      },
+      "vol_regimen": {
+        "validation_review_rate": 16.59259259259259,
+        "test_review_rate": 24.585365853658537,
+        "test_false_alarms_per_year": 17.414634146341463,
+        "test_episode_recall": 1.0
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 16.59259259259259,
+        "test_review_rate": 25.609756097560975,
+        "test_false_alarms_per_year": 18.439024390243905,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 15.555555555555555,
+        "test_review_rate": 23.5609756097561,
+        "test_false_alarms_per_year": 16.390243902439025,
+        "test_episode_recall": 1.0
+      }
+    }
+  },
+  {
+    "year": 2025,
+    "date_start": "2025-01-02",
+    "date_end": "2025-12-31",
+    "n_train_labels": 1963,
+    "n_validation": 246,
+    "n_test": 243,
+    "tail_threshold_train": -1.8069697177305686,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.7339210436230106,
+      2.317741850142207,
+      15.154962791761884,
+      0.38603502766131864,
+      0.04735616133120637,
+      0.5279962094108481
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.1870463787212778,
+      "WTI": 0.16798920199266784,
+      "GOLD": 0.18297182682429197,
+      "SILVER": 0.20174264941876122,
+      "COPPER": 0.17426007749572148,
+      "NATGAS": 0.08598986554727973
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.22481244134000944,
+      "WTI": 0.0,
+      "GOLD": 0.219915206945042,
+      "SILVER": 0.2424759989917623,
+      "COPPER": 0.20944449027954298,
+      "NATGAS": 0.10335186244364336
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1963,
+        "positive_rate_train": 0.10035659704533877,
+        "coefficients": [
+          0.2501788533219578,
+          0.4387077402776002
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1963,
+        "positive_rate_train": 0.10035659704533877,
+        "coefficients": [
+          0.6455707869727518,
+          0.2501323520667794
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1963,
+        "positive_rate_train": 0.10035659704533877,
+        "coefficients": [
+          0.1106679781022846,
+          0.7284826229755303,
+          0.4303694612482712
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 17.414634146341463,
+        "test_review_rate": 23.85185185185185,
+        "test_false_alarms_per_year": 18.666666666666668,
+        "test_episode_recall": 0.8333333333333334
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 15.365853658536585,
+        "test_review_rate": 18.666666666666668,
+        "test_false_alarms_per_year": 14.518518518518519,
+        "test_episode_recall": 0.6666666666666666
+      },
+      "vol_regimen": {
+        "validation_review_rate": 15.365853658536585,
+        "test_review_rate": 21.77777777777778,
+        "test_false_alarms_per_year": 16.59259259259259,
+        "test_episode_recall": 0.8333333333333334
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 16.390243902439025,
+        "test_review_rate": 24.88888888888889,
+        "test_false_alarms_per_year": 18.666666666666668,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 14.341463414634147,
+        "test_review_rate": 23.85185185185185,
+        "test_false_alarms_per_year": 17.62962962962963,
+        "test_episode_recall": 1.0
+      }
+    }
+  },
+  {
+    "year": 2026,
+    "date_start": "2026-01-05",
+    "date_end": "2026-09-09",
+    "n_train_labels": 1960,
+    "n_validation": 243,
+    "n_test": 168,
+    "tail_threshold_train": -1.8664929461875364,
+    "weights_risk_units": [
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666,
+      0.16666666666666666
+    ],
+    "risk_scales_delta_price_train": [
+      1.753156016056033,
+      2.3314391745819525,
+      16.692228672242255,
+      0.42480581297561293,
+      0.051521470144453185,
+      0.6192411070113423
+    ],
+    "risk_contributions_train": {
+      "BRENT": 0.1816195510012276,
+      "WTI": 0.16501344604065288,
+      "GOLD": 0.1879955391951993,
+      "SILVER": 0.20353824592652783,
+      "COPPER": 0.17658852853055287,
+      "NATGAS": 0.08524468930583963
+    },
+    "survival_feature_weights_train": {
+      "BRENT": 0.21751194691701595,
+      "WTI": 0.0,
+      "GOLD": 0.22514798388520182,
+      "SILVER": 0.2437623036699073,
+      "COPPER": 0.2114866732801908,
+      "NATGAS": 0.10209109224768417
+    },
+    "channel_feature_offsets": {
+      "BRENT": 0.0,
+      "WTI": 100.0,
+      "GOLD": 0.0,
+      "SILVER": 0.0,
+      "COPPER": 0.0,
+      "NATGAS": 0.0
+    },
+    "survival_methods": {
+      "BRENT": "cox",
+      "WTI": "excluded: nonpositive settlement makes ratio-survival features undefined",
+      "GOLD": "cox",
+      "SILVER": "cox",
+      "COPPER": "cox",
+      "NATGAS": "cox"
+    },
+    "model_details": {
+      "vol_regimen": {
+        "n_train": 1960,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.2523326893391888,
+          0.5429591245239305
+        ]
+      },
+      "vol_supervivencia": {
+        "n_train": 1960,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.7255818005840341,
+          0.1868036170006509
+        ]
+      },
+      "vol_regimen_supervivencia": {
+        "n_train": 1960,
+        "positive_rate_train": 0.1,
+        "coefficients": [
+          0.18350291995601964,
+          0.7308265303957004,
+          0.32372734426798827
+        ]
+      }
+    },
+    "signals": {
+      "solo_vol": {
+        "validation_review_rate": 15.555555555555555,
+        "test_review_rate": 25.5,
+        "test_false_alarms_per_year": 19.5,
+        "test_episode_recall": 1.0
+      },
+      "fhs_ewma": {
+        "validation_review_rate": 15.555555555555555,
+        "test_review_rate": 25.5,
+        "test_false_alarms_per_year": 19.5,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen": {
+        "validation_review_rate": 15.555555555555555,
+        "test_review_rate": 25.5,
+        "test_false_alarms_per_year": 19.5,
+        "test_episode_recall": 1.0
+      },
+      "vol_supervivencia": {
+        "validation_review_rate": 14.518518518518519,
+        "test_review_rate": 25.5,
+        "test_false_alarms_per_year": 19.5,
+        "test_episode_recall": 1.0
+      },
+      "vol_regimen_supervivencia": {
+        "validation_review_rate": 15.555555555555555,
+        "test_review_rate": 25.5,
+        "test_false_alarms_per_year": 19.5,
+        "test_episode_recall": 1.0
+      }
+    }
+  }
+]
