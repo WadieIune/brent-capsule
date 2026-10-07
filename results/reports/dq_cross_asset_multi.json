@@ -1,0 +1,174 @@
+{
+  "universo": [
+    "BRENT",
+    "WTI",
+    "GOLD",
+    "SILVER",
+    "COPPER",
+    "NATGAS",
+    "SP500",
+    "DAX",
+    "EUROSTOXX50",
+    "EURUSD"
+  ],
+  "n_ventanas": 234,
+  "W": 20,
+  "fp": 0.05,
+  "reps": 30,
+  "por_objetivo": {
+    "BRENT": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.041,
+        "cross_asset": 0.517
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.464
+      }
+    },
+    "WTI": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.04,
+        "cross_asset": 0.619
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.6
+      }
+    },
+    "GOLD": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.036,
+        "cross_asset": 0.866
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.78
+      }
+    },
+    "SILVER": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.027,
+        "cross_asset": 0.897
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.793
+      }
+    },
+    "COPPER": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.044,
+        "cross_asset": 0.312
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.274
+      }
+    },
+    "NATGAS": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.036,
+        "cross_asset": 0.065
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.077
+      }
+    },
+    "SP500": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.06,
+        "cross_asset": 0.337
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.285
+      }
+    },
+    "DAX": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.045,
+        "cross_asset": 0.995
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.975
+      }
+    },
+    "EUROSTOXX50": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.045,
+        "cross_asset": 0.995
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.975
+      }
+    },
+    "EURUSD": {
+      "stale": {
+        "3sigma": 0.0,
+        "cross_asset": 1.0
+      },
+      "decoplamiento": {
+        "3sigma": 0.026,
+        "cross_asset": 0.149
+      },
+      "salto": {
+        "3sigma": 1.0,
+        "cross_asset": 0.147
+      }
+    }
+  },
+  "resumen_mediana": {
+    "stale": {
+      "3sigma": 0.0,
+      "cross_asset": 1.0
+    },
+    "decoplamiento": {
+      "3sigma": 0.041,
+      "cross_asset": 0.568
+    },
+    "salto": {
+      "3sigma": 1.0,
+      "cross_asset": 0.532
+    }
+  }
+}
