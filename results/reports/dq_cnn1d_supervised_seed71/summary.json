@@ -1,0 +1,63 @@
+{
+  "protocol": {
+    "assets": [
+      "BRENT",
+      "WTI",
+      "GOLD",
+      "SILVER",
+      "COPPER",
+      "NATGAS"
+    ],
+    "window_sessions": 20,
+    "window_stride_sessions": 5,
+    "fit_end": "2018-12-31",
+    "validation_end": "2023-12-31",
+    "test_start": "2024-01-03",
+    "target_false_positive_rate": 0.05,
+    "normalization": "rolling 60-session mean/sd shifted one session; WTI uses dollar changes to preserve negative settlement; CNN input clipped to +/-15",
+    "injected_families": [
+      "decoupling",
+      "stale",
+      "reversible_jump"
+    ],
+    "seed": 71,
+    "source": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
+    "sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
+    "n_train_windows": 592,
+    "n_validation_windows": 242,
+    "n_test_windows": 128
+  },
+  "results": {
+    "cnn_1d_supervisada": {
+      "threshold": 0.34882065653800964,
+      "validation_false_positive_rate": 0.049586776859504134,
+      "test_false_positive_rate": 0.1015625,
+      "recall_by_family": {
+        "decoupling": 0.984375,
+        "stale": 0.9921875,
+        "reversible_jump": 1.0
+      }
+    },
+    "cross_asset_1_minus_r2": {
+      "threshold": 0.4899869792960456,
+      "validation_false_positive_rate": 0.049586776859504134,
+      "test_false_positive_rate": 0.1015625,
+      "recall_by_family": {
+        "decoupling": 0.9296875,
+        "stale": 1.0,
+        "reversible_jump": 0.8828125
+      }
+    },
+    "3sigma_vol_normalizada": {
+      "threshold": 7.694526195526123,
+      "validation_false_positive_rate": 0.049586776859504134,
+      "test_false_positive_rate": 0.0859375,
+      "recall_by_family": {
+        "decoupling": 0.0859375,
+        "stale": 0.0859375,
+        "reversible_jump": 0.9140625
+      }
+    }
+  },
+  "interpretation": "Synthetic injected-defect benchmark only; no claim about real defect prevalence or operational benefit."
+}

@@ -84,3 +84,18 @@ bate a 3σ donde 3σ es ciego (rachas/repetidos), queda justificada la CNN 1D.
 
 Esta integración de reglas es una propuesta en rama, pendiente de challenge de B;
 no cambia el veredicto del paper ni constituye aún una comparación de desempeño.
+
+### Prototipo CNN supervisado — 2026-10-07
+
+Se añadió una prueba separada en `dq_cnn1d_supervised.py`; **no** está conectada
+al monitor operativo. Sobre inyecciones sintéticas OOS 2024-2026, la CNN muestra
+ganancia frente a `1−R²` principalmente en salto reversible (~14 pp de recall
+medio), pero no en stale y solo marginal en desacoplamiento. Su FPR OOS media
+(~11,2 %) supera el 5 % calibrado. Resultado exploratorio, con 128 ventanas
+solapadas y tres semillas; ver `docs/hallazgos/2026-10-07-A-dq-cnn1d-supervisada.md`.
+
+El flujo de producto conserva detección de canales y supervivencia después del
+gate DQ; no se usan como etiquetas de calidad. Las salidas de calidad deben
+identificar ventanas observables y procedencia antes de que canales/supervivencia
+o Risk Director consuman la serie. XGBoost DQ y un generador de defectos siguen
+pendientes; el VAE Brent actual no equivale a un modelo generativo de corrupción.
