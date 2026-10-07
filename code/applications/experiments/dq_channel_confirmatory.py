@@ -3,8 +3,10 @@
 
 Thresholds are calibrated on clean validation only. Test windows do not overlap.
 The episode pipeline and one clean-trained XGB-AFT model are rerun/frozen to
-measure how injected price defects distort channel survival. Portfolio impact is
-reported as an equal-weight VaR proxy, not regulatory capital or euros.
+measure how injected price defects distort channel survival. It also retains an
+internal equal-weight return-risk sensitivity proxy; it is not capital and is
+not a paper outcome. Current paper evaluation emphasizes return distributions
+and labelled DQ detection.
 """
 from __future__ import annotations
 

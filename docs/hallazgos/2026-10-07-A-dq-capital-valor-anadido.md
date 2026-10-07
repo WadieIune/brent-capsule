@@ -1,4 +1,19 @@
-# Hallazgo · Error de capital evitado por cada capa: el banco aporta +74,8 pp sobre 3σ, la CNN +1,9 pp, y el combinador −5,1 pp
+# RETIRADO — análisis de capital no válido para el paper DQ
+
+> No citar ni reutilizar las cifras que permanecen en el registro histórico de
+> abajo. El usuario determinó que no son resultados reales: dependen de una
+> cartera equiponderada y nominal normalizado, defectos/prevalencias sintéticos,
+> supuesto de corrección perfecta, ventanas solapadas y presupuestos de FPR
+> diferentes. No representan capital de cartera ni desempeño validado de una
+> capa DQ. Se conservan únicamente para auditoría del proceso.
+
+## Estado vigente
+
+La comparación principal se centra en distribuciones de rendimientos y calidad
+de detección: FPR, recall/precisión por familia con prevalencia defendible,
+transferencia temporal y falsas alertas ante movimientos legítimos. No se
+reportan porcentajes de capital evitado. Véase
+`docs/hallazgos/2026-10-07-A-distribuciones-rendimientos-3sigma.md`.
 
 - **Autor:** A · **Fecha:** 2026-10-07 · 🟡 **provisional**, pendiente de challenge B.
 - **Código:** `code/applications/experiments/dq_capital_value_added.py`.

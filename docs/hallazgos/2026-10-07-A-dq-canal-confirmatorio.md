@@ -24,11 +24,9 @@ cambio en `P(T>10)` para episodios con fecha de inicio coincidente. Esto mide
 distorsión de la representación y del modelo congelado; **no** es una métrica de
 detección DQ ni prueba de capacidad predictiva bajo corrupción.
 
-El impacto downstream usa cartera proxy equiponderada BRENT/COPPER/EUROSTOXX50/
-GOLD/SP500, VaR histórico 99% con ventana 250 sesiones y el mismo calendario de
-estrés (1 de cada 4 ventanas test). Excepciones se contrastan contra retornos
-limpios. Sin posiciones/notional no se informa capital EUR ni capital
-regulatorio.
+Una primera versión calculó un proxy VaR con cartera equiponderada; queda fuera
+del paper y no se interpreta como capital. Sin posiciones/notional y una
+metodología de cartera aprobada, no se reportan conclusiones de capital.
 
 ## Resultados observados
 
@@ -49,11 +47,6 @@ regulatorio.
   inicios coincidentes, el cambio absoluto medio de `P(T>10)` va de 0.0045
   (quantize) a 0.0287 (source switch). La corrupción puede alterar materialmente
   qué episodios existen, no solo el score de supervivencia.
-- El VaR proxy medio cambia entre −2.10% (stale), +8.29% (salto reversible),
-  +2.75% (desacople), +1.14% (lag), −0.18% (weekly fill), +2.06% (cambio de
-  fuente) y −0.09% (quantize). Las excepciones contra retornos limpios van de
-  13 a 20, frente a 16 en el histórico limpio. El signo depende del defecto:
-  una serie sucia puede inflar o reducir riesgo estimado.
 
 ## Lectura y límites
 
@@ -67,9 +60,7 @@ no implica FPR poblacional cero. El IC exacto 95% de 0/71 llega a 5.06%, casi
 todo el presupuesto nominal; hacen falta más validación y evaluación
 multi-activo/multi-periodo.
 
-La mezcla de múltiples ventanas estresadas para el proxy de VaR es una prueba
-de sensibilidad sintética, no P&L de una cartera mantenida ni capital
-regulatorio. El AFT es un único ajuste, el extractor conserva la definición
+El AFT es un único ajuste, el extractor conserva la definición
 existente y los defectos son sintéticos. Antes de una afirmación final hay que
 desafiar el diseño con B, ampliar validación limpia y añadir activos/curvas.
 Resultado recomendado para el paper por ahora:

@@ -1,0 +1,123 @@
+{
+  "disclaimer_capital": "No se reportan cifras de capital. El capital por modelo interno sería k·VaR con k del semáforo de Basilea, y una traducción honesta exigiría la cartera real, correlaciones entre factores, diversificación entre mesas, riesgo específico y de default, PLA por mesa, NMRF y suelo SA. Con una cartera de juguete esas cifras salen infladas o irrelevantes, así que este experimento se queda en la distribución de rendimientos, que es donde el efecto es directamente observable y comparable entre controles.",
+  "por_que_este_encuadre": "Un control 3σ es un supuesto de normalidad encubierto. Si la distribución es leptocúrtica, el umbral no significa lo que se cree y el control no puede separar una cola real de mercado de un defecto de dato.",
+  "forma_de_la_distribucion": {
+    "curtosis_exceso": 76.42338406142143,
+    "asimetria": -1.9219253736831177,
+    "cuantil_99": 2.5089619612015306,
+    "cuantil_01": -2.5111194241381347
+  },
+  "curtosis_sensibilidad": [
+    {
+      "excluidos": 0,
+      "curtosis_exceso": 76.4
+    },
+    {
+      "excluidos": 1,
+      "curtosis_exceso": 25.9
+    },
+    {
+      "excluidos": 3,
+      "curtosis_exceso": 12.9
+    },
+    {
+      "excluidos": 10,
+      "curtosis_exceso": 4.9
+    }
+  ],
+  "nota_curtosis": "La curtosis la dominan unos pocos días de abril de 2020, que son movimientos REALES de mercado, no defectos. Al excluirlos sigue siendo fuertemente leptocúrtica, así que la conclusión no depende de ellos — pero conviene declarar la sensibilidad.",
+  "colas_normal_vs_empirica": [
+    {
+      "umbral_sigmas": 1,
+      "frecuencia_normal": 0.31731050786291415,
+      "frecuencia_empirica": 0.1733076263924593,
+      "veces_mas_frecuente": 0.5
+    },
+    {
+      "umbral_sigmas": 2,
+      "frecuencia_normal": 0.04550026389635839,
+      "frecuencia_empirica": 0.03577549271636675,
+      "veces_mas_frecuente": 0.8
+    },
+    {
+      "umbral_sigmas": 3,
+      "frecuencia_normal": 0.0026997960632601866,
+      "frecuencia_empirica": 0.011139674378748929,
+      "veces_mas_frecuente": 4.1
+    },
+    {
+      "umbral_sigmas": 4,
+      "frecuencia_normal": 6.334248366623973e-05,
+      "frecuencia_empirica": 0.005569837189374464,
+      "veces_mas_frecuente": 87.9
+    },
+    {
+      "umbral_sigmas": 5,
+      "frecuencia_normal": 5.733031437583866e-07,
+      "frecuencia_empirica": 0.003213367609254499,
+      "veces_mas_frecuente": 5605.0
+    }
+  ],
+  "distorsion_por_familia": {
+    "decoupling|fresh": 0.00567,
+    "decoupling|restated": 0.01991,
+    "lag1_calendar|fresh": 0.00479,
+    "lag1_calendar|restated": 0.01791,
+    "quantize|fresh": 0.00077,
+    "quantize|restated": 0.00229,
+    "reversible_jump|fresh": 0.01611,
+    "reversible_jump|restated": 0.02209,
+    "source_switch|fresh": 0.00876,
+    "source_switch|restated": 0.00793,
+    "stale|fresh": 0.00512,
+    "stale|restated": 0.02439,
+    "weekly_ffill|fresh": 0.00306,
+    "weekly_ffill|restated": 0.01734
+  },
+  "escala_absoluta": {
+    "distorsion_total_sin_control_sigmas": 0.01115,
+    "aviso": "La distorsión total sin control es de 0.0112 sigmas, o sea ~1.1 % de una desviación típica. Los porcentajes de 'distorsión corregida' son fracciones de ESA cantidad pequeña, no de la distribución. Es el mismo cuidado que obligó a retirar las cifras de capital: un porcentaje alto sobre una base diminuta se lee inflado. Lo que estos porcentajes permiten es ORDENAR gates entre sí, no afirmar magnitud de impacto.",
+    "por_que_es_pequena": "Cada defecto se inyecta en un episodio de 20 sesiones dentro de una ventana de test de ~670, así que su huella sobre la distribución completa es necesariamente limitada. Lo relevante es la comparación entre gates sobre la misma base."
+  },
+  "proyeccion_no_validada": {
+    "aviso": "NO CITAR. Proyección bajo corrección perfecta, no una mejora medida. Degradada por el challenge de 2026-10-07: multiplica agregados NO pareados (la distorsión se promedia sobre 40 episodios con un RNG y el recall sobre 124 ventanas con otro), supone que detectar equivale a corregir sin error, compara gates a FPR distintas y usa estandarización con look-ahead. Para reabrirlo hace falta test temporal no solapado, prevalencia prefijada, las MISMAS inyecciones en ambos lados, FPR emparejada con incertidumbre y una política de corrección explícita con su error residual.",
+    "gates": [
+      {
+        "gate": "sin_control",
+        "fpr_realizada": 0.0,
+        "distorsion_residual": 0.01115,
+        "distorsion_corregida_pct": 0.0
+      },
+      {
+        "gate": "solo_3sigma",
+        "fpr_realizada": 0.0323,
+        "distorsion_residual": 0.01004,
+        "distorsion_corregida_pct": 9.9
+      },
+      {
+        "gate": "sin_ia",
+        "fpr_realizada": 0.0806,
+        "distorsion_residual": 0.00245,
+        "distorsion_corregida_pct": 78.0
+      },
+      {
+        "gate": "con_cnn",
+        "fpr_realizada": 0.0833,
+        "distorsion_residual": 0.00216,
+        "distorsion_corregida_pct": 80.6
+      },
+      {
+        "gate": "combinador_xgboost",
+        "fpr_realizada": 0.0511,
+        "distorsion_residual": 0.00274,
+        "distorsion_corregida_pct": 75.5
+      }
+    ],
+    "diferencias_pp": {
+      "banco_sobre_3sigma_pp": 68.1,
+      "cnn_sobre_el_banco_pp": 2.6,
+      "combinador_sobre_el_banco_pp": -5.1
+    }
+  },
+  "figura": "/home/wadie/Escritorio/brent-capsule/docs/figuras/dq_distribucion_rendimientos.png"
+}

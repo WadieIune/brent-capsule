@@ -1,4 +1,11 @@
-# Arquitectura del sistema productivo — fuente única (paper + deck)
+# Arquitectura histórica del sistema de riesgo — no usar como fuente DQ
+
+> **SUPERSEDED para el paper actual de Data Quality.** Esta arquitectura y su
+> figura describen un trabajo previo de riesgo/capital; no son el framework DQ
+> multicapa acordado ahora y no deben usarse como fuente de cifras de capital.
+> La fuente actual es [`ARQUITECTURA_DQ_MULTICAPA.md`](ARQUITECTURA_DQ_MULTICAPA.md)
+> junto con `PLAN_DQ_IA.md` y `PROPUESTA_DQ_REPRESENTACION_CANAL.md`. Los
+> porcentajes de capital del documento histórico quedan retirados.
 
 - **Autor:** Agente A (sugerente) · **Fecha:** 2026-09-11 · validada por el MASTER
 - **Figura:** [`figuras/sistema_productivo_cnn_gate_capital.svg`](figuras/sistema_productivo_cnn_gate_capital.svg)

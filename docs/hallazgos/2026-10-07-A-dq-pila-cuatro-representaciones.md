@@ -1,4 +1,9 @@
-# Hallazgo · Vintage cierra `source_switch` solo si hay restatement, y XGBoost como combinador PIERDE contra la unión de controles gateados
+# Hallazgo · Vintage y XGBoost como combinador frente a controles DQ
+
+> **Retirada parcial:** la sección de ilustración de capital que constaba en
+> una versión anterior se elimina del relato. No hay estimación de capital
+> válida y no debe inferirse de una cartera sintética/equiponderada. El análisis
+> vigente se limita a resultados DQ con sus restricciones de muestra.
 
 - **Autor:** A · **Fecha:** 2026-10-07 · 🟡 **provisional**, pendiente de challenge B.
 - **Código:** `dq_representation_stack.py`, `dq_capital_illustration.py`.
@@ -81,47 +86,7 @@ adicional para las familias donde todos los controles son débiles**.
 Eso **sí** es «ML que apoya a los controles estadísticos», en el sentido literal
 del objetivo: no los reemplaza, cubre el hueco que dejan.
 
-## 3 · Capital: ilustración vanilla en base 100
-
-Pedida explícitamente sin porcentajes ni cifras del panel. Serie **sintética**,
-un único factor, VaR 99 % paramétrico a un día, 400 réplicas. **No es una
-medición y no debe citarse como resultado.** Fuera del alcance: múltiples
-factores y su correlación, diversificación entre mesas, riesgo específico y de
-default, multiplicadores supervisores, backtesting/PLA por mesa, NMRF y suelo SA.
-
-VaR de la serie limpia: **2,32** sobre 100 de notional.
-
-| defecto | VaR medido | diferencia | consistencia del signo | dirección |
-|---|---|---|---|---|
-| cotización repetida (stale) | 2,22 | −0,10 | 100 % | **INFRAESTIMA** |
-| fuente semanal propagada | 2,32 | −0,00 | 51 % | **sin dirección** |
-| precisión, rejilla fina | 2,37 | +0,05 | 94 % | SOBREESTIMA |
-| tick erróneo que revierte | 2,85 | +0,53 | 100 % | SOBREESTIMA |
-| precisión, rejilla gruesa | 4,62 | +2,30 | 100 % | **SOBREESTIMA** |
-
-El único que **infraestima** es la cotización repetida: quita movimiento sin
-dejar ningún valor atípico, así que un control de outliers no lo ve y el capital
-queda por debajo de lo debido. Es el caso prudencialmente peligroso, y es el que
-motiva los checks TRIM de repetidos.
-
-**Tres avisos contraintuitivos, cada uno corrigiendo una intuición mía previa:**
-
-1. **La fuente semanal propagada no sesga el VaR a un día.** Su signo solo es
-   consistente en el 51 % de las réplicas: azar. Reagrupa el movimiento
-   conservando la varianza total. Sigue siendo un defecto serio —destruye la
-   autocorrelación y desplaza el P&L en el tiempo— pero es **invisible a esta
-   métrica concreta**. Un defecto puede ser grave para una medida de riesgo e
-   inocuo para otra, y eso condiciona qué se le puede pedir a un gate de DQ.
-2. **Redondear no quita movimiento.** La rejilla gruesa deja el precio pegado
-   varios días y luego lo mueve un escalón entero; esos saltos pesan mucho más
-   que los ceros. Sobreestima, y es **el sesgo más grande de la tabla** — mayor
-   que el del tick erróneo, que es el único que un 3σ caza.
-3. **El signo del sesgo no se deduce de la etiqueta del defecto.** Depende de la
-   relación entre el defecto y el movimiento típico de la serie. Por eso un
-   control no puede «corregir» capital aplicando un ajuste por tipo de defecto:
-   hay que detectarlo, sanear la serie y **recalcular**.
-
-## 4 · Límites
+## Límites
 
 - Defectos **sintéticos** escritos por mí; no es la prevalencia real. El tamaño
   elegido en cada familia mueve su fila entera.
@@ -133,7 +98,6 @@ motiva los checks TRIM de repetidos.
 - El combinador se entrena con 236 ventanas × 14 combinaciones familia-modo
   frente a 236 limpias: **desbalance ~14:1 hacia positivo**, sin corregir. Es un
   candidato claro a explicar parte de su mala calibración.
-- La ilustración de capital es **didáctica**. No hay ninguna medición de impacto
-  de capital en este hallazgo; enlazar con `dq_capital_impact` (C7) sigue
-  pendiente y es lo que haría falta para sostener el objetivo del paper.
+- El cálculo de capital que figuraba aquí se retira; no medir capital es el
+  alcance actual del paper DQ.
 - La **supervivencia** del canal (XGB-AFT) sigue sin usarse como control.

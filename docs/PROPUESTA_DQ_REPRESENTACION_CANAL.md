@@ -92,18 +92,22 @@ El protocolo revisado y el resultado están en
 en `results/reports/dq_channel_confirmatory/summary.json`. Se usan ventanas
 disjuntas 20/20, umbrales calibrados en validación limpia independiente, CNN1D,
 XGBoost DQ (tres familias conocidas y cuatro holdout), recálculo de episodios
-Brent y predicciones de un XGB-AFT limpio congelado, más VaR histórico 99% como
-proxy equiponderado de cinco activos.
+Brent y predicciones de un XGB-AFT limpio congelado.
 
 La validación solo contiene 19 ventanas limpias y test 71: FPR test es 0/71
 para CNN y XGBoost, pero excede el 5% nominal en controles de ruptura de banda
 (8.45%), geometría (12.68%) y oscilación (7.04%). La CNN no detecta la mayoría
 de familias y XGBoost apenas transfiere a las familias reservadas; los
-controles específicos ganan en familias concretas. El XGB-AFT encuentra cambios
-de episodios (p. ej. cambio de fuente: +55/−55 inicios) y el VaR proxy oscila
-entre −2.10% y +8.29% según defecto, pero no es impacto en capital en euros.
-Los IC Clopper–Pearson 95% están en el JSON; para 0/71, el límite superior es
-5.06%, así que tampoco se descarta que la FPR real supere el 5% nominal.
+controles específicos ganan en familias concretas. El XGB-AFT muestra que los
+defectos sintéticos pueden alterar el inventario de episodios. Los IC
+Clopper–Pearson 95% están en el JSON; para 0/71, el límite superior es 5.06%, así
+que tampoco se descarta que la FPR real supere el 5% nominal.
+
+Como análisis paralelo, la comparación Seaborn de rendimientos muestra la
+distribución empírica frente a normal y ±3σ para nueve precios/FX. Método y
+límites: `docs/hallazgos/2026-10-07-A-distribuciones-rendimientos-3sigma.md`.
+Esto motiva calibración por distribución/tipología; no prueba que la IA mejore
+precisión. La prueba de IA requiere ground truth, test OOS y métricas de alerta.
 
 **Conclusión provisional:** queda demostrado que defectos sintéticos pueden
 alterar episodios del canal y riesgo estimado; no que CNN/XGBoost sean mejores
@@ -158,10 +162,13 @@ bootstrap por activo/episodio, no IID.
 - **Fidelidad de representación:** cambios falsos de canal, variación de
   slope/anchura/posición y error de supervivencia entre serie limpia y
   corrupta; una diferencia no demuestra por sí sola detección útil.
-- **Impacto DQ downstream, no alpha:** cambio inducido en retornos,
-  covarianzas/contribuciones de riesgo, volatilidad, VaR/ES y cobertura frente
-  al historial limpio de referencia. No borrar/imputar automáticamente en
-  producción.
+- **Impacto DQ downstream, no alpha:** primero, comparar distribuciones de
+  rendimientos empíricas con referencias gaussianas; medir asimetría, curtosis
+  y frecuencia observada fuera de bandas ±3σ frente a la probabilidad normal.
+  Después, evaluar si alertas etiquetadas distinguen defectos de colas/eventos
+  legítimos. No equiparar un rendimiento extremo con dato erróneo ni borrar/
+  imputar automáticamente. VaR/ES podrá ser análisis secundario solo con cartera,
+  notional y metodología validados; no reportar cifras de capital en este paper.
 
 Promover CNN/XGBoost solo si añaden cobertura en una familia no resuelta por los
 controles baratos, respetan FPR y sobreviven al test temporal/familias. Para

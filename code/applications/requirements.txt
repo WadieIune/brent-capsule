@@ -4,6 +4,7 @@ numpy>=1.23
 pandas>=1.5
 scipy>=1.9
 scikit-learn>=1.1
+seaborn>=0.13  # Visualización comparativa de distribuciones DQ.
 
 # Supervivencia del canal como feature (P(T>k)) en channel_vol_forecast y
 # predicted_var: usa Cox de lifelines si está instalado; si no, cae a un

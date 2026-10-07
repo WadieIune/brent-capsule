@@ -71,9 +71,9 @@ aceptable a una tasa de falsos positivos controlada. No son señales de trading.
 | Auditoría cruzada | conjunto |
 
 ## Lo que se conserva
-Las patas de riesgo (VaR −22,7 %, supervivencia C-index 0,664, detección AUC
-0,97) quedan **documentadas**; la figura de arquitectura es correcta y se le
-añade la capa de IA de DQ. Nada de lo cerrado se reabre.
+Los trabajos anteriores de riesgo/supervivencia quedan como antecedentes
+separados. Sus resultados no son métricas de éxito del framework DQ actual; la
+figura anterior centrada en capital queda fuera del material de este paper.
 
 ## Primer paso (A, ya en marcha)
 Gate barato de DQ: inyección de defectos (rachas/repetidos/saltos/decoplamiento),
@@ -220,16 +220,16 @@ e inteligente** para el Risk Director, no el framework completo. La capa 1
 mantiene controles estadísticos/deterministas como benchmark; la capa 2 combina
 representaciones, modelos y alertas trazables para extender cobertura y
 automatizar triage. La validación primaria es DQ (detección, FPR, transferencia,
-calibración y utilidad operativa). Distorsión del canal y riesgo/VaR son
-métricas downstream complementarias, no el objetivo central ni una evaluación
-de Basilea. Diseño: `docs/PROPUESTA_DQ_REPRESENTACION_CANAL.md`.
+calibración y utilidad operativa). Distorsión del canal es una métrica
+complementaria, no el objetivo central. Diseño:
+`docs/PROPUESTA_DQ_REPRESENTACION_CANAL.md`.
 
 El **piloto exploratorio** (`dq_channel_representation.py`) tenía 124 ventanas
 solapadas, calibración sobre el test y proxies de canal. La primera corrida
 confirmatoria inicial ya cierra esos puntos: 71 ventanas disjuntas OOS desde
 2020-09-21, umbrales congelados de 19 ventanas limpias de validación, CNN1D y
-XGBoost DQ, extracción completa de episodios y XGB-AFT congelado, y VaR
-equiponderado como proxy de riesgo. Código/resultados en
+XGBoost DQ y extracción completa de episodios con XGB-AFT congelado.
+Código/resultados en
 `code/applications/experiments/dq_channel_confirmatory.py` y
 `results/reports/dq_channel_confirmatory/summary.json`; lectura en
 `docs/hallazgos/2026-10-07-A-dq-canal-confirmatorio.md`.
@@ -276,57 +276,55 @@ gateados como esqueleto + combinador como canal adicional** para las familias
 donde todos los controles son débiles. Eso es literalmente «ML que apoya a los
 controles estadísticos», no que los reemplaza.
 
-**Capital: ilustración vanilla, no medición.** A petición del MASTER, sin cifras
-del panel ni porcentajes: serie sintética, un factor, VaR 99 % paramétrico, base
-100, 400 réplicas (`dq_capital_illustration.py`). VaR limpio 2,32. El único que
-**infraestima** es la cotización repetida (−0,10, signo consistente al 100 %):
-quita movimiento sin dejar atípicos, así que un control de outliers no lo ve. Y
-tres avisos contraintuitivos: la fuente semanal propagada **no sesga** el VaR a un
-día (signo consistente solo al 51 % = azar; reagrupa conservando varianza, aunque
-destruye la autocorrelación); **redondear no quita movimiento** —la rejilla gruesa
-es el mayor sesgo de la tabla, +2,30, por sobreestimación—; y el **signo del sesgo
-no se deduce de la etiqueta del defecto**, así que no se puede ajustar capital por
-tipo de defecto: hay que detectar, sanear y recalcular.
+### Disclaimer de capital y prioridad de medición
 
-Este cálculo queda como ilustración downstream del efecto de defectos sobre
-riesgo, no como criterio que sostenga el objetivo central del paper. La
-validación prioritaria es mejora/automatización de controles DQ y calidad de
-alertas para el Risk Director.
+Se retiran del paper y del resumen ejecutivo todos los porcentajes de «capital
+evitado» construidos con cartera equiponderada, nominal base 100, impacto `k·VaR`
+o prevalencia uniforme de defectos. No son estimaciones reales ni sustentan una
+conclusión sobre capital; no citarlos como resultado. El cálculo previo queda
+solo como artefacto exploratorio no validado y se marca como retirado en
+`docs/hallazgos/2026-10-07-A-dq-capital-valor-anadido.md`.
 
-### Error de capital evitado por capa — 2026-10-07 (🟡 pendiente de challenge B)
+La comparación principal pasa a la **distribución de rendimientos**: forma
+empírica frente a una normal ajustada, curtosis/asimetría, frecuencia observada
+fuera de ±3σ y comparación con el 0,27% teórico gaussiano. Es una descripción de
+la distribución, no un umbral productivo ni prueba de calidad por sí sola. El
+valor añadido de IA se medirá por detección con defectos etiquetados, FPR/recall
+por tipología y mejoras de alertas en test temporal. Capital solo se menciona
+como posible consecuencia aguas abajo, sin cuantificarlo sin posiciones,
+notional y metodología de cartera validados.
 
-Enlaza la detección (C11) con el esquema `k · VaR` de `dq_capital_impact` (C7).
-Métrica: `error_residual(gate) = media_f [(1 − recall_gate(f)) × |Δcapital(f)|]`,
-con gates **anidados** (`solo_3sigma` ⊂ `sin_ia` ⊂ `con_cnn`) y cada subconjunto
-recalibrado a su propio reparto, para que la diferencia entre dos consecutivos
-sea la aportación de la capa que los separa. Cartera estándar equiponderada, VaR
-histórico 99 %, base 100. **Análisis superficial y declarado como tal: no estima
-impacto real; lo comparable es la proporción de error evitado.**
-Detalle: `docs/hallazgos/2026-10-07-A-dq-capital-valor-anadido.md`.
+### Distribución de rendimientos: lo que queda en pie — 2026-10-07
 
-| gate | error de capital evitado |
-|---|---|
-| solo 3σ (statu quo) | **10,0 %** |
-| banco sin IA (8 controles) | **84,8 %** |
-| banco con CNN (9) | **86,7 %** |
-| combinador XGBoost | 81,6 % |
+Diagnóstico descriptivo sobre Brent que complementa el de nueve series.
+Figura Seaborn: `docs/figuras/dq_distribucion_rendimientos.png`. Código
+`dq_return_distribution.py`. Hallazgo
+`docs/hallazgos/2026-10-07-A-dq-distorsion-distribucion-por-gate.md`.
 
-Valor añadido: **banco sobre 3σ +74,8 pp**, **CNN sobre el banco +1,9 pp**,
-**combinador sobre el banco −5,1 pp**.
+**Corrección de sentido que conviene fijar.** Suponer normalidad con bandas ±3σ
+**infraestima** la frecuencia de extremos, no la sobreestima: en Brent |z| > 3
+ocurre el **1,11 %** frente al **0,27 %** teórico (**4,1×**), y a 5σ la razón
+llega a **5.605×**. Lo que la normal sobreestima es la masa de los *hombros*
+(1σ y 2σ, ratios 0,5× y 0,8×). De ahí **no** se sigue ninguna dirección de sesgo
+en capital: eso exige cartera, horizonte y metodología, y no se calcula.
 
-**Mensaje del paper que se deriva.** El statu quo evita el 10 % del error de
-capital y el banco de representaciones el 85 %: el valor demostrado está en la
-**cobertura por representaciones**, no en la capacidad del modelo. La CNN aporta
-una mejora **real y modesta** (+1,9 pp marginales sobre un banco que ya incluye
-todo lo demás) y es el **segundo control más valioso en términos de capital**
-(63,0 %), por delante del cross-asset estadístico (54,1 %). El combinador
-aprendido **resta** (−5,1 pp): «ML que apoya» sí, «ML que sustituye» no.
+**Consecuencia para DQ.** Si un umbral 3σ dispara cuatro veces más de lo que su
+propio supuesto promete, **no puede separar una cola real de mercado de un
+defecto**. Esto **motiva** el framework por representaciones; no lo demuestra.
+La demostración viene de detección con etiquetas y test temporal (C10/C11).
 
-**Advertencia metodológica que conviene llevar al paper.** Detectar bien y evitar
-error de capital **no son lo mismo**: el control de retícula es analíticamente
-perfecto en `quantize` (recall 1,000) y es el que menos valor de capital aporta
-(10,2 %), porque `quantize` es la familia que menos mueve el capital (Δ 0,0040 en
-base 100 frente a 0,1654 de `lag1_calendar`). Priorizar controles por recall es
-un error; hay que priorizarlos por error de capital evitado. Límite principal:
-se promedia con **prevalencia uniforme** entre familias, que es falso y no hay
-dato para ponderarlo.
+**La curtosis no es una propiedad estable y no debe citarse sola:** 76,4 con
+todo, 25,9 excluyendo un día, 12,9 excluyendo tres, 4,9 excluyendo diez — y
+todos esos días son movimientos **reales** (2020-04-21, Brent de 17,36 a 9,12,
+el día siguiente al WTI negativo; 2020-03-09; 2009-01-05).
+
+**Degradado y fuera del paper.** La comparación de gates por «distorsión
+corregida» (panel D y sus porcentajes) queda retirada: multiplicaba agregados
+**no pareados** —distorsión sobre 40 episodios con un RNG, recall sobre 124
+ventanas con otro— y proyectaba bajo corrección perfecta. Challenge en
+`docs/auditorias/2026-10-07-A-challenge-dq-return-distribution.md`, aceptación y
+condiciones para reabrir en
+`docs/auditorias/2026-10-07-A-respuesta-challenge-dq-return-distribution.md`.
+Ambas reservas —ésta y la de capital— tienen la misma raíz: un porcentaje
+relativo grande sobre una base pequeña o sobre un supuesto idealizado se lee
+como un resultado y no lo es.
