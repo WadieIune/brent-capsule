@@ -217,12 +217,16 @@ def encaje(path: Path, subsets: dict, singles: dict) -> None:
             fontsize=7, style="italic", color="#666666")
 
     mejor_fresh = max(singles, key=lambda c: sum(singles[c][f"{f}|fresh"] for f in FAMILIAS))
+    fpr_a = subsets["solo_3sigma"]["false_positive_rate"]
+    fpr_b = subsets["con_cnn"]["false_positive_rate"]
     ax.text(0.500, 0.082,
             f"La cobertura conjunta alcanza {media['con_cnn']:.2f} de recall medio frente a "
-            f"{media['solo_3sigma']:.2f} del control estándar por sí solo, a carga de alarmas "
-            "comparable. Ninguna representación domina:\ncada familia de defecto la cubre bien "
-            f"una distinta, y cuando el defecto llega con el dato nuevo el control que más cubre "
-            f"es «{mejor_fresh}». Detalle por familia en la figura de cobertura y en el Excel.",
+            f"{media['solo_3sigma']:.2f} del control estándar por sí solo, pero las dos capas "
+            f"operan a falsas alarmas distintas ({fpr_a:.3f} y {fpr_b:.3f}): la diferencia de "
+            "recall NO aísla\nel valor incremental y no debe leerse como tal. Lo que sí sostiene "
+            "la figura de cobertura es que ninguna representación domina —cada familia la cubre "
+            f"bien una distinta—\ny que cuando el defecto llega con el dato nuevo el control que "
+            f"más cubre es «{mejor_fresh}». Detalle por familia en esa figura y en el Excel.",
             ha="center", va="center", fontsize=8, color="#444444")
 
     fig.tight_layout()

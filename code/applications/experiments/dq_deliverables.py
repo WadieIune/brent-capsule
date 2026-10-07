@@ -249,8 +249,10 @@ PROTOCOLO = [
      "defecto se propague como lo haría en producción. No hay etiquetas de incidentes reales."),
     ("Calibración del umbral",
      "Gate conforme-adaptativo (Adaptive Conformal Inference). El umbral se calibra sobre "
-     "tramos limpios de VALIDACIÓN y se reajusta en línea con la falsa alarma observada. No se "
-     "supone ninguna forma de distribución, que es el punto: 3σ sí la supone y falla."),
+     "tramos limpios de VALIDACIÓN y se reajusta en línea con la falsa alarma observada, sin "
+     "suponer una forma de distribución — que es donde falla un 3σ paramétrico sobre estas "
+     "colas. La garantía NO es incondicional: depende de la dependencia entre ventanas, del "
+     "drift y del tamaño de la muestra de calibración, y aquí las ventanas solapan."),
     ("Sin fuga temporal",
      "Normalización causal con media y desviación móviles de 60 sesiones desplazadas una. WTI "
      "se representa con diferencias en dólares para preservar su settlement negativo real de "
@@ -337,6 +339,10 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
          "XGBoost como combinador de señales PIERDE contra la unión de controles con umbral "
          "propio, y en pérdida de precisión destruye un control que acierta el 100 %. "
          "«ML que apoya» sí; «ML que sustituye» no."),
+        ("Comparaciones válidas",
+         "Solo son interpretables las comparaciones a la MISMA tasa de falsas alarmas. La hoja "
+         "3 compara control contra control a presupuesto común. La hoja 4 describe puntos de "
+         "operación distintos y su diferencia de recall NO mide valor incremental."),
         ("Por qué 3σ no basta",
          f"En Brent, |z|>3 ocurre el {dist['colas_normal_vs_empirica'][2]['frecuencia_empirica']:.2%} "
          f"de las sesiones frente al {dist['colas_normal_vs_empirica'][2]['frecuencia_normal']:.2%} "
@@ -402,8 +408,12 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
                 cell.alignment = Alignment(horizontal="center")
 
     # --- 3. Gate A vs Gate B ---
-    ws = _sheet(wb, "4 Gate A vs Gate B", "Comparación de capas a su propio presupuesto de "
-                "falsas alarmas. «sin IA» es Gate B sin la CNN, para aislar qué añade el deep learning.")
+    ws = _sheet(wb, "4 Gate A vs Gate B",
+                "ATENCIÓN AL LEER ESTA HOJA: cada configuración opera a una tasa de falsas "
+                "alarmas DISTINTA, así que la diferencia de recall entre filas NO aísla el valor "
+                "incremental de ninguna capa. Se incluye porque describe el punto de operación de "
+                "cada configuración, no como medida de mejora. La comparación que sí es válida "
+                "—control contra control a presupuesto común— está en la hoja 3.")
     _header(ws, 4, ["Configuración", "Qué incluye", "Falsas alarmas medidas",
                     "Recall medio", "Recall de la peor familia"], [22, 56, 20, 16, 22])
     keys = [f"{f}|{m}" for f in families for m in ("restated", "fresh")]
@@ -425,8 +435,10 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     delta = (sum(subsets["con_cnn"][k] for k in keys) - sum(subsets["sin_ia"][k] for k in keys)) / len(keys)
     ws.cell(row=row, column=4, value=round(delta, 3)).font = Font(bold=True)
     ws.cell(row=row + 1, column=1,
-            value="Lectura: el salto grande es de 3σ al banco de representaciones. La CNN añade "
-                  "encima una mejora pequeña y positiva.").font = Font(italic=True, size=9)
+            value="Esa diferencia marginal es la única de esta hoja medida entre dos "
+                  "configuraciones a falsas alarmas casi iguales (0,081 y 0,083), así que es la "
+                  "única interpretable como aportación. Las demás filas difieren también en "
+                  "punto de operación.").font = Font(italic=True, size=9)
 
     # --- 4. Familias de defecto ---
     ws = _sheet(wb, "5 Familias", "Qué es cada familia de defecto y qué control la cubre mejor.")
