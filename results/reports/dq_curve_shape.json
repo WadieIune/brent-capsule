@@ -1,0 +1,24 @@
+{
+  "nodes": [
+    "DGS2",
+    "DGS10",
+    "DGS30"
+  ],
+  "n": 4926,
+  "fp": 0.02,
+  "reps": 40,
+  "caveat": "demo sobre yields CMT; produccion requiere ZC bootstrapping y convenciones",
+  "recall_a_FP": {
+    "3sigma_por_nodo": {
+      "kink": 1.0,
+      "inversion": 1.0,
+      "nodo_estancado": 0.0
+    },
+    "forma_cross_tenor": {
+      "kink": 0.45,
+      "inversion": 0.95,
+      "nodo_estancado": 0.025
+    }
+  },
+  "lectura": "El control de FORMA cross-tenor caza cotizaciones malas que rompen la curva (kink 0.45, inversion 0.95) donde el 3σ por nodo falla (kink 1.0, inversion 1.0), porque el valor es normal en su propia serie pero imposible en la forma de la curva."
+}

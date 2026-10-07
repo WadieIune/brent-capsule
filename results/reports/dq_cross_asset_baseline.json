@@ -1,0 +1,106 @@
+{
+  "protocolo": "igual que dq_cnn1d_supervised (umbral en VAL, recall en test)",
+  "universo": [
+    "BRENT",
+    "WTI",
+    "GOLD",
+    "SILVER",
+    "COPPER",
+    "NATGAS"
+  ],
+  "W": 20,
+  "fp": 0.05,
+  "n_val": 20,
+  "n_test": 73,
+  "baseline_a_batir_por_la_CNN": {
+    "BRENT": {
+      "decoupling": {
+        "recall_test": 0.691,
+        "fp_test_real": 0.0
+      },
+      "stale": {
+        "recall_test": 1.0,
+        "fp_test_real": 0.0
+      },
+      "reversible_jump": {
+        "recall_test": 0.452,
+        "fp_test_real": 0.0
+      }
+    },
+    "WTI": {
+      "decoupling": {
+        "recall_test": 0.745,
+        "fp_test_real": 0.015
+      },
+      "stale": {
+        "recall_test": 1.0,
+        "fp_test_real": 0.018
+      },
+      "reversible_jump": {
+        "recall_test": 0.583,
+        "fp_test_real": 0.013
+      }
+    },
+    "GOLD": {
+      "decoupling": {
+        "recall_test": 0.975,
+        "fp_test_real": 0.144
+      },
+      "stale": {
+        "recall_test": 1.0,
+        "fp_test_real": 0.151
+      },
+      "reversible_jump": {
+        "recall_test": 0.892,
+        "fp_test_real": 0.15
+      }
+    },
+    "SILVER": {
+      "decoupling": {
+        "recall_test": 0.986,
+        "fp_test_real": 0.081
+      },
+      "stale": {
+        "recall_test": 1.0,
+        "fp_test_real": 0.082
+      },
+      "reversible_jump": {
+        "recall_test": 0.897,
+        "fp_test_real": 0.08
+      }
+    },
+    "COPPER": {
+      "decoupling": {
+        "recall_test": 0.35,
+        "fp_test_real": 0.044
+      },
+      "stale": {
+        "recall_test": 1.0,
+        "fp_test_real": 0.04
+      },
+      "reversible_jump": {
+        "recall_test": 0.284,
+        "fp_test_real": 0.039
+      }
+    },
+    "NATGAS": {
+      "decoupling": {
+        "recall_test": 0.062,
+        "fp_test_real": 0.037
+      },
+      "stale": {
+        "recall_test": 1.0,
+        "fp_test_real": 0.045
+      },
+      "reversible_jump": {
+        "recall_test": 0.064,
+        "fp_test_real": 0.051
+      }
+    }
+  },
+  "mediana_recall": {
+    "decoupling": 0.718,
+    "stale": 1.0,
+    "reversible_jump": 0.517
+  }
+}
