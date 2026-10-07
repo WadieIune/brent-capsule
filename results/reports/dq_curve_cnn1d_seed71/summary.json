@@ -1,0 +1,92 @@
+{
+  "protocol": {
+    "series": [
+      "DGS2",
+      "DGS10",
+      "DGS30"
+    ],
+    "tenors_years": [
+      2.0,
+      10.0,
+      30.0
+    ],
+    "instrument_status": "US Treasury constant-maturity yields (CMT), not bootstrapped zero-coupon rates",
+    "fit_end": "2018-12-31",
+    "validation_end": "2023-12-31",
+    "test_start": "2024-01-02",
+    "test_end": "2026-09-09",
+    "n_train": 2983,
+    "n_validation": 1251,
+    "n_test": 672,
+    "false_positive_target": 0.02,
+    "training_bumps_bp": [
+      2.0,
+      4.0
+    ],
+    "test_bumps_bp": [
+      1.0,
+      2.0,
+      3.0,
+      4.0,
+      5.0,
+      8.0
+    ],
+    "seed": 71,
+    "source": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
+    "sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
+    "limitations": [
+      "only DGS2/DGS10/DGS30 are available; DGS5 is absent",
+      "GBP base/SONIA pair is not in the panel",
+      "three CMT nodes cannot validate a production Svensson ZC curve",
+      "synthetic perturbations are not real defect labels"
+    ]
+  },
+  "thresholds": {
+    "cnn_1d": 0.746553361415863,
+    "linear_log_tenor_residual": 42.397872109322954,
+    "3sigma_per_node": 3.2118899997434927
+  },
+  "validation_false_positive_rate": {
+    "cnn_1d": 0.019184652278177457,
+    "linear_log_tenor_residual": 0.019984012789768184,
+    "3sigma_per_node": 0.019984012789768184
+  },
+  "clean_test_false_positive_rate": {
+    "cnn_1d": 0.0,
+    "linear_log_tenor_residual": 0.0,
+    "3sigma_per_node": 0.017857142857142856
+  },
+  "recall_by_bump_size_bp": {
+    "1": {
+      "cnn_1d": 0.24702380952380953,
+      "linear_log_tenor_residual": 0.9910714285714286,
+      "3sigma_per_node": 0.017857142857142856
+    },
+    "2": {
+      "cnn_1d": 0.24702380952380953,
+      "linear_log_tenor_residual": 0.9910714285714286,
+      "3sigma_per_node": 0.017857142857142856
+    },
+    "3": {
+      "cnn_1d": 0.24702380952380953,
+      "linear_log_tenor_residual": 0.9910714285714286,
+      "3sigma_per_node": 0.017857142857142856
+    },
+    "4": {
+      "cnn_1d": 0.24702380952380953,
+      "linear_log_tenor_residual": 0.9910714285714286,
+      "3sigma_per_node": 0.017857142857142856
+    },
+    "5": {
+      "cnn_1d": 0.24702380952380953,
+      "linear_log_tenor_residual": 0.9895833333333334,
+      "3sigma_per_node": 0.017857142857142856
+    },
+    "8": {
+      "cnn_1d": 0.24702380952380953,
+      "linear_log_tenor_residual": 0.9895833333333334,
+      "3sigma_per_node": 0.017857142857142856
+    }
+  },
+  "interpretation": "Exploratory synthetic defect test; no production claim."
+}

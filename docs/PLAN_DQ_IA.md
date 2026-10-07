@@ -101,3 +101,68 @@ gate DQ; no se usan como etiquetas de calidad. Las salidas de calidad deben
 identificar ventanas observables y procedencia antes de que canales/supervivencia
 o Risk Director consuman la serie. XGBoost DQ y un generador de defectos siguen
 pendientes; el VAE Brent actual no equivale a un modelo generativo de corrupción.
+
+### CNN de shape de curva — 2026-10-07
+
+Se evaluó una CNN 1D con los únicos nodos de curva disponibles, DGS2/DGS10/DGS30
+(CMT, no ZC), perturbando el nodo 10Y entre 1 y 8 bp. Frente a 3σ puntual,
+recupera el carácter cross-tenor; pero el residuo simple de interpolación
+log-tenor logra ~99 % recall con FPR limpia de test 0, mientras CNN promedia
+~50 % y varía mucho por seed. **La mejora observada es del control de shape,
+no de deep learning**. Sin DGS5, malla ZC bootstrapped ni GBP/SONIA no hay base
+para reclamar validación de Svensson o de cobertura entre instrumentos. Detalle:
+`docs/hallazgos/2026-10-07-A-dq-curve-cnn1d.md`.
+
+### Gate conforme y espacio nulo — 2026-10-07 (🟡 pendiente de challenge B)
+
+El veredicto anterior sobre la CNN de series se midió mal: el umbral se calibraba
+en validación y se congelaba para test, de modo que la CNN operaba al **19,9 %**
+de falsas alarmas frente al **9,7 %** del cross-asset, con objetivo 5 % para
+ambos. Recall comparado en puntos de operación distintos. Con un **gate
+conforme-adaptativo** (ACI) la CNN cumple el presupuesto (FPR 0,053).
+
+Corregido el protocolo, el resultado defendible **no** es que la red gane a los
+controles explícitos —en la familia para la que cada control fue diseñado, pierde:
+`1-R²` logra 1,000 en `stale`, 0,863 en desfase de calendario, y el residuo
+Nelson-Siegel 1,000 en forma de curva—, sino que **la red cubre defectos
+analíticamente invisibles para toda la familia de estadísticos baratos**.
+
+Con **seis** familias nunca vistas, a FPR emparejada (azar 0,056): en `sign_flip`
+los tres controles baratos son **exactamente ciegos** —`1-R²` porque la regresión
+reajusta `β`, 3σ porque usa `|·|`, el vol-ratio porque usa desviaciones típicas—
+y la CNN logra **0,998**. En `rescale`, misma invariancia analítica: CNN 0,594
+frente a 0,056 / 0,065 / 0,300. Pero **ningún detector domina**: el vol-ratio gana
+en empalme de proveedores (0,690) y `1-R²` en desfase de una sesión (0,863).
+
+**Retractado** respecto de la primera versión: con una sola familia no vista se
+afirmó que la CNN era el único detector por encima del azar en todas. Con seis es
+falso — en `quantize` (pérdida de precisión) **los cuatro** quedan en el azar.
+Hueco de cobertura común: hace falta un control de rejilla sobre precios crudos.
+
+Autocrítica incluida: leave-one-family-out muestra que buena parte de la ventaja
+de la CNN dentro de sus familias de entrenamiento estaba inflada por estar en
+distribución (0,865→0,511; 0,797→0,540; 0,998→0,397).
+
+Arquitectura que se deriva: **banco de controles baratos con su espacio nulo
+declarado + CNN como red de arrastre de lo no anticipado, bajo un único gate
+conforme que impone la tasa de falsas alarmas.** La frase «las redes no baten a
+los controles explícitos» queda **imprecisa, no falsa**: es correcta familia a
+familia cuando existe control dedicado, e incorrecta como enunciado general. Se
+somete a veredicto de B. Detalle: `docs/hallazgos/2026-10-07-A-dq-gate-conforme-espacio-nulo.md`.
+
+La idea YOLO queda como experimento de localización visual, no como sustituto
+del control numérico: representar la matriz tiempo×tenor y evaluar cajas de
+defectos localizados (recall de eventos, IoU en tiempo-tenor y falsas alarmas
+por curva-fecha). Requiere etiquetas alineadas con el evento real, rasterización
+congelada y comparación pareada con CNN 1D/residuo/3σ. La prueba YOLO ejecutada
+abajo es de log-volatilidad, no valida todavía localización en curvas; ese gate
+debe usar defectos reales/sintéticos pareados y controles de shape.
+
+### Localización de spikes en log-volatilidad — 2026-10-07
+
+Primer test YOLO/CNN 1D pareado en ventanas sintéticas mean-reverting: a 2σ,
+CNN1D localiza 97,6% frente a 77,6% del 3σ calibrado a 2% FPR en validación;
+YOLO logra 92,8%. En test la FPR sube a 4,0% CNN y 4,8% YOLO (3σ queda 0,8%),
+así que es evidencia de señal aprendible, no gate operativo superado. YOLO no
+mejora la CNN numérica. Repetir con más semillas/ventanas y datos reales antes
+de incorporar. Ver `docs/hallazgos/2026-10-07-A-dq-yolo-volatilidad.md`.

@@ -1,0 +1,93 @@
+{
+  "protocol": {
+    "task": "localize isolated spikes in mean-reverting log-volatility",
+    "window": 128,
+    "train_windows": 1200,
+    "validation_windows": 400,
+    "test_windows_per_amplitude": 250,
+    "cnn1d_epochs": 15,
+    "yolo_epochs_completed": 4,
+    "seed": 42,
+    "target_clean_fpr": 0.02,
+    "localization_tolerance_sessions": 3,
+    "injections_train_sigma": [
+      2,
+      6
+    ],
+    "test_amplitudes_sigma": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+    ],
+    "yolo_pretrained_weights": "yolo11n.pt (Ultralytics COCO initialization; fine-tuned here)",
+    "augmentation": "disabled to preserve time/value coordinates",
+    "limitations": [
+      "synthetic mean-reverting series; not observed market defect labels",
+      "YOLO sees rendered fixed-scale images; CNN1D sees numeric windows",
+      "3sigma_fixed is not FPR-matched; window-max baselines are calibrated to target 2%"
+    ]
+  },
+  "thresholds": {
+    "cnn1d": 0.07832906395196915,
+    "yolo": 0.20397280156612396,
+    "3sigma_fixed": 3.0,
+    "3sigma_window_max_calibrated_to_target_fpr": 4.217495441436768
+  },
+  "clean_test_fpr": {
+    "cnn1d": 0.04,
+    "yolo": 0.048,
+    "3sigma_fixed": 0.46,
+    "3sigma_window_max_calibrated": 0.008
+  },
+  "recall_by_spike_sigma": {
+    "1": {
+      "cnn1d_event_recall_located": 0.248,
+      "yolo_event_recall_located": 0.264,
+      "3sigma_fixed_event_recall": 0.524,
+      "3sigma_event_recall_located_fpr_calibrated": 0.156
+    },
+    "2": {
+      "cnn1d_event_recall_located": 0.976,
+      "yolo_event_recall_located": 0.928,
+      "3sigma_fixed_event_recall": 0.844,
+      "3sigma_event_recall_located_fpr_calibrated": 0.776
+    },
+    "3": {
+      "cnn1d_event_recall_located": 1.0,
+      "yolo_event_recall_located": 0.972,
+      "3sigma_fixed_event_recall": 0.848,
+      "3sigma_event_recall_located_fpr_calibrated": 0.848
+    },
+    "4": {
+      "cnn1d_event_recall_located": 1.0,
+      "yolo_event_recall_located": 0.984,
+      "3sigma_fixed_event_recall": 0.848,
+      "3sigma_event_recall_located_fpr_calibrated": 0.848
+    },
+    "5": {
+      "cnn1d_event_recall_located": 1.0,
+      "yolo_event_recall_located": 0.96,
+      "3sigma_fixed_event_recall": 0.848,
+      "3sigma_event_recall_located_fpr_calibrated": 0.848
+    },
+    "8": {
+      "cnn1d_event_recall_located": 1.0,
+      "yolo_event_recall_located": 0.96,
+      "3sigma_fixed_event_recall": 0.848,
+      "3sigma_event_recall_located_fpr_calibrated": 0.848
+    }
+  },
+  "validation_fpr": {
+    "cnn1d": 0.02,
+    "yolo": 0.02,
+    "3sigma_window_max_calibrated": 0.02
+  },
+  "artifacts": {
+    "yolo_best": "results/reports/dq_yolo_volatility/models/yolo11n_volatility_spikes_best.pt",
+    "cnn1d_state": "results/reports/dq_yolo_volatility/models/cnn1d_volatility_spikes.pt",
+    "dataset": "results/reports/dq_yolo_volatility/yolo_dataset"
+  }
+}

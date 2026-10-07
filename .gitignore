@@ -15,6 +15,20 @@ results/models/*
 !results/models/detector_canal_heads.joblib
 !results/models/torch_training_report_*.json
 
+# Los `!results/reports/**` de arriba fuerzan la inclusión de TODO lo que caiga en
+# reports. Vale para entregables ligeros, pero un experimento de visión escribe
+# ahí su dataset rasterizado y sus checkpoints: 5.227 ficheros y 48 MB entraron
+# por esa puerta el 2026-10-07. Se recorta por tipo, no por experimento, para que
+# también valga para los que vengan.
+*.pt
+*.pth
+results/**/yolo_dataset/
+results/**/yolo_runs/
+results/**/injected_test/
+results/**/*.cache
+# Ultralytics escribe por defecto en `runs/` en la raíz, no bajo results/.
+runs/
+
 # Python
 __pycache__/
 *.py[cod]
