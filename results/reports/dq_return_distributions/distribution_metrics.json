@@ -1,0 +1,127 @@
+{
+  "panel": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
+  "series": [
+    "BRENT",
+    "WTI",
+    "GOLD",
+    "SILVER",
+    "COPPER",
+    "SP500",
+    "DAX",
+    "EUROSTOXX50",
+    "EURUSD"
+  ],
+  "method": "daily log returns; per-series sample mean/std standardization; full-history descriptive fit",
+  "reference": "standard normal with theoretical two-sided P(|Z|>3)=0.0026998",
+  "interpretation": "descriptive only; historical fit is not a causal alert threshold or capital estimate",
+  "metrics": {
+    "BRENT": {
+      "n": 4839,
+      "start_date": "2007-01-03",
+      "end_date": "2026-09-09",
+      "mean_log_return": 7.731633624808579e-05,
+      "std_log_return": 0.027434091651430507,
+      "skewness": -2.2223503502179205,
+      "excess_kurtosis": 83.56843354332959,
+      "empirical_abs_z_gt_3": 0.01136598470758421,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 4.209941951637271
+    },
+    "WTI": {
+      "n": 4751,
+      "start_date": "2007-01-03",
+      "end_date": "2026-09-09",
+      "mean_log_return": 0.0003541162331407714,
+      "std_log_return": 0.028343717015146288,
+      "skewness": 0.7282114921668565,
+      "excess_kurtosis": 29.899697835269457,
+      "empirical_abs_z_gt_3": 0.014523258261418648,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 5.379390858093492
+    },
+    "GOLD": {
+      "n": 4768,
+      "start_date": "2007-01-03",
+      "end_date": "2026-09-10",
+      "mean_log_return": 0.00032766389641279356,
+      "std_log_return": 0.011524239021331413,
+      "skewness": -0.5128439438430371,
+      "excess_kurtosis": 7.4253115556294595,
+      "empirical_abs_z_gt_3": 0.013842281879194632,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 5.1271583315367675
+    },
+    "SILVER": {
+      "n": 4768,
+      "start_date": "2007-01-03",
+      "end_date": "2026-09-10",
+      "mean_log_return": 0.00022566138472314052,
+      "std_log_return": 0.022058399117796078,
+      "skewness": -1.552442375696258,
+      "excess_kurtosis": 22.601981979660074,
+      "empirical_abs_z_gt_3": 0.016149328859060404,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 5.981684720126229
+    },
+    "COPPER": {
+      "n": 4771,
+      "start_date": "2007-01-02",
+      "end_date": "2026-09-10",
+      "mean_log_return": 0.00013883828956705682,
+      "std_log_return": 0.017309161134165557,
+      "skewness": -0.6938874418569474,
+      "excess_kurtosis": 12.892989374035043,
+      "empirical_abs_z_gt_3": 0.013623978201634877,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 5.0462990101493075
+    },
+    "SP500": {
+      "n": 4769,
+      "start_date": "2007-01-04",
+      "end_date": "2026-09-10",
+      "mean_log_return": 0.00035795723277289417,
+      "std_log_return": 0.012448185071937005,
+      "skewness": -0.4734601200476738,
+      "excess_kurtosis": 12.756141798847326,
+      "empirical_abs_z_gt_3": 0.01635563011113441,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 6.058098362949637
+    },
+    "DAX": {
+      "n": 4908,
+      "start_date": "2007-01-03",
+      "end_date": "2026-09-10",
+      "mean_log_return": 0.0002305974655587654,
+      "std_log_return": 0.013232469111779142,
+      "skewness": -0.2030881603881503,
+      "excess_kurtosis": 8.328535553394254,
+      "empirical_abs_z_gt_3": 0.014873675631621841,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 5.509184872897722
+    },
+    "EUROSTOXX50": {
+      "n": 4737,
+      "start_date": "2007-04-02",
+      "end_date": "2026-09-10",
+      "mean_log_return": 0.00011278493036348601,
+      "std_log_return": 0.013606626851395265,
+      "skewness": -0.2834352484070574,
+      "excess_kurtosis": 8.10928878948981,
+      "empirical_abs_z_gt_3": 0.015832805573147563,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 5.864445018127917
+    },
+    "EURUSD": {
+      "n": 4974,
+      "start_date": "2007-01-03",
+      "end_date": "2026-09-10",
+      "mean_log_return": -3.393152745195398e-05,
+      "std_log_return": 0.005562356365181551,
+      "skewness": -0.1083705744069818,
+      "excess_kurtosis": 4.5176573781158,
+      "empirical_abs_z_gt_3": 0.013671089666264576,
+      "gaussian_abs_z_gt_3": 0.0026997960632601866,
+      "empirical_to_gaussian_3sigma_tail_ratio": 5.0637490187891485
+    }
+  }
+}

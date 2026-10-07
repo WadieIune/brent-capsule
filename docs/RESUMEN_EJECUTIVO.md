@@ -1,73 +1,147 @@
-# Resumen ejecutivo — sistema CNN + riesgo sobre Brent
+# Resumen ejecutivo — framework de Data Quality para series temporales
 
-> Pensado para acompañar a la figura `docs/figuras/sistema_productivo_cnn_gate_capital.svg`
-> en un correo de resumen. Prosa lista para pegar; cifras verificadas y
-> reproducibles en el repositorio `WadieIune/brent-capsule`.
+## Objetivo
 
-## En dos líneas
+Diseñar y evaluar un framework de Data Quality para series financieras que
+combine controles estadísticos contrastados con una segunda capa automática e
+inteligente para apoyar al Risk Director. El éxito se mide en calidad de
+detección, cobertura entre tipologías y automatización trazable; no en
+rentabilidad ni en porcentajes de capital.
 
-Hemos construido —y, sobre todo, **validado con un backtest diseñado para
-matarlo**— un sistema que usa reconocimiento de imágenes (CNN) sobre la geometría
-del precio del Brent al servicio de un director de riesgos. El valor no está en
-predecir el mercado (demostramos que no se puede), sino en **medir el capital
-sobre el dato correcto y mantenerlo de forma eficiente**, con cada componente
-certificado o descartado por el mismo filtro.
+## El problema
 
-## El sistema en una imagen (adjunta)
+El control estándar en series de precios es una banda de ±3σ sobre
+log-rendimientos, que lleva dentro un supuesto de normalidad que los datos no
+cumplen. En nueve series del panel (2007-2026), la frecuencia empírica fuera de
+±3σ está entre **1,14 % y 1,64 %**, frente al **0,27 %** de la referencia
+gaussiana: entre 4,2 y 6,1 veces más. Todas tienen curtosis de exceso positiva.
+Ver la [figura de distribuciones](../results/reports/dq_return_distributions/empirical_vs_gaussian_returns.png)
+y el [resumen numérico](../results/reports/dq_return_distributions/distribution_metrics.json).
 
-Dos **puertas (gates) en serie** sobre el dato y dos **palancas de capital** que
-se complementan, con el **backtest validando en paralelo** cada modelo:
+La consecuencia operativa es la que importa: un umbral que dispara varias veces
+más de lo que su propio supuesto promete **no puede separar una cola real de
+mercado de un defecto de dato**. Eso motiva buscar cobertura en otras
+representaciones del dato, no en subir el umbral. No permite inferir ninguna
+dirección de sesgo en capital, que dependería de cartera, horizonte y
+metodología y aquí no se calcula.
 
-1. **Gate 1 · Calidad de dato** (control geométrico): detecta defectos —precios
-   estancados, no positivos— que un control estadístico de cola no ve. Consumir
-   el dato «tal cual se recibe» **infradota el capital un 13,4 %**. Limpiarlo lo
-   corrige al alza → **exactitud**: no quedarse corto de capital.
-2. **Gate 2 · Detección de canal** (la CNN, AUC 0,97): es la **puerta de entrada
-   al modelo**. Produce los episodios de canal que alimentan al modelo de
-   supervivencia. En paralelo, el **VaR condicional a volatilidad** reduce el
-   capital **−22,7 %** a igual cobertura → **eficiencia**: no pasarse. (Además
-   corrige el agrupamiento de excepciones del VaR estático, que es lo que inflaba
-   el multiplicador regulatorio.)
-3. **Backtest** (capa de validación, en paralelo): walk-forward purgado, DSR,
-   PBO/CSCV, nulo de paseo aleatorio, Kupiec/Christoffersen, semáforo de Basilea.
+Advertencia de alcance: esa comparación es descriptiva y de muestra completa,
+con *look-ahead* por la estandarización ex post. No es un umbral desplegable.
 
-## Lo que SÍ sostiene el backtest (presentable)
+## Arquitectura
 
-| Resultado | Métrica |
-|---|---|
-| La CNN detecta el canal con fiabilidad | AUC **0,97 / 0,956** fuera de muestra |
-| La vida del canal es ordenable (XGB-AFT) | C-index **0,664 ± 0,007** |
-| El dato sucio infradota el capital | **13,4 %** |
-| El VaR condicional a volatilidad ahorra capital | **−22,7 %** (IC95 [−28,9; −1,3]), batería completa pasada |
+El gate de calidad de dato se despliega en dos capas y entrega una serie
+validada a los modelos de riesgo.
 
-## Lo que el backtest DESCARTÓ (y por qué eso da credibilidad)
+1. **Capa A — determinista y estadística:** calendario, duplicados, faltantes,
+   TRIM y rachas de retornos cero, rangos y positividad, 3σ y robustos, reglas
+   por instrumento. Resuelve de forma cerrada y barata lo que admite regla.
+2. **Capa B — por representación, con IA:** el mismo dato mirado como precio
+   crudo (retícula del tick), como retorno frente a pares correlacionados
+   (1−R² y CNN 1D), como canal (posición en banda, oscilación, geometría) y
+   como *vintage* (serie recibida frente al snapshot almacenado). XGBoost entra
+   como combinador de señales. Complementa la capa A; no la reemplaza.
+3. **Salida:** alerta trazable con serie, tramo, controles activados, evidencia
+   y score calibrado. Revisión humana; nunca corrección automática.
 
-El mismo banco que aceptó lo anterior rechazó **diez** hipótesis que «parecían»
-funcionar: que el canal diera ventaja direccional (DSR≈0), que acertar la ruptura
-diera dinero (67,8 % de acierto pero Sharpe −0,48), que la geometría anticipara
-la volatilidad (la persistencia gana) o el agrupamiento de pérdidas (sin señal
-sobre el nulo). **Un banco que rechaza nueve de cada trece y aún deja pasar
-cuatro es la razón por la que creemos esas cuatro.**
+Todos los controles operan bajo un gate conforme-adaptativo, que calibra el
+umbral sobre la distribución empírica observada en lugar de sobre una forma
+supuesta. Esa garantía **no es incondicional**: depende de la dependencia entre
+ventanas, del *drift* y del tamaño de la muestra de calibración.
 
-## El hallazgo que vale como caso propio
+Figuras: [arquitectura del sistema](figuras/dq_encaje_produccion.pdf) y
+[cobertura por control y familia](figuras/dq_pipeline_gate_a_b.pdf).
 
-Durante el trabajo, un **defecto real de datos** (diez saltos imposibles en la
-serie EUR/USD, de 2008) **atravesó todo el pipeline sin que nada lo detectara**,
-hasta que lo cazamos al contrastar con una fuente independiente. Es la tesis del
-capítulo de calidad de dato ocurriendo en nuestros propios datos: más convincente
-que cualquier defecto inyectado a mano.
+## Cómo se mide
 
-## Papel honesto de la IA
+Detección sobre defectos de **verdad conocida** inyectados en los precios
+crudos, con retornos y normalización recalculados para que el defecto se
+propague como en producción. Partición cronológica: entrenamiento hasta
+2018-12-31, validación 2019-2023, test desde 2024-01-05. Métrica principal
+**recall a presupuesto de falsas alarmas común**; no se reporta precisión/PPV
+porque exigiría una prevalencia real que no se tiene.
 
-La CNN **no predice el capital** —lo probamos y no pasa el filtro—. Es un
-**instrumento de medición**: detecta la estructura del mercado de forma
-automática y consistente (puerta de entrada al modelo), sostiene el único modelo
-de ranking que sobrevive (supervivencia del canal) y da legibilidad al marco.
-El capital lo mueven el control de calidad de dato y el modelo de volatilidad.
+**Esto no es un backtest.** El gate no toma posiciones: se valida midiendo
+detección. El backtest valida a los modelos de riesgo aguas abajo.
 
-## Estado y reproducibilidad
+## Evidencia
 
-Todo está en el repositorio en formato **Code Ocean** (reproducible): datos con
-inventario y verificación automática (`data/verify_panel.py`), código, resultados
-publicados y documentación. El panel de mercado llega al **2026-09-10** (21
-variables; EUR/USD servido por el BCE tras rechazar las fuentes defectuosas).
+**Ninguna representación domina.** Cada familia de defecto la cubre bien un
+control distinto y varias las ve uno solo. El resultado es una matriz de
+coberturas complementarias con huecos declarados, no un ranking.
+
+**Dónde aporta la capa de IA.** La CNN 1D es el mejor control en las familias
+cuyo defecto es un patrón temporal multivariante sin estadístico cerrado
+evidente, y es el control que más cubre en el escenario de defecto que llega con
+el **dato nuevo** —el frecuente—, aunque ahí lo es dentro de un campo débil.
+Donde existe un control dedicado, la red pierde contra él.
+
+**Resultado negativo que se publica igual.** XGBoost como combinador rinde por
+debajo de la unión de los mismos controles con umbral propio, y llega a diluir
+un control que resuelve su familia de forma exacta. «ML que apoya» sí; «ML que
+sustituye» no.
+
+**Alcance del control de vintage.** Alcanza recall 1,00 cuando el defecto
+reescribe historia ya publicada, y es ciego **por construcción** cuando llega
+con el dato nuevo, porque no hay snapshot con el que comparar. Complementa en el
+eje de la procedencia; no resuelve la calidad por sí solo.
+
+Solo son interpretables las comparaciones a la **misma** tasa de falsas alarmas.
+Las configuraciones de capa que operan a tasas distintas describen puntos de
+operación, y su diferencia de recall no mide valor incremental.
+
+## Los modelos de riesgo que consumen la serie
+
+El backtest se les aplica a ellos, que miden riesgo. Conviene dejar escrito no
+solo que lo superan, sino por qué.
+
+- **VaR FHS-EWMA condicional a volatilidad.** Kupiec p 0,985 (cobertura
+  correcta), Christoffersen p 0,128 (las excepciones no se agrupan), semáforo de
+  Basilea en zona verde con k = 3,0. Supera el backtest **porque condiciona a
+  volatilidad**: un VaR histórico simple sobre la misma serie falla la prueba de
+  independencia (Christoffersen p 0,0011), acumulando sus excepciones en los
+  episodios de estrés, que es cuando el capital tiene que aguantar.
+- **Supervivencia del canal · XGB-AFT.** C-index 0,664 ± 0,007. Supera el
+  backtest **porque la validación es walk-forward purgada con embargo**, que
+  impide que un episodio que rompe tras el corte entrene con su propio futuro.
+- **Detección de canal.** AUC 0,973 ascendente y 0,956 descendente **como
+  clasificador**. Como estrategia de inversión **no** supera el backtest:
+  Deflated Sharpe 0,000 y PBO 0,382, con Sharpe 0,329 frente a 1,004 del
+  buy & hold. Por eso se usa como contexto de régimen y nunca como señal.
+
+## Entregables
+
+- [Excel de resultados](../results/reports/dq_entregables/resultados_dq.xlsx) —
+  métricas y protocolo, cobertura por control y familia, puntos de operación,
+  familias de defecto, evidencia de los modelos aguas abajo, estado de
+  validación y limitaciones.
+- [Resumen en Word](../results/reports/dq_entregables/resumen_dq_estado_del_arte.docx).
+- Figuras en PDF vectorial, listas para Overleaf.
+- `code/run_dq.sh` reproduce la línea completa en la cápsula Code Ocean. Las
+  figuras y los entregables **leen** los JSON publicados por los experimentos,
+  de modo que no pueden divergir de la evidencia.
+
+## Límites
+
+Defectos **sintéticos** escritos por nosotros, promediados con prevalencia
+uniforme entre familias, que no representa la incidencia real. Test de 124
+ventanas que **solapan al 75 %**: no son observaciones independientes y
+cualquier intervalo implícito es optimista. Todo el banco se ha medido sobre
+Brent y cuatro pares: la transferencia a otras asset classes **no** está
+demostrada. Los controles estadísticos son deterministas y no llevan dispersión;
+solo la CNN y el combinador promedian semillas.
+
+Todos los resultados del gate son **provisionales** y están sujetos a auditoría
+cruzada. Un resultado sin auditoría superada no puede figurar como afirmación
+cerrada en el paper.
+
+## Disclaimer de capital
+
+No se reporta ninguna cifra de capital. El capital por modelo interno sería
+`k · VaR` con `k` del semáforo de Basilea, pero una traducción honesta exigiría
+cartera real con posiciones y notional, correlaciones entre factores,
+diversificación entre mesas, riesgo específico y de default, P&L attribution por
+mesa, NMRF y suelo del método estándar. Quedan retiradas las cifras previas de
+«capital evitado» y «capital por dato» derivadas de carteras equiponderadas,
+nominales normalizados o prevalencias uniformes: no representan una estimación
+real y no deben citarse.
