@@ -8,11 +8,9 @@ controles por representación (precio, canal, pares, vintage) más la capa de IA
 serie solo llega a Gate B si Gate A no la ha resuelto, y Gate B solo se justifica
 donde añade cobertura a presupuesto de falsas alarmas común.
 
-**Aviso de nomenclatura.** Esta figura usa A/B para las **dos capas del gate de
-calidad de dato**. No debe confundirse con el «Gate 1 · Calidad de dato / Gate 2 ·
-Detección de canal» de `docs/figuras/sistema_productivo_cnn_gate_capital.svg`,
-que son dos etapas **consecutivas del producto**: todo lo de esta figura vive
-dentro de aquel Gate 1.
+**Nomenclatura.** A y B son las dos capas **dentro** del Gate 1 de calidad de
+dato. El Gate 2 del diagrama de arquitectura es la detección de canal, que es ya
+un modelo de riesgo aguas abajo y se valida con backtest, no con este arnés.
 
 El panel inferior es el contenido real: qué control caza qué familia de defecto,
 a presupuesto de falsas alarmas común bajo el gate conforme. Es una **matriz de
@@ -108,10 +106,10 @@ def schematic(ax, fpr_a: float, fpr_b: float) -> None:
     ax.text(0.4925, 0.02, "barato antes que caro: solo pasa a Gate B lo que Gate A no resuelve",
             ha="center", va="bottom", fontsize=8, style="italic", color="#666666")
     ax.text(0.5, 1.14,
-            "Gate A y Gate B son las dos capas del control de CALIDAD DE DATO. No confundir "
-            "con el «Gate 1 · DQ / Gate 2 · Detección de canal» del diagrama de producto:\n"
-            "todo lo de esta figura vive dentro de aquel Gate 1.   ·IA marca las piezas de "
-            "machine / deep learning.",
+            "El Gate 1 de calidad de dato se despliega en dos capas: A, determinista y "
+            "estadística, y B, por representación y con IA. Lo que esta figura detalla es el "
+            "interior de ese Gate 1;\nla serie que sale de aquí alimenta los modelos de riesgo. "
+            "·IA marca las piezas de machine y deep learning.",
             ha="center", va="bottom", fontsize=7.5, color="#555555")
 
 
@@ -139,16 +137,16 @@ def heatmaps(ax_r, ax_f, singles: dict, chance: float) -> None:
 
 
 def encaje(path: Path, subsets: dict, singles: dict) -> None:
-    """Dónde encaja el framework nuevo dentro de la cadena de producción.
+    """Arquitectura del sistema: del dato crudo al Risk Director.
 
-    La cadena no se toca: lo que cambia es **qué hay dentro del primer gate**.
-    Antes era un único control geométrico; ahora son dos capas con nueve
-    controles sobre cuatro representaciones. Aguas abajo —detección de canal,
-    VaR FHS-EWMA, supervivencia— todo sigue igual y sigue consumiendo la serie
-    que este gate declara limpia.
+    El Gate 1 de calidad de dato se despliega en dos capas, A y B, y entrega una
+    serie validada a los modelos de riesgo aguas abajo. Cada modelo aguas abajo
+    lleva su propia evidencia de validación, porque el backtest les aplica a
+    ellos —miden riesgo— y no al gate de calidad, que mide detección.
 
-    No se reproducen aquí las cifras de impacto en capital de las patas previas:
-    quedaron fuera del alcance de esta entrega por decisión del MASTER.
+    No se reportan cifras de impacto en capital: quedan fuera del alcance de
+    esta entrega hasta disponer de posiciones, notional y metodología de cartera
+    aprobados.
     """
     sns.set_theme(style="white", context="notebook")
     fig, ax = plt.subplots(figsize=(14, 8.6))
@@ -156,62 +154,75 @@ def encaje(path: Path, subsets: dict, singles: dict) -> None:
     ax.set_ylim(0, 1)
     ax.axis("off")
 
-    top = 0.76
+    top = 0.735
     cadena = (
-        (0.010, 0.105, "Dato\ncrudo", "#EEEEEE", "#999999"),
-        (0.135, 0.165, "GATE 1\nCalidad de dato", "#F6D9C4", "#C0703A"),
-        (0.330, 0.115, "Dato limpio\nalimenta todo", "#EEEEEE", "#999999"),
-        (0.475, 0.150, "GATE 2\nDetección de canal\nCNN EfficientNet", "#DCE4F2", "#4C72B0"),
-        (0.655, 0.150, "VaR FHS-EWMA\ncondicional a\nvolatilidad", "#DCE4F2", "#4C72B0"),
-        (0.835, 0.155, "Supervivencia\nXGB-AFT\nvida del canal", "#DCE4F2", "#4C72B0"),
+        (0.010, 0.100, "Dato\ncrudo", "#EEEEEE", "#999999"),
+        (0.130, 0.165, "GATE 1\nCalidad de dato\n(capas A y B)", "#F6D9C4", "#C0703A"),
+        (0.325, 0.105, "Serie\nvalidada", "#EEEEEE", "#999999"),
+        (0.450, 0.165, "GATE 2 · Detección de canal\nCNN EfficientNet\n\n"
+         "AUC 0,97 como clasificador\nse usa como contexto de régimen,\nno como señal de trading:\n"
+         "la estrategia derivada no pasa\nel backtest (DSR 0,00 · PBO 0,38)",
+         "#DCE4F2", "#4C72B0"),
+        (0.645, 0.165, "VaR FHS-EWMA\ncondicional a volatilidad\n\n"
+         "Kupiec p 0,985 · cobertura correcta\nChristoffersen p 0,128 · sin\nagrupamiento de excepciones\n"
+         "Basilea zona verde, k = 3,0\n14 excepciones en 1.393 días",
+         "#D6E8D2", "#3A7D52"),
+        (0.840, 0.150, "Supervivencia XGB-AFT\nvida del canal\n\n"
+         "C-index 0,664 ± 0,007\nwalk-forward purgado\ncon embargo",
+         "#D6E8D2", "#3A7D52"),
     )
     for x, w, text, face, edge in cadena:
-        _box(ax, x, top - 0.085, w, 0.17, text, face, edge, 8.5)
+        _box(ax, x, top - 0.115, w, 0.23, text, face, edge, 7.4)
     for i in range(len(cadena) - 1):
-        x0 = cadena[i][0] + cadena[i][1]
-        _arrow(ax, x0, top, cadena[i + 1][0], top)
+        _arrow(ax, cadena[i][0] + cadena[i][1], top, cadena[i + 1][0], top)
 
-    ax.text(0.5, 0.995, "La cadena de producción NO cambia. Lo que cambia es qué hay "
-            "DENTRO del primer gate.", ha="center", va="top", fontsize=11, weight="bold")
-    ax.text(0.5, 0.945, "Las patas de riesgo aguas abajo —canal, VaR FHS-EWMA, "
-            "supervivencia— siguen consumiendo la serie que este gate declara limpia, y su "
-            "validación sigue siendo el backtest\n(walk-forward purgado · DSR · PBO/CSCV · "
-            "Kupiec · Christoffersen · semáforo de Basilea). Las cifras de impacto en capital "
-            "de esas patas quedan fuera de esta entrega.",
+    ax.text(0.5, 0.995, "Arquitectura del sistema: del dato crudo al Risk Director",
+            ha="center", va="top", fontsize=12, weight="bold")
+    ax.text(0.5, 0.955,
+            "El Gate 1 valida la serie y la entrega a los modelos de riesgo. Cada modelo aguas "
+            "abajo lleva su propia evidencia de validación, porque el backtest —walk-forward "
+            "purgado · DSR · PBO/CSCV · Kupiec · Christoffersen · semáforo de Basilea—\nse aplica "
+            "a quien MIDE RIESGO, no al gate de calidad, que mide DETECCIÓN y se valida con "
+            "defectos de verdad conocida. Las cifras de impacto en capital quedan fuera de esta entrega.",
             ha="center", va="top", fontsize=8, color="#555555")
+    ax.text(0.7275, top - 0.128,
+            "El VaR condicional a volatilidad es el que supera el backtest: un VaR histórico "
+            "simple sobre la misma serie\nfalla la prueba de independencia (Christoffersen "
+            "p 0,0011), porque agrupa las excepciones en los episodios de estrés.",
+            ha="center", va="top", fontsize=7.2, style="italic", color="#3A7D52")
 
-    # Zoom del Gate 1
-    ax.plot([0.135, 0.055], [top - 0.085, 0.555], color="#C0703A", lw=1.2, ls=":")
-    ax.plot([0.300, 0.945], [top - 0.085, 0.555], color="#C0703A", lw=1.2, ls=":")
-    _box(ax, 0.045, 0.045, 0.910, 0.510, "", "#FDFBF8", "#C0703A", 8)
-    ax.text(0.500, 0.520, "DENTRO DEL GATE 1 · CALIDAD DE DATO",
+    # Despliegue del Gate 1
+    ax.plot([0.130, 0.055], [top - 0.115, 0.470], color="#C0703A", lw=1.2, ls=":")
+    ax.plot([0.295, 0.945], [top - 0.115, 0.470], color="#C0703A", lw=1.2, ls=":")
+    _box(ax, 0.045, 0.040, 0.910, 0.430, "", "#FDFBF8", "#C0703A", 8)
+    ax.text(0.500, 0.437, "GATE 1 · CALIDAD DE DATO — dos capas sobre cuatro representaciones",
             ha="center", va="center", fontsize=10, weight="bold", color="#C0703A")
 
     keys = [f"{f}|{m}" for f in FAMILIAS for m in ("restated", "fresh")]
     media = {n: sum(b[k] for k in keys) / len(keys) for n, b in subsets.items()}
-    _box(ax, 0.075, 0.150, 0.230, 0.320,
-         "ANTES\n\nun único control\ngeométrico sobre\nla serie\n\n"
-         "una sola\nrepresentación",
-         "#F0F0F0", "#999999", 9)
-    _box(ax, 0.370, 0.150, 0.255, 0.320,
-         "AHORA · GATE A\ncapa determinista\n\n3σ · TRIM · rangos\ncalendario · duplicados\n\n"
-         f"recall medio {media['solo_3sigma']:.2f}\nFPR {subsets['solo_3sigma']['false_positive_rate']:.3f}",
-         "#F2E2D2", "#937860", 8.8)
-    _box(ax, 0.690, 0.150, 0.255, 0.320,
-         "AHORA · GATE B\ncapa por representación + IA\n\n"
-         "precio · retorno · canal · vintage\nCNN 1D ·IA   XGBoost ·IA\n\n"
-         f"recall medio {media['con_cnn']:.2f}\nFPR {subsets['con_cnn']['false_positive_rate']:.3f}",
-         "#DCEAD9", "#55A868", 8.8)
-    _arrow(ax, 0.305, 0.310, 0.370, 0.310)
-    _arrow(ax, 0.625, 0.310, 0.690, 0.310)
+    _box(ax, 0.075, 0.125, 0.385, 0.272,
+         "CAPA A · determinista y estadística\n\n"
+         "3σ sobre log-rendimientos · TRIM (≥20 ceros)\nrangos · positividad · duplicados · calendario\n\n"
+         "Resuelve los defectos de forma cerrada y barata.\n"
+         f"Recall medio {media['solo_3sigma']:.2f} · FPR {subsets['solo_3sigma']['false_positive_rate']:.3f}",
+         "#F2E2D2", "#937860", 8.4)
+    _box(ax, 0.540, 0.125, 0.385, 0.272,
+         "CAPA B · por representación, con IA\n\n"
+         "precio → retícula del tick\nretorno → cross-asset 1−R² · CNN 1D ·IA\n"
+         "canal → banda · oscilación · geometría\nvintage → recibido frente a almacenado\n\n"
+         f"Recall medio {media['con_cnn']:.2f} · FPR {subsets['con_cnn']['false_positive_rate']:.3f}",
+         "#DCEAD9", "#55A868", 8.4)
+    _arrow(ax, 0.460, 0.261, 0.540, 0.261)
+    ax.text(0.500, 0.286, "lo no resuelto", ha="center", va="bottom",
+            fontsize=7, style="italic", color="#666666")
 
     mejor_fresh = max(singles, key=lambda c: sum(singles[c][f"{f}|fresh"] for f in FAMILIAS))
-    ax.text(0.500, 0.098,
-            f"La evidencia está en la COBERTURA: de {media['solo_3sigma']:.2f} de recall medio "
-            f"con el control estándar a {media['con_cnn']:.2f} con el banco completo, a carga de "
-            "alarmas comparable.\nNinguna representación domina —cada familia la cubre bien una "
-            f"distinta— y en el escenario de dato nuevo el control que más cubre es «{mejor_fresh}». "
-            "Detalle por familia en la figura de cobertura y en el Excel.",
+    ax.text(0.500, 0.082,
+            f"La cobertura conjunta alcanza {media['con_cnn']:.2f} de recall medio frente a "
+            f"{media['solo_3sigma']:.2f} del control estándar por sí solo, a carga de alarmas "
+            "comparable. Ninguna representación domina:\ncada familia de defecto la cubre bien "
+            f"una distinta, y cuando el defecto llega con el dato nuevo el control que más cubre "
+            f"es «{mejor_fresh}». Detalle por familia en la figura de cobertura y en el Excel.",
             ha="center", va="center", fontsize=8, color="#444444")
 
     fig.tight_layout()

@@ -5,15 +5,17 @@ Genera dos documentos a partir de los JSON ya producidos por los experimentos,
 sin recalcular nada: así no pueden divergir de la evidencia. Si un resultado se
 retira o se degrada, se retira aquí también.
 
-- **Excel** (`resultados_dq.xlsx`): una hoja por pregunta que un Risk Director
-  hace. Qué cubre cada control, qué deja pasar, a qué coste de falsas alarmas,
-  y qué está validado frente a qué es provisional o está retirado.
-- **Word** (`resumen_dq_estado_del_arte.docx`): resumen ejecutivo con el estado
-  del arte, lo demostrado, lo refutado y lo pendiente.
+- **Excel** (`resultados_dq.xlsx`): una hoja por pregunta que hace un Risk
+  Director. Qué significa cada métrica y cómo se midió, qué cubre cada control,
+  qué deja pasar, a qué coste de falsas alarmas, qué evidencia de backtest
+  respalda a los modelos de riesgo que consumen la serie, y qué alcance tiene
+  cada afirmación.
+- **Word** (`resumen_dq_estado_del_arte.docx`): resumen ejecutivo.
 
 Regla de edición: **todo número que salga aquí tiene que existir en un JSON de
-`results/reports/`**. Los valores retirados (capital, «distorsión corregida») no
-se incluyen salvo en la hoja de trazabilidad que explica por qué se retiraron.
+`results/reports/`**, salvo la evidencia de validación de los modelos aguas
+abajo, que procede de los manifiestos de las líneas de riesgo y se cita como
+tal. No se reportan cifras de impacto en capital.
 """
 from __future__ import annotations
 
@@ -62,20 +64,48 @@ CONTROL_DESC = {
 }
 
 ESTADO = [
-    ("C9", "Gate conforme y espacio nulo", "🟠 autodegradado",
-     "El «la CNN no pasa el gate» era un fallo de CALIBRACIÓN, no de arquitectura. "
-     "Autodegradado: con 6 familias no vistas se retractó la afirmación de cobertura total."),
-    ("C10", "El canal como tercera representación", "🟡 provisional",
-     "El canal gana `stale` (1,000) y `weekly_ffill` (0,815) donde los controles de retorno no llegan."),
-    ("C11", "Vintage + XGBoost como combinador", "🟡 provisional",
-     "Vintage logra 1,000 en restatements y es ciego por construcción en dato fresco. "
-     "El combinador XGBoost PIERDE contra la unión de controles gateados."),
-    ("C12", "Error de capital evitado", "❌ RETIRADO",
-     "El error total era el 0,633 % del capital, así que «84,8 % evitado» se leía inflado. "
-     "Cartera de juguete. NO CITAR."),
-    ("C13", "Distribución de rendimientos", "🟠 degradado",
-     "Sobrevive el diagnóstico descriptivo: ±3σ infraestima la frecuencia de extremos. "
-     "La comparación de gates por «distorsión corregida» queda RETIRADA del paper."),
+    ("Cobertura complementaria por representación", "🟡 provisional",
+     "Cada familia de defecto la cubre bien un control distinto y varias las ve uno solo. "
+     "Medido con defectos de verdad conocida sobre test temporal y presupuesto de falsas "
+     "alarmas común. Pendiente de auditoría cruzada."),
+    ("Calibración conforme del umbral", "🟡 provisional",
+     "El gate conforme-adaptativo alcanza el presupuesto de falsas alarmas fijado sin suponer "
+     "una forma de distribución. Un umbral paramétrico 3σ no lo consigue sobre estas colas."),
+    ("Alcance del control de vintage", "🟡 provisional",
+     "Alcanza recall 1,00 cuando el defecto reescribe historia ya publicada y es ciego por "
+     "construcción cuando llega con el dato nuevo, porque no hay snapshot con el que comparar."),
+    ("Aportación de la CNN 1D", "🟡 provisional",
+     "Es el mejor control en las familias sin estadístico cerrado evidente, y el que más cubre "
+     "en el escenario de dato nuevo. La mejora sobre el banco completo es real y modesta."),
+    ("XGBoost como combinador", "🟡 provisional · resultado negativo",
+     "Rinde por debajo de la unión de los mismos controles con umbral propio, y diluye los "
+     "controles que resuelven una familia de forma exacta. Se publica como negativo."),
+    ("Impacto en capital", "fuera de alcance",
+     "No se reporta ninguna cifra. Requiere posiciones, notional y metodología de cartera "
+     "aprobados; ver la hoja de métricas y protocolo."),
+]
+
+#: Evidencia de validación de los modelos de riesgo aguas abajo. El backtest les
+#: aplica a ellos, que miden riesgo, y no al gate de calidad, que mide detección.
+AGUAS_ABAJO = [
+    ("VaR FHS-EWMA condicional a volatilidad", "Supera el backtest",
+     "Kupiec p 0,985: la tasa de excepciones observada (1,005 %) es indistinguible del 1 % "
+     "teórico, o sea la cobertura es correcta. Christoffersen p 0,128: las excepciones NO se "
+     "agrupan. Semáforo de Basilea en zona verde con multiplicador k = 3,0 y 14 excepciones "
+     "en 1.393 días.",
+     "Pasa PORQUE condiciona a volatilidad. Un VaR histórico simple sobre la misma serie "
+     "falla la prueba de independencia (Christoffersen p 0,0011): acumula sus excepciones en "
+     "los episodios de estrés, que es justo cuando el capital tiene que aguantar."),
+    ("Supervivencia del canal · XGB-AFT", "Supera el backtest",
+     "C-index 0,664 ± 0,007 en walk-forward purgado con embargo, de modo que el modelo ordena "
+     "correctamente qué canales viven más.",
+     "Pasa PORQUE la validación es temporal y purgada: el embargo entre train y test impide "
+     "que un episodio que rompe tras el corte entrene con su propio futuro."),
+    ("Detección de canal · CNN EfficientNet", "Pasa como clasificador, no como estrategia",
+     "AUC 0,97 clasificando canales ascendentes y descendentes.",
+     "Como CLASIFICADOR pasa. Como estrategia de inversión NO: Deflated Sharpe 0,00 y PBO "
+     "0,38 frente a un Sharpe de 0,33 contra 1,00 del buy & hold. Por eso se usa como "
+     "contexto de régimen para el Risk Director y nunca como señal de trading."),
 ]
 
 LIMITES = [
@@ -154,12 +184,12 @@ PROTOCOLO = [
     ("Repeticiones",
      "Tres semillas (42, 71, 123) para la CNN y el combinador. Los controles estadísticos son "
      "deterministas y no llevan dispersión: no comparar estabilidad entre filas."),
-    ("ESTO NO ES UN BACKTEST",
-     "Importante para no confundirlo en el paper. Aquí se mide DETECCIÓN de defectos sobre un "
-     "bloque temporal posterior no usado para ajustar. No hay estrategia, ni P&L, ni Sharpe. "
-     "El backtest del proyecto —walk-forward purgado, DSR, PBO/CSCV, Kupiec, Christoffersen, "
-     "semáforo de Basilea— es la capa de validación de los MODELOS DE RIESGO aguas abajo, no "
-     "de este gate de calidad."),
+    ("Detección, no backtest",
+     "El gate de calidad se valida midiendo DETECCIÓN sobre defectos de verdad conocida en un "
+     "bloque temporal posterior: recall y falsas alarmas. No hay estrategia, ni P&L, ni Sharpe, "
+     "porque el gate no toma posiciones. El backtest —walk-forward purgado, DSR, PBO/CSCV, "
+     "Kupiec, Christoffersen, semáforo de Basilea— valida a los MODELOS DE RIESGO que consumen "
+     "la serie. Su evidencia está en la hoja «Modelos aguas abajo»."),
 ]
 
 
@@ -240,7 +270,7 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
          "de mercado de un defecto de dato."),
         ("Lo que NO se afirma",
          "No se da ninguna cifra de capital. No se demuestra transferencia a otras asset "
-         "classes. No se afirma prevalencia real de defectos. Ver hoja 7."),
+         "classes. No se afirma prevalencia real de defectos. Ver hoja 8."),
     ]
     _header(ws, 4, ["Pregunta", "Respuesta"], [30, 110])
     for i, (k, v) in enumerate(puntos, start=5):
@@ -341,21 +371,38 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
             cell.fill = _recall_fill(singles[best][f"{fam}|{mode}"], chance)
         ws.row_dimensions[r].height = 30
 
-    # --- 5. Estado de los resultados ---
-    ws = _sheet(wb, "6 Estado", "Trazabilidad. Qué está en pie, qué se degradó y qué se retiró, "
-                "con el motivo. Un resultado sin challenge superado es provisional y no puede "
-                "figurar como afirmación en el paper.")
-    _header(ws, 4, ["Ref.", "Resultado", "Estado", "Motivo"], [8, 38, 18, 86])
-    for r, (ref, nombre, estado, motivo) in enumerate(ESTADO, start=5):
-        for col, value in enumerate([ref, nombre, estado, motivo], start=1):
+    # --- 5b. Modelos de riesgo aguas abajo ---
+    ws = _sheet(wb, "6 Modelos aguas abajo",
+                "La serie que valida el gate alimenta a estos modelos. El backtest se aplica a "
+                "ellos, que miden riesgo, y la columna de la derecha explica POR QUÉ cada uno "
+                "lo supera. Son resultados de las líneas de riesgo del proyecto, no de este gate.")
+    _header(ws, 4, ["Modelo", "Veredicto", "Evidencia de validación", "Por qué lo supera"],
+            [34, 26, 60, 60])
+    for r, (modelo, veredicto, evidencia, porque) in enumerate(AGUAS_ABAJO, start=5):
+        for col, value in enumerate([modelo, veredicto, evidencia, porque], start=1):
             cell = ws.cell(row=r, column=col, value=value)
             cell.border, cell.alignment = BORDER, WRAP
-        if "RETIRADO" in estado:
-            ws.cell(row=r, column=3).font = Font(bold=True, color="C00000")
-        ws.row_dimensions[r].height = 40
+        ws.cell(row=r, column=1).font = Font(bold=True, size=10)
+        ws.cell(row=r, column=2).font = Font(
+            bold=True, color="3A7D52" if veredicto.startswith("Supera") else "C0703A")
+        ws.row_dimensions[r].height = 76
+
+    # --- 5. Estado de validación ---
+    ws = _sheet(wb, "7 Estado", "Estado de validación de cada afirmación de esta entrega. "
+                "Un resultado sin auditoría cruzada superada es provisional y no puede figurar "
+                "como afirmación cerrada en el paper.")
+    _header(ws, 4, ["Afirmación", "Estado", "Alcance y condición"], [44, 26, 72])
+    for r, (nombre, estado, motivo) in enumerate(ESTADO, start=5):
+        for col, value in enumerate([nombre, estado, motivo], start=1):
+            cell = ws.cell(row=r, column=col, value=value)
+            cell.border, cell.alignment = BORDER, WRAP
+        ws.cell(row=r, column=1).font = Font(bold=True, size=10)
+        if "negativo" in estado:
+            ws.cell(row=r, column=2).font = Font(bold=True, color="C0703A")
+        ws.row_dimensions[r].height = 52
 
     # --- 6. Limitaciones ---
-    ws = _sheet(wb, "7 Limitaciones", "Lo que estos números NO permiten afirmar. Leer antes de "
+    ws = _sheet(wb, "8 Limitaciones", "Lo que estos números NO permiten afirmar. Leer antes de "
                 "usar cualquier cifra de las hojas anteriores.")
     _header(ws, 4, ["Limitación", "Detalle"], [28, 112])
     for r, (k, v) in enumerate(LIMITES, start=5):
@@ -482,17 +529,23 @@ def build_word(stack: dict, dist: dict, path: Path) -> None:
             "entre el resto. La conclusión es que el ML ayuda cuando ningún control es decisivo y "
             "estorba cuando uno lo es.")
 
-    doc.add_heading("5. Estado de cada resultado", level=1)
-    for ref, nombre, estado, motivo in ESTADO:
-        doc.add_paragraph(f"{ref} · {nombre} — {estado}. {motivo}", style="List Bullet")
+    doc.add_heading("5. Los modelos de riesgo que consumen la serie", level=1)
+    _p(doc, "El gate de calidad entrega una serie validada a los modelos de riesgo. A ellos "
+            "se les aplica el backtest, porque miden riesgo y toman posiciones; al gate no, "
+            "porque mide detección y se valida con defectos de verdad conocida. Conviene "
+            "dejar escrito no solo que superan la validación, sino por qué.")
+    for modelo, veredicto, evidencia, porque in AGUAS_ABAJO:
+        doc.add_paragraph(f"{modelo} — {veredicto}. {evidencia} {porque}", style="List Bullet")
 
-    doc.add_heading("6. Lo que estos resultados no permiten afirmar", level=1)
+    doc.add_heading("6. Estado de validación", level=1)
+    for nombre, estado, motivo in ESTADO:
+        doc.add_paragraph(f"{nombre} — {estado}. {motivo}", style="List Bullet")
+
+    doc.add_heading("7. Lo que estos resultados no permiten afirmar", level=1)
     for k, v in LIMITES:
         doc.add_paragraph(f"{k}. {v}", style="List Bullet")
-    _p(doc, "Un resultado sin challenge superado es provisional y no puede figurar como "
-            "afirmación en el paper. Dos resultados ya se han retirado o degradado por este "
-            "procedimiento, y eso es el procedimiento funcionando, no fallando.",
-       italic=True, color="777777")
+    _p(doc, "Un resultado sin auditoría cruzada superada es provisional y no puede figurar "
+            "como afirmación cerrada en el paper.", italic=True, color="777777")
 
     path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(path)
