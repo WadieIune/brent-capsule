@@ -1,0 +1,387 @@
+{
+  "protocol": {
+    "panel": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
+    "brent_survival_series": "/home/wadie/Escritorio/brent-capsule/data/brent_fred_daily.csv",
+    "window_length_sessions": 20,
+    "stride_sessions": 20,
+    "nonoverlapping_windows": true,
+    "train_end": "2018-12-31",
+    "validation_end": "2020-08-20",
+    "test_start": "2020-09-21",
+    "n_windows": {
+      "train": 140,
+      "validation": 19,
+      "test": 71
+    },
+    "threshold_calibration": "clean validation only; frozen for test",
+    "target_fpr": 0.05,
+    "families": [
+      "stale",
+      "reversible_jump",
+      "decoupling",
+      "lag1_calendar",
+      "weekly_ffill",
+      "source_switch",
+      "quantize"
+    ],
+    "xgb_dq_training_families": [
+      "stale",
+      "reversible_jump",
+      "decoupling"
+    ],
+    "xgb_dq_holdout_families": [
+      "lag1_calendar",
+      "weekly_ffill",
+      "source_switch",
+      "quantize"
+    ],
+    "stress_injection_density": "one corruption per 4 non-overlapping test windows",
+    "survival_model": "single XGB-AFT fit on clean channel episodes start_date <= 2018-12-31, admin-censored at cutoff; frozen across corruption scenarios",
+    "survival_train_episodes": 473,
+    "survival_train_events": 472,
+    "risk_proxy": "equal-weight BRENT/COPPER/EUROSTOXX50/GOLD/SP500; rolling 250-session historical VaR 99%; no positions supplied",
+    "limitations": [
+      "only one market panel; synthetic defects",
+      "non-overlap reduces test sample size",
+      "risk view is not regulatory capital or currency P&L",
+      "episode extraction retains the existing production definition and its limitations"
+    ],
+    "device_cnn": "cpu (dq_cnn1d_supervised.fit_cnn)",
+    "device_xgboost_dq": "cpu"
+  },
+  "thresholds_from_clean_validation": {
+    "canal_coherencia_banda": 0.6481657301160968,
+    "canal_ruptura_banda": 2.621239549816872,
+    "canal_cambio_geometria": 0.8427399437738032,
+    "canal_deficit_oscilacion": 0.14285714285714285,
+    "reticula_precio": 0.01,
+    "cnn1d": 0.986785888671875,
+    "cross_asset_1_minus_r2": 0.878720919107131,
+    "3sigma_vol_normalizada": 20.931468963623047,
+    "xgboost_combiner": 0.9966232776641846
+  },
+  "realized_clean_test_fpr": {
+    "canal_coherencia_banda": 0.0,
+    "canal_ruptura_banda": 0.08450704225352113,
+    "canal_cambio_geometria": 0.1267605633802817,
+    "canal_deficit_oscilacion": 0.07042253521126761,
+    "reticula_precio": 0.0,
+    "cnn1d": 0.0,
+    "cross_asset_1_minus_r2": 0.0,
+    "3sigma_vol_normalizada": 0.0,
+    "xgboost_combiner": 0.0
+  },
+  "realized_clean_test_fpr_exact_95ci": {
+    "canal_coherencia_banda": {
+      "alerts": 0,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.0,
+        0.0506294079544037
+      ]
+    },
+    "canal_ruptura_banda": {
+      "alerts": 6,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.03164602813342263,
+        0.17491605582103933
+      ]
+    },
+    "canal_cambio_geometria": {
+      "alerts": 9,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.05963576220001375,
+        0.22704045419493038
+      ]
+    },
+    "canal_deficit_oscilacion": {
+      "alerts": 5,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.023260280930717386,
+        0.15674171725669583
+      ]
+    },
+    "reticula_precio": {
+      "alerts": 0,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.0,
+        0.0506294079544037
+      ]
+    },
+    "cnn1d": {
+      "alerts": 0,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.0,
+        0.0506294079544037
+      ]
+    },
+    "cross_asset_1_minus_r2": {
+      "alerts": 0,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.0,
+        0.0506294079544037
+      ]
+    },
+    "3sigma_vol_normalizada": {
+      "alerts": 0,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.0,
+        0.0506294079544037
+      ]
+    },
+    "xgboost_combiner": {
+      "alerts": 0,
+      "test_windows": 71,
+      "clopper_pearson_95": [
+        0.0,
+        0.0506294079544037
+      ]
+    }
+  },
+  "localized_window_recall_by_family": {
+    "stale": {
+      "canal_coherencia_banda": 0.9577464788732394,
+      "canal_ruptura_banda": 0.0,
+      "canal_cambio_geometria": 0.0,
+      "canal_deficit_oscilacion": 1.0,
+      "reticula_precio": 0.676056338028169,
+      "cnn1d": 0.0,
+      "cross_asset_1_minus_r2": 0.28169014084507044,
+      "3sigma_vol_normalizada": 0.0,
+      "xgboost_combiner": 0.5352112676056338
+    },
+    "reversible_jump": {
+      "canal_coherencia_banda": 0.2112676056338028,
+      "canal_ruptura_banda": 0.704225352112676,
+      "canal_cambio_geometria": 0.4507042253521127,
+      "canal_deficit_oscilacion": 0.07042253521126761,
+      "reticula_precio": 0.0,
+      "cnn1d": 0.08450704225352113,
+      "cross_asset_1_minus_r2": 0.11267605633802817,
+      "3sigma_vol_normalizada": 0.0,
+      "xgboost_combiner": 0.5492957746478874
+    },
+    "decoupling": {
+      "canal_coherencia_banda": 0.2535211267605634,
+      "canal_ruptura_banda": 0.08450704225352113,
+      "canal_cambio_geometria": 0.2112676056338028,
+      "canal_deficit_oscilacion": 0.07042253521126761,
+      "reticula_precio": 0.0,
+      "cnn1d": 0.0,
+      "cross_asset_1_minus_r2": 0.30985915492957744,
+      "3sigma_vol_normalizada": 0.0,
+      "xgboost_combiner": 0.1267605633802817
+    },
+    "lag1_calendar": {
+      "canal_coherencia_banda": 0.23943661971830985,
+      "canal_ruptura_banda": 0.36619718309859156,
+      "canal_cambio_geometria": 0.2535211267605634,
+      "canal_deficit_oscilacion": 0.07042253521126761,
+      "reticula_precio": 0.0,
+      "cnn1d": 0.0,
+      "cross_asset_1_minus_r2": 0.28169014084507044,
+      "3sigma_vol_normalizada": 0.0,
+      "xgboost_combiner": 0.028169014084507043
+    },
+    "weekly_ffill": {
+      "canal_coherencia_banda": 0.2112676056338028,
+      "canal_ruptura_banda": 0.056338028169014086,
+      "canal_cambio_geometria": 0.39436619718309857,
+      "canal_deficit_oscilacion": 1.0,
+      "reticula_precio": 0.014084507042253521,
+      "cnn1d": 0.014084507042253521,
+      "cross_asset_1_minus_r2": 0.15492957746478872,
+      "3sigma_vol_normalizada": 0.0,
+      "xgboost_combiner": 0.09859154929577464
+    },
+    "source_switch": {
+      "canal_coherencia_banda": 0.028169014084507043,
+      "canal_ruptura_banda": 0.07042253521126761,
+      "canal_cambio_geometria": 0.2535211267605634,
+      "canal_deficit_oscilacion": 0.08450704225352113,
+      "reticula_precio": 0.0,
+      "cnn1d": 0.0,
+      "cross_asset_1_minus_r2": 0.028169014084507043,
+      "3sigma_vol_normalizada": 0.0,
+      "xgboost_combiner": 0.11267605633802817
+    },
+    "quantize": {
+      "canal_coherencia_banda": 0.014084507042253521,
+      "canal_ruptura_banda": 0.07042253521126761,
+      "canal_cambio_geometria": 0.11267605633802817,
+      "canal_deficit_oscilacion": 0.18309859154929578,
+      "reticula_precio": 1.0,
+      "cnn1d": 0.0,
+      "cross_asset_1_minus_r2": 0.0,
+      "3sigma_vol_normalizada": 0.0,
+      "xgboost_combiner": 0.0
+    }
+  },
+  "channel_episode_and_frozen_aft_impact": {
+    "stale": {
+      "corrupted_blocks": 18,
+      "clean_test_episodes": 91,
+      "altered_test_episodes": 95,
+      "starts_added": 58,
+      "starts_removed": 54,
+      "matched_start_dates": 37,
+      "matched_mean_abs_delta_p_survive_10": 0.012455099292311643,
+      "matched_mean_signed_delta_p_survive_10": 0.01183874125099798
+    },
+    "reversible_jump": {
+      "corrupted_blocks": 18,
+      "clean_test_episodes": 91,
+      "altered_test_episodes": 83,
+      "starts_added": 27,
+      "starts_removed": 35,
+      "matched_start_dates": 56,
+      "matched_mean_abs_delta_p_survive_10": 0.01147963981114436,
+      "matched_mean_signed_delta_p_survive_10": -0.0034688030263918535
+    },
+    "decoupling": {
+      "corrupted_blocks": 18,
+      "clean_test_episodes": 91,
+      "altered_test_episodes": 88,
+      "starts_added": 47,
+      "starts_removed": 50,
+      "matched_start_dates": 41,
+      "matched_mean_abs_delta_p_survive_10": 0.012036613320365276,
+      "matched_mean_signed_delta_p_survive_10": 0.00751407485826552
+    },
+    "lag1_calendar": {
+      "corrupted_blocks": 18,
+      "clean_test_episodes": 91,
+      "altered_test_episodes": 87,
+      "starts_added": 29,
+      "starts_removed": 33,
+      "matched_start_dates": 58,
+      "matched_mean_abs_delta_p_survive_10": 0.013155662647634972,
+      "matched_mean_signed_delta_p_survive_10": 0.004495124466597025
+    },
+    "weekly_ffill": {
+      "corrupted_blocks": 18,
+      "clean_test_episodes": 91,
+      "altered_test_episodes": 93,
+      "starts_added": 38,
+      "starts_removed": 36,
+      "matched_start_dates": 55,
+      "matched_mean_abs_delta_p_survive_10": 0.025109864970587318,
+      "matched_mean_signed_delta_p_survive_10": 0.013139863077409067
+    },
+    "source_switch": {
+      "corrupted_blocks": 18,
+      "clean_test_episodes": 91,
+      "altered_test_episodes": 91,
+      "starts_added": 55,
+      "starts_removed": 55,
+      "matched_start_dates": 36,
+      "matched_mean_abs_delta_p_survive_10": 0.028685994498708185,
+      "matched_mean_signed_delta_p_survive_10": 0.006060841470261082
+    },
+    "quantize": {
+      "corrupted_blocks": 18,
+      "clean_test_episodes": 91,
+      "altered_test_episodes": 90,
+      "starts_added": 14,
+      "starts_removed": 15,
+      "matched_start_dates": 76,
+      "matched_mean_abs_delta_p_survive_10": 0.004544280489757144,
+      "matched_mean_signed_delta_p_survive_10": 0.0016834986426549027
+    }
+  },
+  "equal_weight_risk_proxy": {
+    "clean": {
+      "test_observations": 1464,
+      "mean_historical_var_99": 0.030746986318783125,
+      "exceptions_on_clean_reference": 16,
+      "exception_rate_on_clean_reference": 0.01092896174863388,
+      "clean_reference_es_99": 0.035664892990734415,
+      "capital_eur": null,
+      "capital_note": "No holdings/notional supplied; report is an equal-weight return-risk proxy, not capital in EUR or regulatory capital."
+    },
+    "stale": {
+      "test_observations": 1464,
+      "mean_historical_var_99": 0.030100503529610963,
+      "exceptions_on_clean_reference": 20,
+      "exception_rate_on_clean_reference": 0.01366120218579235,
+      "clean_reference_es_99": 0.035664892990734415,
+      "capital_eur": null,
+      "capital_note": "No holdings/notional supplied; report is an equal-weight return-risk proxy, not capital in EUR or regulatory capital.",
+      "delta_mean_var_pct": -2.1025891203432567,
+      "corrupted_test_return_vol_pct": -1.5997341025348248
+    },
+    "reversible_jump": {
+      "test_observations": 1464,
+      "mean_historical_var_99": 0.03329510081477092,
+      "exceptions_on_clean_reference": 13,
+      "exception_rate_on_clean_reference": 0.008879781420765027,
+      "clean_reference_es_99": 0.035664892990734415,
+      "capital_eur": null,
+      "capital_note": "No holdings/notional supplied; report is an equal-weight return-risk proxy, not capital in EUR or regulatory capital.",
+      "delta_mean_var_pct": 8.28736341691858,
+      "corrupted_test_return_vol_pct": 8.040508064070877
+    },
+    "decoupling": {
+      "test_observations": 1464,
+      "mean_historical_var_99": 0.03159382289973703,
+      "exceptions_on_clean_reference": 16,
+      "exception_rate_on_clean_reference": 0.01092896174863388,
+      "clean_reference_es_99": 0.035664892990734415,
+      "capital_eur": null,
+      "capital_note": "No holdings/notional supplied; report is an equal-weight return-risk proxy, not capital in EUR or regulatory capital.",
+      "delta_mean_var_pct": 2.7542100294771776,
+      "corrupted_test_return_vol_pct": 4.137923667242646
+    },
+    "lag1_calendar": {
+      "test_observations": 1464,
+      "mean_historical_var_99": 0.03109800253195332,
+      "exceptions_on_clean_reference": 14,
+      "exception_rate_on_clean_reference": 0.009562841530054645,
+      "clean_reference_es_99": 0.035664892990734415,
+      "capital_eur": null,
+      "capital_note": "No holdings/notional supplied; report is an equal-weight return-risk proxy, not capital in EUR or regulatory capital.",
+      "delta_mean_var_pct": 1.1416280266653756,
+      "corrupted_test_return_vol_pct": 3.055825278831989
+    },
+    "weekly_ffill": {
+      "test_observations": 1464,
+      "mean_historical_var_99": 0.03069195383593243,
+      "exceptions_on_clean_reference": 20,
+      "exception_rate_on_clean_reference": 0.01366120218579235,
+      "clean_reference_es_99": 0.035664892990734415,
+      "capital_eur": null,
+      "capital_note": "No holdings/notional supplied; report is an equal-weight return-risk proxy, not capital in EUR or regulatory capital.",
+      "delta_mean_var_pct": -0.17898496548611753,
+      "corrupted_test_return_vol_pct": -0.24120847608335794
+    },
+    "source_switch": {
+      "test_observations": 1464,
+      "mean_historical_var_99": 0.03137983821967835,
+      "exceptions_on_clean_reference": 15,
+      "exception_rate_on_clean_reference": 0.010245901639344262,
+      "clean_reference_es_99": 0.035664892990734415,
+      "capital_eur": null,
+      "capital_note": "No holdings/notional supplied; report is an equal-weight return-risk proxy, not capital in EUR or regulatory capital.",
+      "delta_mean_var_pct": 2.0582566835456673,
+      "corrupted_test_return_vol_pct": 2.901978278036836
+    },
+    "quantize": {
+      "test_observations": 1464,
+      "mean_historical_var_99": 0.030718457627784912,
+      "exceptions_on_clean_reference": 16,
+      "exception_rate_on_clean_reference": 0.01092896174863388,
+      "clean_reference_es_99": 0.035664892990734415,
+      "capital_eur": null,
+      "capital_note": "No holdings/notional supplied; report is an equal-weight return-risk proxy, not capital in EUR or regulatory capital.",
+      "delta_mean_var_pct": -0.0927853243970933,
+      "corrupted_test_return_vol_pct": 0.135621620665745
+    }
+  }
+}

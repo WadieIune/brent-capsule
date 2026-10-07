@@ -221,11 +221,69 @@ VaR/ES, contribuciones y cobertura frente al mismo historial limpio. CNN/XGB
 solo se promueven si añaden cobertura a FPR común; una regla barata ganadora es
 un resultado válido. Diseño detallado y splits: `docs/PROPUESTA_DQ_REPRESENTACION_CANAL.md`.
 
-Existe ya un **piloto de controles de canal** (`dq_channel_representation.py`):
-apunta a cobertura complementaria (stale/weekly-fill por oscilación; quantize
-por rejilla; decoupling/lag por residuo cross-asset), no a dominancia de IA.
-Reserva metodológica antes de citarlo como confirmatorio: solo 124 ventanas de
-test, umbral estimado sobre el mismo test limpio, proxies de regresión por
-ventana (sin re-ejecutar todavía episodios y supervivencia XGB-AFT) y no hay
-XGBoost DQ. Rehacer calibración en validación limpia independiente, medir FPR
-OOS e impacto en duración/estado del canal y luego comparar CNN/XGBoost.
+El **piloto exploratorio** (`dq_channel_representation.py`) tenía 124 ventanas
+solapadas, calibración sobre el test y proxies de canal. La primera corrida
+confirmatoria inicial ya cierra esos puntos: 71 ventanas disjuntas OOS desde
+2020-09-21, umbrales congelados de 19 ventanas limpias de validación, CNN1D y
+XGBoost DQ, extracción completa de episodios y XGB-AFT congelado, y VaR
+equiponderado como proxy de riesgo. Código/resultados en
+`code/applications/experiments/dq_channel_confirmatory.py` y
+`results/reports/dq_channel_confirmatory/summary.json`; lectura en
+`docs/hallazgos/2026-10-07-A-dq-canal-confirmatorio.md`.
+
+No es una victoria de IA: el FPR test de CNN/XGBoost es 0/71, pero hay solo 19
+observaciones limpias para calibrar; controles de canal superan 5% (ruptura
+8.45%, geometría 12.68%, oscilación 7.04%), y CNN/XGBoost tienen recall débil
+fuera de familias concretas. Sí se observa que corrupciones pueden crear/quitar
+episodios y mover el VaR proxy (−2.10% a +8.29%), sin traducirse a capital EUR.
+Próxima condición para cerrar: intervalos de incertidumbre, validación más
+amplia y challenge de B; ampliar a activos/curvas antes de afirmar robustez.
+
+### Pila de 4 representaciones + XGBoost combinador — 2026-10-07 (🟡 pendiente de challenge B)
+
+Cerradas las dos piezas que quedaban abiertas. Detalle y límites:
+`docs/hallazgos/2026-10-07-A-dq-pila-cuatro-representaciones.md`.
+
+**Vintage cierra `source_switch`, pero solo con restatement.** Comparando serie
+recibida contra snapshot almacenado, vintage logra **1,000** en seis de las siete
+familias cuando el defecto reescribe historia publicada — incluido
+`source_switch`, que era el hueco abierto. Cuando el defecto solo toca el dato
+**fresco** posterior al snapshot, vintage queda **exactamente en el azar en las
+siete**: es ciego por construcción, no por falta de potencia. Es el control más
+potente del banco dentro de su subespacio y no cubre nada fuera de él.
+
+**XGBoost como combinador PIERDE contra la unión de controles gateados.** Con la
+CNN entrenada en train, el combinador en validación y evaluación en test: unión
+de los 9 controles con umbral conforme propio **0,606** de recall medio frente a
+**0,539** del combinador, y la unión casi iguala al oráculo inalcanzable de
+«mejor control por familia» (0,630). Salvedad declarada: la unión gasta 1,6× el
+presupuesto de alarmas (FPR 0,083 vs 0,051) y no se consigue bajarla al 5 % por
+el suelo de α del ACI y las 236 ventanas de calibración.
+
+Dos celdas son concluyentes al margen del presupuesto: en `quantize|restated` el
+control de retícula da **1,000** y el combinador **0,462**, con leave-one-family-out
+en **0,048** = azar — **el modelo aprendido destruye un control analíticamente
+perfecto**, aun siendo la retícula su feature más importante. Y en
+`source_switch|fresh` el combinador da **0,435**, el mejor de todo, con el
+presupuesto más apretado de los tres.
+
+Regla con mecanismo: **el combinador ayuda cuando ningún control es decisivo y
+estorba cuando uno lo es.** Arquitectura que se deriva: **unión de controles
+gateados como esqueleto + combinador como canal adicional** para las familias
+donde todos los controles son débiles. Eso es literalmente «ML que apoya a los
+controles estadísticos», no que los reemplaza.
+
+**Capital: ilustración vanilla, no medición.** A petición del MASTER, sin cifras
+del panel ni porcentajes: serie sintética, un factor, VaR 99 % paramétrico, base
+100, 400 réplicas (`dq_capital_illustration.py`). VaR limpio 2,32. El único que
+**infraestima** es la cotización repetida (−0,10, signo consistente al 100 %):
+quita movimiento sin dejar atípicos, así que un control de outliers no lo ve. Y
+tres avisos contraintuitivos: la fuente semanal propagada **no sesga** el VaR a un
+día (signo consistente solo al 51 % = azar; reagrupa conservando varianza, aunque
+destruye la autocorrelación); **redondear no quita movimiento** —la rejilla gruesa
+es el mayor sesgo de la tabla, +2,30, por sobreestimación—; y el **signo del sesgo
+no se deduce de la etiqueta del defecto**, así que no se puede ajustar capital por
+tipo de defecto: hay que detectar, sanear y recalcular.
+
+Pendiente para sostener el objetivo del paper: enlazar con `dq_capital_impact`
+(C7) para medir error de capital evitado, no solo detección.

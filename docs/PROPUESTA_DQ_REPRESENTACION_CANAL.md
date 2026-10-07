@@ -4,7 +4,7 @@
 - **Objetivo del paper:** mejorar la confianza y exactitud de series históricas
   de precios con controles DQ complementarios. No se busca demostrar alpha,
   rentabilidad ni que el canal prediga retornos.
-- **Estado:** protocolo de investigación; aún no hay validación de este gate.
+- **Estado:** primera corrida confirmatoria inicial completada; no se promueve a producción ni se afirma superioridad de IA.
 
 ## Tesis
 
@@ -32,7 +32,7 @@ Si el canal solo amplifica la misma señal de 3σ o residuo cross-asset, o la
 mejora desaparece con FPR emparejada, no se reclama valor incremental de deep
 learning.
 
-## Estado piloto visible en el workspace
+## Evidencia exploratoria inicial
 
 Hay un prototipo exploratorio en `code/applications/experiments/dq_channel_representation.py`
 y un reporte en `results/reports/dq_channel_representation/summary.json`. A FPR
@@ -45,13 +45,36 @@ complementarios: coherencia de posición-en-banda da recall 1,00 en `stale` y
 Esto apoya investigar una matriz de representaciones complementarias, no la
 afirmación de que una red o el canal dominen.
 
-**No es todavía resultado confirmatorio ni prueba de supervivencia**: no se ve
-XGBoost DQ ni se usa la predicción XGB-AFT; las métricas del canal son proxies de
-regresión por ventana (no la secuencia online completa de `extract_episodes`),
-y el helper `matched_fpr_recall` estima el umbral sobre los mismos scores limpios
-de test que usa para puntuar. Para cerrar el gate hay que fijar umbrales en
-validación limpia independiente, reportar FPR OOS, intervalos por bloques y
-recalcular explícitamente episodio, régimen y supervivencia bajo cada inyección.
+Ese piloto no es evidencia confirmatoria: tenía ventanas solapadas y umbrales
+estimados sobre el mismo test limpio. Sus proxies de canal tampoco recalculaban
+episodios/supervivencia.
+
+## Corrida confirmatoria inicial
+
+El protocolo revisado y el resultado están en
+`docs/hallazgos/2026-10-07-A-dq-canal-confirmatorio.md`; código en
+`code/applications/experiments/dq_channel_confirmatory.py` y números completos
+en `results/reports/dq_channel_confirmatory/summary.json`. Se usan ventanas
+disjuntas 20/20, umbrales calibrados en validación limpia independiente, CNN1D,
+XGBoost DQ (tres familias conocidas y cuatro holdout), recálculo de episodios
+Brent y predicciones de un XGB-AFT limpio congelado, más VaR histórico 99% como
+proxy equiponderado de cinco activos.
+
+La validación solo contiene 19 ventanas limpias y test 71: FPR test es 0/71
+para CNN y XGBoost, pero excede el 5% nominal en controles de ruptura de banda
+(8.45%), geometría (12.68%) y oscilación (7.04%). La CNN no detecta la mayoría
+de familias y XGBoost apenas transfiere a las familias reservadas; los
+controles específicos ganan en familias concretas. El XGB-AFT encuentra cambios
+de episodios (p. ej. cambio de fuente: +55/−55 inicios) y el VaR proxy oscila
+entre −2.10% y +8.29% según defecto, pero no es impacto en capital en euros.
+Los IC Clopper–Pearson 95% están en el JSON; para 0/71, el límite superior es
+5.06%, así que tampoco se descarta que la FPR real supere el 5% nominal.
+
+**Conclusión provisional:** queda demostrado que defectos sintéticos pueden
+alterar episodios del canal y riesgo estimado; no que CNN/XGBoost sean mejores
+detectores. La validación pequeña, intervalos amplios, un único panel y una
+sola cartera proxy impiden una conclusión confirmatoria fuerte. Ver el
+hallazgo para las cifras completas y límites.
 
 ## Representaciones y controles
 

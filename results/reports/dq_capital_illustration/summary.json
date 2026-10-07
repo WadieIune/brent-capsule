@@ -1,0 +1,63 @@
+{
+  "aviso": "Ilustración didáctica con serie sintética y un solo factor de riesgo. NO es una medición del impacto real y no debe citarse como resultado del paper.",
+  "fuera_del_alcance": [
+    "múltiples factores y su matriz de correlaciones",
+    "diversificación entre mesas",
+    "riesgo específico y de default",
+    "multiplicadores supervisores y backtesting/PLA por mesa",
+    "NMRF y suelo del método estándar"
+  ],
+  "supuestos": {
+    "notional_base": 100.0,
+    "sesiones": 250,
+    "volatilidad_diaria_verdadera": 0.01,
+    "cuantil_normal_99": 2.326,
+    "semilla": 20261007,
+    "replicas": 400,
+    "var": "paramétrico normal a un día"
+  },
+  "var99_serie_limpia_base100": 2.32,
+  "casos": [
+    {
+      "defecto": "cotización repetida (stale)",
+      "var99_medido_base100": 2.22,
+      "diferencia_vs_serie_limpia": -0.1,
+      "direccion": "INFRAESTIMA capital",
+      "consistencia_del_signo": 1.0
+    },
+    {
+      "defecto": "fuente semanal propagada",
+      "var99_medido_base100": 2.32,
+      "diferencia_vs_serie_limpia": -0.0,
+      "direccion": "SIN DIRECCION (no sesga esta metrica)",
+      "consistencia_del_signo": 0.51
+    },
+    {
+      "defecto": "precisión, rejilla gruesa",
+      "var99_medido_base100": 4.62,
+      "diferencia_vs_serie_limpia": 2.3,
+      "direccion": "SOBREESTIMA capital",
+      "consistencia_del_signo": 1.0
+    },
+    {
+      "defecto": "precisión, rejilla fina",
+      "var99_medido_base100": 2.37,
+      "diferencia_vs_serie_limpia": 0.05,
+      "direccion": "SOBREESTIMA capital",
+      "consistencia_del_signo": 0.938
+    },
+    {
+      "defecto": "tick erróneo que revierte",
+      "var99_medido_base100": 2.85,
+      "diferencia_vs_serie_limpia": 0.53,
+      "direccion": "SOBREESTIMA capital",
+      "consistencia_del_signo": 1.0
+    }
+  ],
+  "lectura": "El único de los cinco que INFRAESTIMA es la cotización repetida: quita movimiento sin dejar ningún valor atípico, así que un control de outliers no lo ve y el capital queda por debajo de lo debido. Es el caso prudencialmente peligroso y el que motiva los checks TRIM de repetidos. Los demás SOBREESTIMAN, y el más grave con diferencia no es el tick erróneo —que un 3σ caza— sino la rejilla gruesa, que ningún control de magnitud marca como anómala.",
+  "tres_avisos_contraintuitivos": [
+    "La fuente semanal propagada NO sesga el VaR a un día: su signo solo es consistente en el 51 % de las réplicas, o sea azar. Reagrupa el movimiento conservando la varianza total. Sigue siendo un defecto serio —destruye la autocorrelación y desplaza el P&L en el tiempo— pero es invisible a esta métrica concreta. Un defecto puede ser grave para una medida de riesgo e inocuo para otra.",
+    "Redondear NO quita movimiento: la rejilla gruesa deja el precio pegado varios días y luego lo mueve un escalón entero, y esos saltos pesan mucho más que los ceros. Sobreestima, y fuerte. La intuición contraria es la natural y es la equivocada.",
+    "El signo del sesgo no se deduce de la etiqueta del defecto ni de su tamaño: depende de la relación entre el defecto y el movimiento típico de la serie. Por eso un control no puede 'corregir' el capital aplicando un ajuste por tipo de defecto; hay que detectarlo, sanear la serie y recalcular."
+  ]
+}
