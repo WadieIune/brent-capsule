@@ -91,8 +91,8 @@ FPR emparejada (5 semillas; azar = 0,056; ✗ = en el azar):
 
 Lo que queda en pie, más estrecho pero más firme:
 
-1. **`quantize` es un espacio nulo COMÚN: no lo caza nadie.** Hallazgo negativo
-   limpio. Una pérdida de precisión en el feed atraviesa los cuatro controles.
+1. **`quantize` NO es un espacio nulo común: era un problema de representación.**
+   Ver §4bis — resuelto con un control sobre precios.
 2. **Los tres controles baratos son *exactamente* ciegos a la inversión de signo**,
    y no por falta de potencia: `1-R²` porque la regresión reajusta `β`; 3σ porque
    opera sobre `|·|`; el vol-ratio porque usa desviaciones típicas. Las tres
@@ -110,6 +110,51 @@ que son analíticamente invisibles para toda la familia de estadísticos baratos
 señaladamente los que alteran signo o escala. Pero no cubre todo: `quantize` queda
 abierto para todos.*
 
+## 4bis. `quantize` resuelto: el hueco era de REPRESENTACIÓN
+
+- **Código:** `code/applications/experiments/dq_quantize_price_grid.py`
+- **Tests:** `tests/test_dq_quantize_price_grid.py` (5)
+- **Artefactos:** `results/reports/dq_quantize_price_grid/summary.json`
+
+La fila `quantize` de la §4 inyectaba el defecto sobre **retornos ya
+normalizados**, donde la rejilla se difumina. Un feed que trunca decimales actúa
+sobre **precios**. Rehecho de forma fiel —truncar el precio crudo del tramo y
+**recalcular** retornos y normalización causal sobre la serie corrompida (la
+tubería replicada se valida contra la original en
+`test_normalize_matches_the_original_pipeline`)— y añadiendo un control de
+rejilla que busca la malla más gruesa compatible con la ventana de **precios**:
+
+| detector | $0,10 | $0,25 | $0,50 | $1,00 |
+|---|---|---|---|---|
+| **control de rejilla (PRECIOS)** | **1,000** | **1,000** | **1,000** | **1,000** |
+| CNN 1D | 0,055 ✗ | 0,047 ✗ | 0,048 ✗ | 0,082 |
+| `1-R²` | 0,056 ✗ | 0,056 ✗ | 0,048 ✗ | 0,081 |
+| 3σ | 0,032 ✗ | 0,032 ✗ | 0,032 ✗ | 0,032 ✗ |
+| vol-ratio | 0,048 ✗ | 0,056 ✗ | 0,065 ✗ | 0,032 ✗ |
+
+Dos lecturas, las dos importantes:
+
+1. **Recall 1,000 con FPR 0, y no por un score degenerado** (checklist #6, el
+   fallo de WP2-A). El score limpio es constante en 0,01 —el tick nativo de
+   Brent— y cada ventana truncada devuelve **exactamente** el paso inyectado. El
+   control no «marca todo»: recupera el parámetro del defecto. Verificado en
+   `test_grid_control_separates_clean_from_truncated_without_false_alarms`.
+2. **Con la inyección fiel, los cuatro detectores de ventana siguen en el azar.**
+   No es que la inyección anterior fuera demasiado débil: una truncación de hasta
+   1 $ sobre Brent **no deja huella** en retornos normalizados por volatilidad, y
+   deja una huella total en la retícula del precio.
+
+Conclusión: el hueco era de **representación, no de método ni de capacidad**. Un
+control de diez líneas sobre la representación correcta bate a todo lo demás,
+incluida la red. Es la misma lección que el `vintage` de B y que el residuo
+Nelson-Siegel: *el acierto está en mirar el objeto adecuado*.
+
+**Límites del control de rejilla:** el tick nativo se asume estable, así que en
+operación debe aprenderse por serie e históricamente y alertar sobre **cambios**,
+no sobre un valor absoluto; un cambio legítimo de tick del mercado daría falsa
+alarma. Es ciego si la truncación coincide con el tick nativo, y no aplica a
+series que no coticen en rejilla (índices como DTWEXBGS).
+
 ## 5. Arquitectura que se deriva
 
 No «CNN *en vez de* controles», sino **banco de controles baratos (cada uno fuerte
@@ -123,9 +168,12 @@ familia peor servida de 0,715 a 0,922 bajo FPR emparejada, pero **no** bajo el
 gate operativo, donde hereda la degradación del componente peor calibrado: el
 ensemble necesita diseño, no un máximo.
 
-Y una consecuencia operativa directa: **`quantize` exige un control dedicado**
-—detección de rejilla en los precios, no en los retornos normalizados—, porque
-ninguna de las cuatro vías lo ve. Es una pieza que falta en el framework.
+Y la §4bis añade el eje que faltaba: **el banco de controles tiene que cubrir
+varias REPRESENTACIONES, no solo varios estadísticos**. Los cuatro detectores de
+la §4 miran todos lo mismo —retornos normalizados por volatilidad— y por eso
+comparten un espacio nulo entero. En cuanto se mira el precio crudo, el defecto
+que ninguno veía se resuelve con una línea. La cobertura se gana cambiando de
+representación antes que añadiendo capacidad al modelo.
 
 ## 6. Encaje con el estado del arte
 
@@ -165,9 +213,9 @@ línea activa: ACI ([Gibbs & Candès](https://arxiv.org/pdf/2010.09107)),
 1. Romper el punto 2 de la §4: ¿existe un control barato que cace `sign_flip` y
    `rescale` sin perder las familias donde los baratos ya ganan? Si existe, la
    justificación de la red se queda sin su mejor caso.
-2. Atacar `quantize`: un control de rejilla sobre **precios crudos** debería
-   cazarlo. Si funciona, confirma que el hueco es de representación y no de
-   método, y la fila entera cambia de lectura.
+2. ~~Atacar `quantize`~~ **hecho, §4bis**: el control de rejilla lo caza a 1,000
+   con FPR 0. Lo que queda para ti es romperlo: ¿aguanta un cambio legítimo de
+   tick de mercado sin disparar? ¿Y una serie sin rejilla nativa?
 3. Challenge al gate ACI: la retroalimentación usa el flujo limpio como si se
    supiera que es limpio. En operación no se sabe. ¿Cuánta contaminación tolera
    antes de descalibrarse?

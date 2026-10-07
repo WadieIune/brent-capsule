@@ -1,0 +1,113 @@
+{
+  "protocol": {
+    "seed": 42,
+    "window_length": 128,
+    "train": 800,
+    "validation_clean": 300,
+    "test_clean": 250,
+    "yolo_epochs_each": 5,
+    "recognizer_epochs": 12,
+    "vae_epochs": 20,
+    "target_validation_fpr": 0.02,
+    "train_domain": "Gaussian mean-reverting AR with Markov volatility states",
+    "validation_test_domain": "independent AR parameter ranges with Student-t innovations and switching volatility",
+    "train_defects": [
+      "isolated spike",
+      "smooth hump"
+    ],
+    "test_defects": [
+      "spike",
+      "stale_block",
+      "level_shift"
+    ],
+    "limits": [
+      "all clean series and labels are synthetic",
+      "one seed; research gate only"
+    ]
+  },
+  "vae_generation_diagnostics": {
+    "std_ratio_generated_to_reference": 0.6887283325195312,
+    "acf_lag1_generated": 0.9842998186553733,
+    "acf_lag1_reference": 0.9095694488038542,
+    "acf_lag5_generated": 0.7446004012292373,
+    "acf_lag5_reference": 0.6328366630390505,
+    "q01_generated": -1.6711257696151733,
+    "q01_reference": -2.526167392730713,
+    "q99_generated": 1.5508363246917725,
+    "q99_reference": 2.5145788192749023,
+    "clean_reconstruction_rmse": 0.40536412596702576
+  },
+  "models": {
+    "base": {
+      "thresholds": {
+        "cnn1d": 0.999923825263977,
+        "autoencoder_reconstruction": 3.9639275074005127,
+        "3sigma_causal_window_max": 11.11763858795166,
+        "yolo": 0.8470126986503601
+      },
+      "clean_test_fpr": {
+        "cnn1d": 0.028,
+        "autoencoder_reconstruction": 0.02,
+        "3sigma_causal_window_max": 0.032,
+        "yolo": 0.036
+      },
+      "event_recall_located": {
+        "spike": {
+          "cnn1d": 0.224,
+          "autoencoder_reconstruction": 0.268,
+          "3sigma_causal_window_max": 0.184,
+          "yolo": 0.116
+        },
+        "stale_block": {
+          "cnn1d": 0.004,
+          "autoencoder_reconstruction": 0.0,
+          "3sigma_causal_window_max": 0.012,
+          "yolo": 0.004
+        },
+        "level_shift": {
+          "cnn1d": 0.132,
+          "autoencoder_reconstruction": 0.072,
+          "3sigma_causal_window_max": 0.156,
+          "yolo": 0.024
+        }
+      },
+      "yolo_weights": "results/reports/dq_yolo_generative_pack/models/yolo11n_base_best.pt"
+    },
+    "vae_augmented": {
+      "thresholds": {
+        "cnn1d": 0.9999483823776245,
+        "autoencoder_reconstruction": 3.9639275074005127,
+        "3sigma_causal_window_max": 11.11763858795166,
+        "yolo": 0.7021464109420776
+      },
+      "clean_test_fpr": {
+        "cnn1d": 0.024,
+        "autoencoder_reconstruction": 0.02,
+        "3sigma_causal_window_max": 0.032,
+        "yolo": 0.02
+      },
+      "event_recall_located": {
+        "spike": {
+          "cnn1d": 0.2,
+          "autoencoder_reconstruction": 0.268,
+          "3sigma_causal_window_max": 0.184,
+          "yolo": 0.14
+        },
+        "stale_block": {
+          "cnn1d": 0.004,
+          "autoencoder_reconstruction": 0.0,
+          "3sigma_causal_window_max": 0.012,
+          "yolo": 0.004
+        },
+        "level_shift": {
+          "cnn1d": 0.12,
+          "autoencoder_reconstruction": 0.072,
+          "3sigma_causal_window_max": 0.156,
+          "yolo": 0.016
+        }
+      },
+      "yolo_weights": "results/reports/dq_yolo_generative_pack/models/yolo11n_vae_augmented_best.pt"
+    }
+  },
+  "interpretation": "VAE augmentation adds value only if the OOD event-recall lift survives at similar clean-test FPR; a high synthetic validation score alone is not an operational DQ result."
+}

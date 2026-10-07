@@ -137,7 +137,21 @@ en empalme de proveedores (0,690) y `1-R²` en desfase de una sesión (0,863).
 **Retractado** respecto de la primera versión: con una sola familia no vista se
 afirmó que la CNN era el único detector por encima del azar en todas. Con seis es
 falso — en `quantize` (pérdida de precisión) **los cuatro** quedan en el azar.
-Hueco de cobertura común: hace falta un control de rejilla sobre precios crudos.
+
+**Y ese hueco resultó ser de REPRESENTACIÓN, no de método.** Rehecha la inyección
+sobre **precios crudos** (truncación del tick, con retornos y normalización
+recalculados), un control de rejilla de diez líneas sobre el precio logra
+**recall 1,000 con FPR 0** en truncaciones de 0,10 $ a 1,00 $, mientras los
+cuatro detectores de ventana **siguen en el azar**. Una truncación de hasta 1 $
+sobre Brent no deja huella en retornos normalizados por volatilidad y deja huella
+total en la retícula del precio. Los cuatro controles de la tabla miran todos la
+misma representación, y por eso comparten un espacio nulo entero.
+
+Consecuencia para la arquitectura: **el banco de controles debe cubrir varias
+representaciones (precio crudo y retorno normalizado), no solo varios
+estadísticos.** La cobertura se gana cambiando de representación antes que
+añadiendo capacidad al modelo. Es la misma lección que el `vintage` de B y que el
+residuo Nelson-Siegel. Código: `dq_quantize_price_grid.py`.
 
 Autocrítica incluida: leave-one-family-out muestra que buena parte de la ventaja
 de la CNN dentro de sus familias de entrenamiento estaba inflada por estar en
