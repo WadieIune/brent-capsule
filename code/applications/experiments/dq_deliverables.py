@@ -85,28 +85,102 @@ ESTADO = [
      "aprobados; ver la hoja de métricas y protocolo."),
 ]
 
-#: Evidencia de validación de los modelos de riesgo aguas abajo. El backtest les
-#: aplica a ellos, que miden riesgo, y no al gate de calidad, que mide detección.
-AGUAS_ABAJO = [
-    ("VaR FHS-EWMA condicional a volatilidad", "Supera el backtest",
-     "Kupiec p 0,985: la tasa de excepciones observada (1,005 %) es indistinguible del 1 % "
-     "teórico, o sea la cobertura es correcta. Christoffersen p 0,128: las excepciones NO se "
-     "agrupan. Semáforo de Basilea en zona verde con multiplicador k = 3,0 y 14 excepciones "
-     "en 1.393 días.",
-     "Pasa PORQUE condiciona a volatilidad. Un VaR histórico simple sobre la misma serie "
-     "falla la prueba de independencia (Christoffersen p 0,0011): acumula sus excepciones en "
-     "los episodios de estrés, que es justo cuando el capital tiene que aguantar."),
-    ("Supervivencia del canal · XGB-AFT", "Supera el backtest",
-     "C-index 0,664 ± 0,007 en walk-forward purgado con embargo, de modo que el modelo ordena "
-     "correctamente qué canales viven más.",
-     "Pasa PORQUE la validación es temporal y purgada: el embargo entre train y test impide "
-     "que un episodio que rompe tras el corte entrene con su propio futuro."),
-    ("Detección de canal · CNN EfficientNet", "Pasa como clasificador, no como estrategia",
-     "AUC 0,97 clasificando canales ascendentes y descendentes.",
-     "Como CLASIFICADOR pasa. Como estrategia de inversión NO: Deflated Sharpe 0,00 y PBO "
-     "0,38 frente a un Sharpe de 0,33 contra 1,00 del buy & hold. Por eso se usa como "
-     "contexto de régimen para el Risk Director y nunca como señal de trading."),
-]
+#: Manifiestos de las líneas de riesgo de los que se lee la evidencia de backtest.
+FUENTES_AGUAS_ABAJO = {
+    "var": "portfolio_var_manifest.json",
+    "supervivencia": "part2_channel_survival_validacion.json",
+    "detector": "detector_solo_precio.json",
+    "backtest_canal": "backtest_canal_dsr_pbo.json",
+}
+
+
+def _dig(payload: dict, path: str, source: str):
+    """Navega un camino `a.b.c` y falla con un mensaje que dice dónde se rompió.
+
+    Se prefiere romper a devolver un valor por defecto: si un manifiesto cambia
+    de forma, el entregable tiene que dejar de generarse en vez de publicar un
+    número obsoleto.
+    """
+    node = payload
+    for i, key in enumerate(path.split(".")):
+        if not isinstance(node, dict) or key not in node:
+            raise KeyError(
+                f"{source}: falta la ruta '{path}' (se rompió en "
+                f"'{'.'.join(path.split('.')[:i + 1])}'). El manifiesto ha cambiado "
+                "de forma; actualiza el lector en vez de publicar cifras obsoletas.")
+        node = node[key]
+    return node
+
+
+def _n(value: float, decimals: int = 3) -> str:
+    """Formato español: coma decimal."""
+    return f"{value:.{decimals}f}".replace(".", ",")
+
+
+def load_downstream(reports: Path) -> list[tuple[str, str, str, str]]:
+    """Evidencia de backtest de los modelos de riesgo que consumen la serie.
+
+    Se lee de los manifiestos de las líneas de riesgo, no se escribe a mano: si
+    alguna de esas líneas se re-ejecuta y cambian los números, el entregable los
+    recoge solo. El backtest aplica a estos modelos, que miden riesgo; el gate de
+    calidad mide detección y se valida con defectos de verdad conocida.
+    """
+    data = {}
+    for alias, filename in FUENTES_AGUAS_ABAJO.items():
+        path = reports / filename
+        if not path.exists():
+            raise FileNotFoundError(
+                f"Falta el manifiesto {path}, necesario para la evidencia de backtest "
+                f"de los modelos aguas abajo ({alias}).")
+        data[alias] = json.loads(path.read_text(encoding="utf-8"))
+
+    var_src = FUENTES_AGUAS_ABAJO["var"]
+    fhs = _dig(data["var"], "metrics.backtests.fhs_ewma", var_src)
+    hist_chr = _dig(data["var"], "metrics.backtests.historical.christoffersen.p_value", var_src)
+    n_test = _dig(data["var"], "metrics.n_test", var_src)
+
+    sup_src = FUENTES_AGUAS_ABAJO["supervivencia"]
+    aft = _dig(data["supervivencia"], "metrics.walkforward.summary.q2_xgb_aft", sup_src)
+
+    det_src = FUENTES_AGUAS_ABAJO["detector"]
+    auc_asc = _dig(data["detector"], "ascending_channel.auc", det_src)
+    auc_desc = _dig(data["detector"], "descending_channel.auc", det_src)
+
+    bt_src = FUENTES_AGUAS_ABAJO["backtest_canal"]
+    dsr = _dig(data["backtest_canal"], "deflated_sharpe.deflated_sharpe_ratio", bt_src)
+    pbo = _dig(data["backtest_canal"], "pbo.pbo", bt_src)
+    sharpe = _dig(data["backtest_canal"], "strategy.sharpe_annual", bt_src)
+    sharpe_bh = _dig(data["backtest_canal"], "buy_and_hold.sharpe_annual", bt_src)
+
+    # El separador de miles se construye aparte: aplicar un `replace` sobre la
+    # frase entera convertía también las comas decimales y las de puntuación.
+    dias = f"{n_test:,}".replace(",", ".")
+
+    return [
+        ("VaR FHS-EWMA condicional a volatilidad", "Supera el backtest",
+         f"Kupiec p {_n(fhs['kupiec']['p_value'])}: la tasa de excepciones observada "
+         f"({_n(100 * fhs['exception_rate'], 3)} %) es indistinguible del 1 % teórico, o sea la "
+         f"cobertura es correcta. Christoffersen p {_n(fhs['christoffersen']['p_value'])}: las "
+         f"excepciones NO se agrupan. Semáforo de Basilea en zona "
+         f"{fhs['capital']['zone_avg']} con multiplicador k = {_n(fhs['capital']['multiplier_avg'], 1)} "
+         f"y {fhs['basel']['exceptions']} excepciones en {dias} días.",
+         "Pasa PORQUE condiciona a volatilidad. Un VaR histórico simple sobre la misma serie "
+         f"falla la prueba de independencia (Christoffersen p {_n(hist_chr, 4)}): acumula sus "
+         "excepciones en los episodios de estrés, que es justo cuando el capital tiene que "
+         "aguantar."),
+        ("Supervivencia del canal · XGB-AFT", "Supera el backtest",
+         f"C-index {_n(aft['c_index_mean'])} ± {_n(aft['c_index_std'])} en walk-forward purgado "
+         f"con embargo (mínimo por fold {_n(aft['c_index_min'])}), de modo que el modelo ordena "
+         "correctamente qué canales viven más.",
+         "Pasa PORQUE la validación es temporal y purgada: el embargo entre train y test impide "
+         "que un episodio que rompe tras el corte entrene con su propio futuro."),
+        ("Detección de canal · CNN EfficientNet", "Pasa como clasificador, no como estrategia",
+         f"AUC {_n(auc_asc)} en canal ascendente y {_n(auc_desc)} en descendente.",
+         "Como CLASIFICADOR pasa. Como estrategia de inversión NO: Deflated Sharpe "
+         f"{_n(dsr)} y PBO {_n(pbo)}, con un Sharpe anual de {_n(sharpe)} frente a "
+         f"{_n(sharpe_bh)} del buy & hold. Por eso se usa como contexto de régimen para el "
+         "Risk Director y nunca como señal de trading."),
+    ]
 
 LIMITES = [
     ("Defectos sintéticos", "Las inyecciones están escritas por nosotros. No son una muestra de "
@@ -225,7 +299,7 @@ def _recall_fill(value: float, chance: float) -> PatternFill:
     return PatternFill("solid", fgColor="5BA85B")
 
 
-def build_excel(stack: dict, dist: dict, path: Path) -> None:
+def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     families = stack["protocol"]["families"]
     singles = stack["single_controls_conformal_aci"]
     subsets = stack["gate_subsets_conformal_aci"]
@@ -378,7 +452,7 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
                 "lo supera. Son resultados de las líneas de riesgo del proyecto, no de este gate.")
     _header(ws, 4, ["Modelo", "Veredicto", "Evidencia de validación", "Por qué lo supera"],
             [34, 26, 60, 60])
-    for r, (modelo, veredicto, evidencia, porque) in enumerate(AGUAS_ABAJO, start=5):
+    for r, (modelo, veredicto, evidencia, porque) in enumerate(aguas_abajo, start=5):
         for col, value in enumerate([modelo, veredicto, evidencia, porque], start=1):
             cell = ws.cell(row=r, column=col, value=value)
             cell.border, cell.alignment = BORDER, WRAP
@@ -428,7 +502,7 @@ def _p(doc, text, size=10, bold=False, italic=False, color=None, space=6):
     return par
 
 
-def build_word(stack: dict, dist: dict, path: Path) -> None:
+def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     families = stack["protocol"]["families"]
     singles = stack["single_controls_conformal_aci"]
     subsets = stack["gate_subsets_conformal_aci"]
@@ -534,7 +608,7 @@ def build_word(stack: dict, dist: dict, path: Path) -> None:
             "se les aplica el backtest, porque miden riesgo y toman posiciones; al gate no, "
             "porque mide detección y se valida con defectos de verdad conocida. Conviene "
             "dejar escrito no solo que superan la validación, sino por qué.")
-    for modelo, veredicto, evidencia, porque in AGUAS_ABAJO:
+    for modelo, veredicto, evidencia, porque in aguas_abajo:
         doc.add_paragraph(f"{modelo} — {veredicto}. {evidencia} {porque}", style="List Bullet")
 
     doc.add_heading("6. Estado de validación", level=1)
@@ -564,8 +638,9 @@ def run(output_dir: Path) -> dict:
 
     xlsx = output_dir / "resultados_dq.xlsx"
     docx = output_dir / "resumen_dq_estado_del_arte.docx"
-    build_excel(stack, dist, xlsx)
-    build_word(stack, dist, docx)
+    aguas_abajo = load_downstream(REPORTS)
+    build_excel(stack, dist, aguas_abajo, xlsx)
+    build_word(stack, dist, aguas_abajo, docx)
     return {"excel": str(xlsx), "word": str(docx)}
 
 
