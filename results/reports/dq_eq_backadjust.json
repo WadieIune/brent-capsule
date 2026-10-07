@@ -1,0 +1,16 @@
+{
+  "target": "SP500",
+  "peer": "DAX",
+  "factor_backadjust": 0.98,
+  "segmento": 400,
+  "corr_retornos": 0.6031,
+  "fp": 0.02,
+  "reps": 30,
+  "recall_tramo_reajustado": {
+    "3sigma_retorno": 0.023,
+    "cross_asset_retorno": 0.042,
+    "nivel_ratio_rolling": 0.024,
+    "vintage_vs_almacenado": 1.0
+  },
+  "lectura": "El re-ajuste hacia atrás es INVISIBLE a los controles de retorno (3σ y cross-asset ~0 en el tramo, porque el escalado no cambia los retornos); solo el control de CONSISTENCIA DE NIVEL (ratio serie/par) lo caza. Justifica un control de nivel/vintage además de los de desviación."
+}

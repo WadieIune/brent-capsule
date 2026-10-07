@@ -1,0 +1,21 @@
+{
+  "spike_bps": 4.0,
+  "fp": 0.02,
+  "n_test": 1000,
+  "pico_sigma_retorno": 1.4,
+  "resultados": {
+    "cnn1d_supervisada": {
+      "recall_test": 0.048,
+      "fp_test": 0.01
+    },
+    "residuo_NS": {
+      "recall_test": 1.0,
+      "fp_test": 0.031
+    },
+    "3sigma_por_nodo": {
+      "recall_test": 0.075,
+      "fp_test": 0.034
+    }
+  },
+  "lectura": "CNN 1D supervisada recall 0.048 vs residuo NS 1.0 y 3σ 0.075. La CNN no iguala al residuo NS; el control paramétrico sigue siendo superior."
+}
