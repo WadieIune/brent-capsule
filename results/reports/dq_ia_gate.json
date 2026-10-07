@@ -1,0 +1,49 @@
+{
+  "target": "BRENT",
+  "peers": [
+    "WTI",
+    "GOLD",
+    "SILVER",
+    "COPPER",
+    "NATGAS",
+    "DTWEXBGS"
+  ],
+  "fp_target": 0.01,
+  "reps": 60,
+  "n": 4831,
+  "recall_por_familia_a_FP_1pct": {
+    "3sigma": {
+      "stale": 0.0,
+      "repetidos20": 0.0,
+      "salto": 0.95,
+      "decoplamiento": 0.026
+    },
+    "trim_czeros": {
+      "stale": 1.0,
+      "repetidos20": 1.0,
+      "salto": 0.0,
+      "decoplamiento": 0.0
+    },
+    "cross_asset": {
+      "stale": 0.035,
+      "repetidos20": 0.023,
+      "salto": 0.967,
+      "decoplamiento": 0.13
+    }
+  },
+  "lectura": {
+    "3sigma_ciego_en": [
+      "stale",
+      "repetidos20",
+      "decoplamiento"
+    ],
+    "cross_asset_recupera": {
+      "stale": 0.035,
+      "repetidos20": 0.023,
+      "salto": 0.017,
+      "decoplamiento": 0.104
+    },
+    "trim_capta_repetidos": 1.0,
+    "veredicto": "El cross-asset no aporta sobre 3σ"
+  }
+}
