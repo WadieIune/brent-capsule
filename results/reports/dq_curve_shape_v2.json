@@ -1,0 +1,31 @@
+{
+  "tenores": [
+    0.25,
+    0.5,
+    1.0,
+    2.0,
+    3.0,
+    5.0,
+    7.0,
+    10.0,
+    20.0,
+    30.0
+  ],
+  "spike_bps": 4.0,
+  "fp": 0.02,
+  "reps": 25,
+  "torch": true,
+  "node_daily_std_bps_mediana": 2.87,
+  "pico_en_sigmas_de_retorno": 1.39,
+  "recall_a_FP": {
+    "3sigma_por_nodo": 0.049,
+    "residuo_NS": 1.0,
+    "cnn1d_forma": 0.022
+  },
+  "paralelas_base_vs_rfr": {
+    "recall_3sigma_nodo": 0.026,
+    "recall_forma_spread": 1.0,
+    "corr_media_base_rfr": 0.9995
+  },
+  "lectura": "Pico de 4.0pb = 1.39σ de retorno (sub-umbral para 3σ). Recall: 3σ 0.049, residuo NS 1.0, CNN 1D forma 0.022. La forma (NS/CNN) caza el pico que rompe el smoothness donde el 3σ por punto falla."
+}
