@@ -97,6 +97,72 @@ LIMITES = [
 ]
 
 
+METRICAS = [
+    ("Recall (sensibilidad)",
+     "De los tramos que SÍ tenían un defecto inyectado, qué fracción levantó alerta el "
+     "control. Es la métrica principal de cobertura. Recall 1,00 = los caza todos.",
+     "TP / (TP + FN)"),
+    ("FPR (tasa de falsas alarmas)",
+     "De los tramos LIMPIOS, qué fracción levantó alerta igualmente. Es el coste operativo: "
+     "cada falsa alarma es trabajo de revisión que no encuentra nada. Objetivo fijado: 5 %.",
+     "FP / (FP + TN)"),
+    ("Recall a presupuesto común",
+     "Comparar recalls solo tiene sentido si todos los controles operan a la MISMA carga de "
+     "alarmas. Si no, el que más alerta parece el más sensible. Todo el Excel está medido así.",
+     "recall | FPR = 5 %"),
+    ("Recall de la peor familia",
+     "El mínimo sobre las familias de defecto. Un control con buena media y un cero en una "
+     "familia tiene un punto ciego, y eso importa más que la media.",
+     "min_familias(recall)"),
+    ("Azar",
+     "Nivel de recall que alcanzaría un detector que alertase al azar al 5 %. En las tablas, "
+     "las celdas en gris están en el azar: ese control NO ve esa familia.",
+     "≈ 0,048"),
+    ("Precisión / PPV",
+     "NO se reporta. Exigiría conocer la prevalencia real de cada defecto, y no la tenemos. "
+     "Declararla con prevalencia inventada daría un número sin significado.",
+     "no calculada"),
+]
+
+PROTOCOLO = [
+    ("Fuente de datos",
+     "Panel `panel_extendido_2026-09-09.csv`. BRENT como serie objetivo y cuatro pares "
+     "correlacionados: WTI, DTWEXBGS, COPPER, EUROSTOXX50. Pares elegidos por correlación "
+     "medida SOLO en el tramo de entrenamiento, para no mirar el futuro."),
+    ("Hash del dato",
+     "sha256 b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3. Queda en cada "
+     "summary.json para que el resultado sea trazable al fichero exacto."),
+    ("Unidad de análisis",
+     "Ventanas de 20 sesiones con paso de 5. ATENCIÓN: solapan al 75 %, así que NO son "
+     "observaciones independientes y cualquier intervalo de confianza implícito es optimista."),
+    ("Partición temporal",
+     "Estrictamente cronológica, sin mezclar. Entrenamiento hasta 2018-12-31 (558 ventanas). "
+     "Validación 2019-2023 (236). Test desde 2024-01-05 (124). La CNN se entrena en "
+     "entrenamiento, el combinador XGBoost en validación y TODO se evalúa en test."),
+    ("Ground truth",
+     "Defectos SINTÉTICOS inyectados sobre los precios crudos, con verdad conocida por "
+     "construcción. Tras inyectar se RECALCULAN retornos y normalización causal, para que el "
+     "defecto se propague como lo haría en producción. No hay etiquetas de incidentes reales."),
+    ("Calibración del umbral",
+     "Gate conforme-adaptativo (Adaptive Conformal Inference). El umbral se calibra sobre "
+     "tramos limpios de VALIDACIÓN y se reajusta en línea con la falsa alarma observada. No se "
+     "supone ninguna forma de distribución, que es el punto: 3σ sí la supone y falla."),
+    ("Sin fuga temporal",
+     "Normalización causal con media y desviación móviles de 60 sesiones desplazadas una. WTI "
+     "se representa con diferencias en dólares para preservar su settlement negativo real de "
+     "abril de 2020 en vez de tratarlo como un error."),
+    ("Repeticiones",
+     "Tres semillas (42, 71, 123) para la CNN y el combinador. Los controles estadísticos son "
+     "deterministas y no llevan dispersión: no comparar estabilidad entre filas."),
+    ("ESTO NO ES UN BACKTEST",
+     "Importante para no confundirlo en el paper. Aquí se mide DETECCIÓN de defectos sobre un "
+     "bloque temporal posterior no usado para ajustar. No hay estrategia, ni P&L, ni Sharpe. "
+     "El backtest del proyecto —walk-forward purgado, DSR, PBO/CSCV, Kupiec, Christoffersen, "
+     "semáforo de Basilea— es la capa de validación de los MODELOS DE RIESGO aguas abajo, no "
+     "de este gate de calidad."),
+]
+
+
 def _sheet(wb, title, intro):
     ws = wb.create_sheet(title)
     ws["A1"] = title
@@ -174,7 +240,7 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
          "de mercado de un defecto de dato."),
         ("Lo que NO se afirma",
          "No se da ninguna cifra de capital. No se demuestra transferencia a otras asset "
-         "classes. No se afirma prevalencia real de defectos. Ver hoja 6."),
+         "classes. No se afirma prevalencia real de defectos. Ver hoja 7."),
     ]
     _header(ws, 4, ["Pregunta", "Respuesta"], [30, 110])
     for i, (k, v) in enumerate(puntos, start=5):
@@ -185,8 +251,35 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
         c.alignment, c.border = WRAP, BORDER
         ws.row_dimensions[i].height = 46
 
+    # --- 1b. Métricas y protocolo ---
+    ws = _sheet(wb, "2 Métricas y protocolo",
+                "Qué significa cada número de este Excel y cómo se ha medido. Leer antes que "
+                "las tablas de resultados.")
+    _header(ws, 4, ["Métrica", "Qué mide", "Definición"], [26, 92, 20])
+    for r, (nombre, desc, formula) in enumerate(METRICAS, start=5):
+        ws.cell(row=r, column=1, value=nombre).font = Font(bold=True, size=10)
+        ws.cell(row=r, column=1).border = BORDER
+        c = ws.cell(row=r, column=2, value=desc)
+        c.alignment, c.border = WRAP, BORDER
+        f = ws.cell(row=r, column=3, value=formula)
+        f.alignment, f.border = Alignment(horizontal="center", vertical="top"), BORDER
+        ws.row_dimensions[r].height = 42
+
+    start = 5 + len(METRICAS) + 2
+    ws.cell(row=start - 1, column=1, value="Diseño experimental").font = TITLE_FONT
+    _header(ws, start, ["Elemento", "Cómo se ha hecho"], [26, 112])
+    for r, (k, v) in enumerate(PROTOCOLO, start=start + 1):
+        cell = ws.cell(row=r, column=1, value=k)
+        cell.font = Font(bold=True, size=10,
+                         color="C00000" if k.startswith("ESTO NO") else "000000")
+        cell.border, cell.alignment = BORDER, WRAP
+        c = ws.cell(row=r, column=2, value=v)
+        c.alignment, c.border = WRAP, BORDER
+        ws.row_dimensions[r].height = 46
+    ws.freeze_panes = "A5"
+
     # --- 2. Cobertura por control y familia ---
-    ws = _sheet(wb, "2 Cobertura", f"Recall por control y familia, a presupuesto de falsas "
+    ws = _sheet(wb, "3 Cobertura", f"Recall por control y familia, a presupuesto de falsas "
                 f"alarmas común ({target:.0%}). Azar ≈ {chance:.3f}; en gris lo que está en el azar. "
                 "«Reescribe historia» = el defecto altera datos ya publicados; «dato nuevo» = solo "
                 "afecta a las sesiones recientes.")
@@ -205,7 +298,7 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
                 cell.alignment = Alignment(horizontal="center")
 
     # --- 3. Gate A vs Gate B ---
-    ws = _sheet(wb, "3 Gate A vs Gate B", "Comparación de capas a su propio presupuesto de "
+    ws = _sheet(wb, "4 Gate A vs Gate B", "Comparación de capas a su propio presupuesto de "
                 "falsas alarmas. «sin IA» es Gate B sin la CNN, para aislar qué añade el deep learning.")
     _header(ws, 4, ["Configuración", "Qué incluye", "Falsas alarmas medidas",
                     "Recall medio", "Recall de la peor familia"], [22, 56, 20, 16, 22])
@@ -232,7 +325,7 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
                   "encima una mejora pequeña y positiva.").font = Font(italic=True, size=9)
 
     # --- 4. Familias de defecto ---
-    ws = _sheet(wb, "4 Familias", "Qué es cada familia de defecto y qué control la cubre mejor.")
+    ws = _sheet(wb, "5 Familias", "Qué es cada familia de defecto y qué control la cubre mejor.")
     _header(ws, 4, ["Familia", "Qué es", "Mejor control (reescribe)", "Recall",
                     "Mejor control (dato nuevo)", "Recall"], [20, 62, 26, 10, 26, 10])
     for r, fam in enumerate(families, start=5):
@@ -249,7 +342,7 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
         ws.row_dimensions[r].height = 30
 
     # --- 5. Estado de los resultados ---
-    ws = _sheet(wb, "5 Estado", "Trazabilidad. Qué está en pie, qué se degradó y qué se retiró, "
+    ws = _sheet(wb, "6 Estado", "Trazabilidad. Qué está en pie, qué se degradó y qué se retiró, "
                 "con el motivo. Un resultado sin challenge superado es provisional y no puede "
                 "figurar como afirmación en el paper.")
     _header(ws, 4, ["Ref.", "Resultado", "Estado", "Motivo"], [8, 38, 18, 86])
@@ -262,7 +355,7 @@ def build_excel(stack: dict, dist: dict, path: Path) -> None:
         ws.row_dimensions[r].height = 40
 
     # --- 6. Limitaciones ---
-    ws = _sheet(wb, "6 Limitaciones", "Lo que estos números NO permiten afirmar. Leer antes de "
+    ws = _sheet(wb, "7 Limitaciones", "Lo que estos números NO permiten afirmar. Leer antes de "
                 "usar cualquier cifra de las hojas anteriores.")
     _header(ws, 4, ["Limitación", "Detalle"], [28, 112])
     for r, (k, v) in enumerate(LIMITES, start=5):

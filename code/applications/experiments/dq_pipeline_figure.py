@@ -138,6 +138,89 @@ def heatmaps(ax_r, ax_f, singles: dict, chance: float) -> None:
             tick.set_weight("bold" if control in GATE_A else "normal")
 
 
+def encaje(path: Path, subsets: dict, singles: dict) -> None:
+    """Dónde encaja el framework nuevo dentro de la cadena de producción.
+
+    La cadena no se toca: lo que cambia es **qué hay dentro del primer gate**.
+    Antes era un único control geométrico; ahora son dos capas con nueve
+    controles sobre cuatro representaciones. Aguas abajo —detección de canal,
+    VaR FHS-EWMA, supervivencia— todo sigue igual y sigue consumiendo la serie
+    que este gate declara limpia.
+
+    No se reproducen aquí las cifras de impacto en capital de las patas previas:
+    quedaron fuera del alcance de esta entrega por decisión del MASTER.
+    """
+    sns.set_theme(style="white", context="notebook")
+    fig, ax = plt.subplots(figsize=(14, 8.6))
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+
+    top = 0.76
+    cadena = (
+        (0.010, 0.105, "Dato\ncrudo", "#EEEEEE", "#999999"),
+        (0.135, 0.165, "GATE 1\nCalidad de dato", "#F6D9C4", "#C0703A"),
+        (0.330, 0.115, "Dato limpio\nalimenta todo", "#EEEEEE", "#999999"),
+        (0.475, 0.150, "GATE 2\nDetección de canal\nCNN EfficientNet", "#DCE4F2", "#4C72B0"),
+        (0.655, 0.150, "VaR FHS-EWMA\ncondicional a\nvolatilidad", "#DCE4F2", "#4C72B0"),
+        (0.835, 0.155, "Supervivencia\nXGB-AFT\nvida del canal", "#DCE4F2", "#4C72B0"),
+    )
+    for x, w, text, face, edge in cadena:
+        _box(ax, x, top - 0.085, w, 0.17, text, face, edge, 8.5)
+    for i in range(len(cadena) - 1):
+        x0 = cadena[i][0] + cadena[i][1]
+        _arrow(ax, x0, top, cadena[i + 1][0], top)
+
+    ax.text(0.5, 0.995, "La cadena de producción NO cambia. Lo que cambia es qué hay "
+            "DENTRO del primer gate.", ha="center", va="top", fontsize=11, weight="bold")
+    ax.text(0.5, 0.945, "Las patas de riesgo aguas abajo —canal, VaR FHS-EWMA, "
+            "supervivencia— siguen consumiendo la serie que este gate declara limpia, y su "
+            "validación sigue siendo el backtest\n(walk-forward purgado · DSR · PBO/CSCV · "
+            "Kupiec · Christoffersen · semáforo de Basilea). Las cifras de impacto en capital "
+            "de esas patas quedan fuera de esta entrega.",
+            ha="center", va="top", fontsize=8, color="#555555")
+
+    # Zoom del Gate 1
+    ax.plot([0.135, 0.055], [top - 0.085, 0.555], color="#C0703A", lw=1.2, ls=":")
+    ax.plot([0.300, 0.945], [top - 0.085, 0.555], color="#C0703A", lw=1.2, ls=":")
+    _box(ax, 0.045, 0.045, 0.910, 0.510, "", "#FDFBF8", "#C0703A", 8)
+    ax.text(0.500, 0.520, "DENTRO DEL GATE 1 · CALIDAD DE DATO",
+            ha="center", va="center", fontsize=10, weight="bold", color="#C0703A")
+
+    keys = [f"{f}|{m}" for f in FAMILIAS for m in ("restated", "fresh")]
+    media = {n: sum(b[k] for k in keys) / len(keys) for n, b in subsets.items()}
+    _box(ax, 0.075, 0.150, 0.230, 0.320,
+         "ANTES\n\nun único control\ngeométrico sobre\nla serie\n\n"
+         "una sola\nrepresentación",
+         "#F0F0F0", "#999999", 9)
+    _box(ax, 0.370, 0.150, 0.255, 0.320,
+         "AHORA · GATE A\ncapa determinista\n\n3σ · TRIM · rangos\ncalendario · duplicados\n\n"
+         f"recall medio {media['solo_3sigma']:.2f}\nFPR {subsets['solo_3sigma']['false_positive_rate']:.3f}",
+         "#F2E2D2", "#937860", 8.8)
+    _box(ax, 0.690, 0.150, 0.255, 0.320,
+         "AHORA · GATE B\ncapa por representación + IA\n\n"
+         "precio · retorno · canal · vintage\nCNN 1D ·IA   XGBoost ·IA\n\n"
+         f"recall medio {media['con_cnn']:.2f}\nFPR {subsets['con_cnn']['false_positive_rate']:.3f}",
+         "#DCEAD9", "#55A868", 8.8)
+    _arrow(ax, 0.305, 0.310, 0.370, 0.310)
+    _arrow(ax, 0.625, 0.310, 0.690, 0.310)
+
+    mejor_fresh = max(singles, key=lambda c: sum(singles[c][f"{f}|fresh"] for f in FAMILIAS))
+    ax.text(0.500, 0.098,
+            f"La evidencia está en la COBERTURA: de {media['solo_3sigma']:.2f} de recall medio "
+            f"con el control estándar a {media['con_cnn']:.2f} con el banco completo, a carga de "
+            "alarmas comparable.\nNinguna representación domina —cada familia la cubre bien una "
+            f"distinta— y en el escenario de dato nuevo el control que más cubre es «{mejor_fresh}». "
+            "Detalle por familia en la figura de cobertura y en el Excel.",
+            ha="center", va="center", fontsize=8, color="#444444")
+
+    fig.tight_layout()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=150, bbox_inches="tight")
+    fig.savefig(path.with_suffix(".pdf"), format="pdf", bbox_inches="tight")
+    plt.close(fig)
+
+
 def run(stack_summary: Path, figure_path: Path) -> dict:
     if not stack_summary.exists():
         raise FileNotFoundError(
@@ -170,7 +253,12 @@ def run(stack_summary: Path, figure_path: Path) -> dict:
     fig.savefig(figure_path, dpi=150, bbox_inches="tight")
     fig.savefig(figure_path.with_suffix(".pdf"), format="pdf", bbox_inches="tight")
     plt.close(fig)
-    return {"png": str(figure_path), "pdf": str(figure_path.with_suffix(".pdf"))}
+
+    encaje_path = figure_path.with_name("dq_encaje_produccion.png")
+    encaje(encaje_path, subsets, singles)
+    return {"png": str(figure_path), "pdf": str(figure_path.with_suffix(".pdf")),
+            "encaje_png": str(encaje_path),
+            "encaje_pdf": str(encaje_path.with_suffix(".pdf"))}
 
 
 def main() -> None:
@@ -181,8 +269,8 @@ def main() -> None:
                         default=ROOT / "docs" / "figuras" / "dq_pipeline_gate_a_b.png")
     args = parser.parse_args()
     out = run(args.stack_summary, args.figure)
-    print(f"  figura PNG -> {out['png']}")
-    print(f"  figura PDF -> {out['pdf']}")
+    for k, v in out.items():
+        print(f"  {k:12s} -> {v}")
 
 
 if __name__ == "__main__":
