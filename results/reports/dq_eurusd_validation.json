@@ -1,0 +1,124 @@
+{
+  "fuente_corrupta": "dataset_wide_with_target.csv",
+  "peers": [
+    "DTWEXBGS",
+    "GOLD",
+    "DAX",
+    "EUROSTOXX50"
+  ],
+  "n": 4563,
+  "n_defectos": 10,
+  "dias_defecto": [
+    "2008-01-08",
+    "2008-01-09",
+    "2008-02-08",
+    "2008-02-11",
+    "2008-09-08",
+    "2008-09-09",
+    "2008-10-08",
+    "2008-10-09",
+    "2008-12-08",
+    "2008-12-09"
+  ],
+  "recall_a_FP": {
+    "FP=0.005": {
+      "recall_3sigma": 1.0,
+      "recall_cross_asset": 1.0
+    },
+    "FP=0.01": {
+      "recall_3sigma": 1.0,
+      "recall_cross_asset": 1.0
+    },
+    "FP=0.02": {
+      "recall_3sigma": 1.0,
+      "recall_cross_asset": 1.0
+    }
+  },
+  "detalle_por_dia_FP_0.5pct": [
+    {
+      "dia": "2008-01-08",
+      "ret_corrupt": 0.059,
+      "z_3sigma": 11.7,
+      "caza_3sigma": true,
+      "z_cross": 15.8,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-01-09",
+      "ret_corrupt": -0.06,
+      "z_3sigma": -6.6,
+      "caza_3sigma": true,
+      "z_cross": -9.7,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-02-08",
+      "ret_corrupt": 0.073,
+      "z_3sigma": 5.9,
+      "caza_3sigma": true,
+      "z_cross": 8.5,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-02-11",
+      "ret_corrupt": -0.071,
+      "z_3sigma": -4.6,
+      "caza_3sigma": true,
+      "z_cross": -7.3,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-09-08",
+      "ret_corrupt": 0.053,
+      "z_3sigma": 6.1,
+      "caza_3sigma": true,
+      "z_cross": 10.5,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-09-09",
+      "ret_corrupt": -0.062,
+      "z_3sigma": -5.5,
+      "caza_3sigma": true,
+      "z_cross": -8.4,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-10-08",
+      "ret_corrupt": 0.096,
+      "z_3sigma": 6.8,
+      "caza_3sigma": true,
+      "z_cross": 12.4,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-10-09",
+      "ret_corrupt": -0.095,
+      "z_3sigma": -5.0,
+      "caza_3sigma": true,
+      "z_cross": -7.0,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-12-08",
+      "ret_corrupt": 0.16,
+      "z_3sigma": 7.4,
+      "caza_3sigma": true,
+      "z_cross": 8.8,
+      "caza_cross": true
+    },
+    {
+      "dia": "2008-12-09",
+      "ret_corrupt": -0.143,
+      "z_3sigma": -4.8,
+      "caza_3sigma": true,
+      "z_cross": -7.1,
+      "caza_cross": true
+    }
+  ],
+  "veredicto": {
+    "3sigma_pierde": [],
+    "cross_asset_pierde": [],
+    "lectura": "El cross-asset caza 10/10 y 3σ 10/10 a FP=0,5 %. Ambos cazan los mismos; el defecto era de salto, no de decoplamiento puro."
+  }
+}
