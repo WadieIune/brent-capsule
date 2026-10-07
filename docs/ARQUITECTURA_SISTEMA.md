@@ -82,6 +82,15 @@ Por tanto:
   CNN **no interviene** en la ruta de calidad de dato (decisión #12, verificado
   por traza de importaciones: 0 módulos de deep learning).
 
+**Extensión de investigación DQ (2026-10-07, no productiva):** el paper evalúa
+el espacio de canal como una segunda representación para auditar si defectos
+en las series alteran régimen, geometría, episodios o supervivencia estimada y
+sesgan métricas de riesgo. Esto no cambia el diagrama ni la afirmación anterior:
+la CNN de canal y XGBoost-AFT existentes siguen siendo detector de régimen y
+supervivencia, respectivamente; no son detectores DQ hasta entrenarse y pasar
+una evaluación específica a FPR controlada. El protocolo está en
+`PROPUESTA_DQ_REPRESENTACION_CANAL.md`.
+
 ## Qué aporta cada caja, y qué NO
 
 | Caja | Qué es | Aporta | NO es |

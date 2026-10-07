@@ -5,14 +5,26 @@
   que ha dado valor real, integrando **CNN + XGBoost + modelo generativo** en el
   framework de control ya creado, con **sistema de alertas real** cuyo
   **benchmark es el control típico de 3σ sobre log-rendimientos**.
+- **Objetivo reformulado por el MASTER (2026-10-07):** desarrollar técnicas de
+  **deep learning (CNN) y ML (XGBoost) que mejoren o APOYEN a los controles
+  estadísticos actuales**, con dos fines medibles: (1) no **infra/sobre-estimar
+  capital** por una serie sucia que pasó el gate, y (2) **ganar accuracy en la
+  calidad de las series históricas de precios**. No se busca rentabilidad: el
+  régimen de canal y el tiempo de supervivencia entran como **representaciones de
+  control**, no como estrategia.
 
-## Tesis
-Los controles estándar (3σ sobre log-rendimientos) **no ven** defectos
-estructurales que sí importan para riesgo/capital: rachas estancadas,
+## Tesis (actualizada por el MASTER, 2026-10-07)
+El objetivo es mejorar la calidad y confiabilidad de las series históricas de
+precios para que su lectura de riesgo/capital no quede sesgada; no buscamos
+rentabilidad ni alpha. Los controles estándar (3σ sobre log-rendimientos)
+pueden no ver defectos estructurales relevantes: rachas estancadas,
 **repetidos consecutivos** (≥20 sesiones con rendimiento 0 → P&L mensual
 repetido, alerta TRIM), decoplamiento **cross-asset**, y formas imposibles de
 **curvas de tipos** (ZC, OIS-RFR). Una capa de IA los detecta a **tasa de falsos
-positivos controlada**, mejorando el estado del arte.
+positivos controlada**, si así lo demuestra una comparación pareada. Canal y
+supervivencia se investigan como **representación adicional de DQ**: cómo una
+corrupción distorsiona régimen, geometría, episodios y vida inferida. No son
+señales de trading.
 
 ## Componentes
 1. **Benchmark (a batir):** 3σ sobre log-rendimientos; + controles de cola
@@ -30,6 +42,11 @@ positivos controlada**, mejorando el estado del arte.
 6. **Shape de curvas de tipos:** la misma CNN controla ZC / OIS-RFR (inversiones
    imposibles, kinks, violaciones de no-arbitraje). Datos disponibles: DGS2/5/10/30,
    SOFR, DFF en el panel.
+7. **DQ en espacio de canal (hipótesis nueva, no validada):** comparar controles
+   de precio/retorno y cross-asset con residuos proyectados, geometría,
+   asignación de régimen y duración/supervivencia calculadas *as-of*. Recomputar
+   todo tras inyectar defectos con etiqueta conocida y medir el sesgo en las
+   métricas de riesgo; no optimizar P&L ni llamarlo alpha.
 
 ## Evaluación (estricta, y aquí SÍ hay ground truth)
 - **Inyección sintética** de defectos por familia, con verdad conocida →
@@ -180,3 +197,35 @@ YOLO logra 92,8%. En test la FPR sube a 4,0% CNN y 4,8% YOLO (3σ queda 0,8%),
 así que es evidencia de señal aprendible, no gate operativo superado. YOLO no
 mejora la CNN numérica. Repetir con más semillas/ventanas y datos reales antes
 de incorporar. Ver `docs/hallazgos/2026-10-07-A-dq-yolo-volatilidad.md`.
+
+### YOLO focalizado en spikes leves entre tenors — piloto 2026-10-07
+
+Se ejecutó el test solicitado sobre pares de curvas suaves, residuo primario vs
+referencia en 32 tenors log-espaciados, perturbaciones de 0,5–4 bp y etiquetas
+bbox de tenor. En RTX 5060, tras corregir una fuga visual en el renderer,
+YOLO alcanza recall localizado 0,144 a 0,5 bp y 0,578 a 1 bp (FPR test 1,4 %).
+El residuo local logra 0,140 y 0,794 (FPR 2 %); residuo pareado 0,330 y 0,996
+(FPR 3 %); CNN1D 0,290 y 0,978 (FPR 4,4 %). A 2 bp los métodos numéricos/CNN
+alcanzan 1,0, YOLO 0,658. **YOLO aún no supera los controles de shape**; queda
+como herramienta de localización visual hasta repetir multi-semilla y con curvas
+reales. La fuga encontrada y métricas completas: `docs/hallazgos/2026-10-07-A-dq-yolo-spikes-tenor.md`.
+
+### Encuadre del paper: DQ en representación de canal — 2026-10-07
+
+El uso de canal y supervivencia se reencuadra como una **vista adicional de
+calidad del historial**, no como señal de rentabilidad. La prueba debe inyectar
+defectos conocidos en precios crudos, recalcular retornos, canales y vida
+estimada *as-of*, y medir (i) detección frente a TRIM/3σ/cross-asset, (ii)
+distorsión del régimen/features/supervivencia y (iii) propagación a volatilidad,
+VaR/ES, contribuciones y cobertura frente al mismo historial limpio. CNN/XGB
+solo se promueven si añaden cobertura a FPR común; una regla barata ganadora es
+un resultado válido. Diseño detallado y splits: `docs/PROPUESTA_DQ_REPRESENTACION_CANAL.md`.
+
+Existe ya un **piloto de controles de canal** (`dq_channel_representation.py`):
+apunta a cobertura complementaria (stale/weekly-fill por oscilación; quantize
+por rejilla; decoupling/lag por residuo cross-asset), no a dominancia de IA.
+Reserva metodológica antes de citarlo como confirmatorio: solo 124 ventanas de
+test, umbral estimado sobre el mismo test limpio, proxies de regresión por
+ventana (sin re-ejecutar todavía episodios y supervivencia XGB-AFT) y no hay
+XGBoost DQ. Rehacer calibración en validación limpia independiente, medir FPR
+OOS e impacto en duración/estado del canal y luego comparar CNN/XGBoost.

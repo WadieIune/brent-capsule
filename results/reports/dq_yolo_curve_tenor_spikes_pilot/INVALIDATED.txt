@@ -1,0 +1,3 @@
+INVALIDATED: do not use the YOLO metrics in summary.json as evidence.
+The renderer leaked the positive bbox location as a visible circle. See the
+corrected rerun at results/reports/dq_yolo_curve_tenor_spikes_cleanlabels/.

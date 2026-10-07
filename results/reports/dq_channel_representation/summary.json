@@ -1,0 +1,205 @@
+{
+  "protocol": {
+    "source": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
+    "question": "\u00bfel canal cubre familias de defecto que las otras dos representaciones no ven?",
+    "injection_space": "PRECIO; retornos y normalizaci\u00f3n causal recalculados sobre la serie corrompida",
+    "channel_definition": "reutilizada de code/part2_channel_survival/patterns_min.py",
+    "representations": {
+      "canal": [
+        "canal_coherencia_banda",
+        "canal_ruptura_banda",
+        "canal_cambio_geometria",
+        "canal_deficit_oscilacion"
+      ],
+      "precio": [
+        "reticula_precio"
+      ],
+      "retorno_normalizado": [
+        "cnn_1d",
+        "cross_asset_1_minus_r2",
+        "3sigma_vol_normalizada"
+      ]
+    },
+    "families": [
+      "stale",
+      "reversible_jump",
+      "decoupling",
+      "lag1_calendar",
+      "weekly_ffill",
+      "source_switch",
+      "quantize"
+    ],
+    "target_false_positive_rate": 0.05,
+    "approx_chance_recall": 0.04838709677419355,
+    "n_windows": {
+      "train": 558,
+      "validation": 236,
+      "test": 124
+    },
+    "seeds": [
+      42,
+      71,
+      123,
+      7,
+      2024
+    ],
+    "matched_protocol": "umbral = cuantil (1-alpha) del test limpio; aisla poder discriminante, NO es operativo",
+    "conformal_protocol": "umbral calibrado en validaci\u00f3n limpia y recalibrado en l\u00ednea (ACI); es el gate operativo"
+  },
+  "recall_matched_fpr": {
+    "canal_coherencia_banda": {
+      "stale": 1.0,
+      "reversible_jump": 0.5161290322580645,
+      "decoupling": 0.5806451612903226,
+      "lag1_calendar": 0.5806451612903226,
+      "weekly_ffill": 0.49193548387096775,
+      "source_switch": 0.20967741935483872,
+      "quantize": 0.06451612903225806
+    },
+    "canal_ruptura_banda": {
+      "stale": 0.0,
+      "reversible_jump": 0.6935483870967742,
+      "decoupling": 0.04838709677419355,
+      "lag1_calendar": 0.27419354838709675,
+      "weekly_ffill": 0.10483870967741936,
+      "source_switch": 0.06451612903225806,
+      "quantize": 0.03225806451612903
+    },
+    "canal_cambio_geometria": {
+      "stale": 0.0,
+      "reversible_jump": 0.20161290322580644,
+      "decoupling": 0.12096774193548387,
+      "lag1_calendar": 0.06451612903225806,
+      "weekly_ffill": 0.24193548387096775,
+      "source_switch": 0.056451612903225805,
+      "quantize": 0.04838709677419355
+    },
+    "canal_deficit_oscilacion": {
+      "stale": 1.0,
+      "reversible_jump": 0.016129032258064516,
+      "decoupling": 0.024193548387096774,
+      "lag1_calendar": 0.024193548387096774,
+      "weekly_ffill": 0.9919354838709677,
+      "source_switch": 0.04032258064516129,
+      "quantize": 0.10483870967741936
+    },
+    "reticula_precio": {
+      "stale": 0.6129032258064516,
+      "reversible_jump": 0.0,
+      "decoupling": 0.0,
+      "lag1_calendar": 0.0,
+      "weekly_ffill": 0.024193548387096774,
+      "source_switch": 0.0,
+      "quantize": 1.0
+    },
+    "cnn_1d": {
+      "stale": 0.7919354838709678,
+      "reversible_jump": 0.8,
+      "decoupling": 0.9306451612903224,
+      "lag1_calendar": 0.55,
+      "weekly_ffill": 0.6661290322580645,
+      "source_switch": 0.4064516129032258,
+      "quantize": 0.0532258064516129
+    },
+    "cross_asset_1_minus_r2": {
+      "stale": 0.8387096774193548,
+      "reversible_jump": 0.532258064516129,
+      "decoupling": 0.8951612903225806,
+      "lag1_calendar": 0.8548387096774194,
+      "weekly_ffill": 0.7419354838709677,
+      "source_switch": 0.2096774193548387,
+      "quantize": 0.06451612903225806
+    },
+    "3sigma_vol_normalizada": {
+      "stale": 0.03225806451612903,
+      "reversible_jump": 0.4112903225806452,
+      "decoupling": 0.1532258064516129,
+      "lag1_calendar": 0.08064516129032258,
+      "weekly_ffill": 0.12096774193548387,
+      "source_switch": 0.08064516129032258,
+      "quantize": 0.03225806451612903
+    }
+  },
+  "recall_conformal_aci": {
+    "canal_coherencia_banda": {
+      "false_positive_rate": 0.04838709677419355,
+      "stale": 1.0,
+      "reversible_jump": 0.5403225806451613,
+      "decoupling": 0.6451612903225806,
+      "lag1_calendar": 0.6290322580645161,
+      "weekly_ffill": 0.532258064516129,
+      "source_switch": 0.23387096774193547,
+      "quantize": 0.056451612903225805
+    },
+    "canal_ruptura_banda": {
+      "false_positive_rate": 0.06451612903225806,
+      "stale": 0.0,
+      "reversible_jump": 0.6774193548387096,
+      "decoupling": 0.04838709677419355,
+      "lag1_calendar": 0.28225806451612906,
+      "weekly_ffill": 0.0967741935483871,
+      "source_switch": 0.06451612903225806,
+      "quantize": 0.03225806451612903
+    },
+    "canal_cambio_geometria": {
+      "false_positive_rate": 0.06451612903225806,
+      "stale": 0.0,
+      "reversible_jump": 0.2903225806451613,
+      "decoupling": 0.13709677419354838,
+      "lag1_calendar": 0.0967741935483871,
+      "weekly_ffill": 0.3064516129032258,
+      "source_switch": 0.11290322580645161,
+      "quantize": 0.04032258064516129
+    },
+    "canal_deficit_oscilacion": {
+      "false_positive_rate": 0.04838709677419355,
+      "stale": 1.0,
+      "reversible_jump": 0.0,
+      "decoupling": 0.008064516129032258,
+      "lag1_calendar": 0.024193548387096774,
+      "weekly_ffill": 0.8145161290322581,
+      "source_switch": 0.008064516129032258,
+      "quantize": 0.04838709677419355
+    },
+    "reticula_precio": {
+      "false_positive_rate": 0.0,
+      "stale": 0.6129032258064516,
+      "reversible_jump": 0.0,
+      "decoupling": 0.0,
+      "lag1_calendar": 0.0,
+      "weekly_ffill": 0.024193548387096774,
+      "source_switch": 0.0,
+      "quantize": 1.0
+    },
+    "cnn_1d": {
+      "false_positive_rate": 0.0532258064516129,
+      "stale": 0.7080645161290322,
+      "reversible_jump": 0.717741935483871,
+      "decoupling": 0.835483870967742,
+      "lag1_calendar": 0.5064516129032258,
+      "weekly_ffill": 0.617741935483871,
+      "source_switch": 0.33225806451612905,
+      "quantize": 0.02096774193548387
+    },
+    "cross_asset_1_minus_r2": {
+      "false_positive_rate": 0.04032258064516129,
+      "stale": 0.7338709677419355,
+      "reversible_jump": 0.5806451612903226,
+      "decoupling": 0.7983870967741935,
+      "lag1_calendar": 0.7903225806451613,
+      "weekly_ffill": 0.6935483870967742,
+      "source_switch": 0.24193548387096775,
+      "quantize": 0.06451612903225806
+    },
+    "3sigma_vol_normalizada": {
+      "false_positive_rate": 0.04838709677419355,
+      "stale": 0.03225806451612903,
+      "reversible_jump": 0.3709677419354839,
+      "decoupling": 0.12903225806451613,
+      "lag1_calendar": 0.07258064516129033,
+      "weekly_ffill": 0.08870967741935484,
+      "source_switch": 0.0967741935483871,
+      "quantize": 0.03225806451612903
+    }
+  }
+}

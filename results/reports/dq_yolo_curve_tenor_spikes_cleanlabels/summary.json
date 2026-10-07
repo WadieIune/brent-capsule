@@ -1,0 +1,108 @@
+{
+  "protocol": {
+    "seed": 42,
+    "tenors_years": [
+      0.25,
+      0.2917496686319034,
+      0.34047147658730165,
+      0.39732976189184044,
+      0.46368330547815007,
+      0.5411178028935836,
+      0.6314837587401065,
+      0.7369407094354196,
+      0.8600088311165738,
+      1.0036291659950838,
+      1.1712339064335169,
+      1.366828416369713,
+      1.5950869502101324,
+      1.8614643566515174,
+      2.172326436892718,
+      2.535102072495095,
+      2.958460758393982,
+      3.4525197836877353,
+      4.02908601134395,
+      4.701938034796137,
+      5.4871554543180645,
+      6.403503142116146,
+      7.4728796791829515,
+      8.720840680510843,
+      10.177209514922643,
+      11.876790014304534,
+      13.860198204336196,
+      16.17483293315034,
+      18.876008593692053,
+      22.028277009210456,
+      25.706970071875695,
+      30.0
+    ],
+    "train": 1000,
+    "validation_clean": 500,
+    "test_clean": 500,
+    "target_validation_fpr": 0.02,
+    "yolo_epochs": 15,
+    "cnn_epochs": 15,
+    "amplitudes_bp": [
+      0.5,
+      1.0,
+      2.0,
+      3.0,
+      4.0
+    ],
+    "training_amplitude_range_bp": [
+      0.5,
+      4.0
+    ],
+    "curve_generator": "smooth parametric curve pair with shared factors and independent sub-bp quote noise",
+    "test_domain": "wider shared-factor and noise ranges than train",
+    "limitations": [
+      "all generated curves and defect labels are synthetic",
+      "single seed pilot"
+    ]
+  },
+  "thresholds": {
+    "cnn1d": 0.8096225261688232,
+    "paired_residual": 0.57806396484375,
+    "local_shape_residual": 0.34285736083984375,
+    "yolo": 0.8868023157119751
+  },
+  "clean_test_fpr": {
+    "cnn1d": 0.044,
+    "paired_residual": 0.03,
+    "local_shape_residual": 0.02,
+    "yolo": 0.014
+  },
+  "localized_event_recall_by_amplitude_bp": {
+    "0.5": {
+      "cnn1d": 0.29,
+      "paired_residual": 0.33,
+      "local_shape_residual": 0.14,
+      "yolo": 0.144
+    },
+    "1.0": {
+      "cnn1d": 0.978,
+      "paired_residual": 0.996,
+      "local_shape_residual": 0.794,
+      "yolo": 0.578
+    },
+    "2.0": {
+      "cnn1d": 1.0,
+      "paired_residual": 1.0,
+      "local_shape_residual": 1.0,
+      "yolo": 0.658
+    },
+    "3.0": {
+      "cnn1d": 1.0,
+      "paired_residual": 1.0,
+      "local_shape_residual": 1.0,
+      "yolo": 0.682
+    },
+    "4.0": {
+      "cnn1d": 1.0,
+      "paired_residual": 1.0,
+      "local_shape_residual": 1.0,
+      "yolo": 0.684
+    }
+  },
+  "weights": "results/reports/dq_yolo_curve_tenor_spikes_cleanlabels/models/yolo11n_curve_tenor_spikes.pt",
+  "interpretation": "Pilot only; no operational DQ claim."
+}
