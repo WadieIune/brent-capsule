@@ -6,3 +6,13 @@ pyyaml==6.0.2
 # Requeridos por code/channel_detector.py (cabezas logísticas del detector de canal)
 scikit-learn==1.4.2
 joblib==1.4.2
+# --- Pipeline de Data Quality (code/run_dq.sh) ---
+# scipy: distancia de Wasserstein, cuantiles normales y tests de forma.
+scipy==1.13.1
+# xgboost: combinador de señales sobre las cuatro representaciones.
+xgboost==2.1.1
+# matplotlib/seaborn: figuras de distribución y de pipeline (PNG + PDF vectorial).
+matplotlib==3.9.2
+seaborn==0.13.2
+# python-docx: resumen ejecutivo en Word. El Excel sale con openpyxl, ya arriba.
+python-docx==1.1.2

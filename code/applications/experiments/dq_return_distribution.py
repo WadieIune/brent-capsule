@@ -192,6 +192,9 @@ def figure(z: np.ndarray, tails: list[dict], gates: list[dict], path: Path) -> N
     fig.tight_layout(rect=(0, 0, 1, 0.96))
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=150)
+    # Versión vectorial para Overleaf: el PDF escala sin pixelar y pesa menos
+    # que un PNG a la resolución que exigiría una figura a doble columna.
+    fig.savefig(path.with_suffix(".pdf"), format="pdf", bbox_inches="tight")
     plt.close(fig)
 
 

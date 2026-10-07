@@ -1,24 +1,44 @@
 metadata_version: 1
-name: "BRENT Pattern System v2 — Chartismo CNN con CV purgada, walk-forward y backtest (DSR/PBO)"
+name: "Data Quality en series financieras — gate de dos capas con controles por representación, CNN 1D y XGBoost"
 description: >
-  Sistema de reconocimiento de patrones chartistas sobre el precio del Brent
-  mediante una CNN multitarea (EfficientNet sobre codificación imagen GASF/GADF +
-  mapa de features). Incorpora validación cruzada purgada con embargo y backtest
-  walk-forward, con métricas robustas frente al overfitting de backtest
-  (Probabilistic Sharpe Ratio, Deflated Sharpe Ratio y Probability of Backtest
-  Overfitting / CSCV) siguiendo a López de Prado. La cápsula reproduce el
-  entrenamiento, la evaluación out-of-sample y el backtest de extremo a extremo.
+  Framework de control de calidad de dato para series temporales financieras,
+  evaluado con defectos inyectados de verdad conocida y presupuesto de falsas
+  alarmas común. El gate tiene dos capas: Gate A reúne los controles
+  deterministas y estadísticos clásicos (3σ, checks TRIM de repetidos, rangos,
+  calendario); Gate B mira el mismo dato en cuatro REPRESENTACIONES distintas
+  —precio crudo, retorno frente a pares, canal/geometría y vintage frente al
+  snapshot almacenado— e incorpora la capa de IA: una CNN 1D supervisada y
+  XGBoost como combinador de señales. Todos los controles operan bajo un gate
+  conforme-adaptativo (Adaptive Conformal Inference) que calibra el umbral sobre
+  la distribución empírica en vez de sobre un supuesto de normalidad, lo que
+  importa porque las colas observadas superan a la gaussiana por un factor de 4
+  a 3σ y de varios órdenes de magnitud a 5σ.
+
+  Resultado principal: ninguna representación domina. Cada familia de defecto la
+  cubre bien un control distinto y varias las ve un solo control, de modo que el
+  valor está en la cobertura combinada y no en la capacidad de ningún modelo. La
+  CNN 1D aporta una mejora real y modesta, y es el mejor control en las familias
+  sin estadístico cerrado evidente; XGBoost como combinador rinde por debajo de
+  la unión de los mismos controles con umbral propio, un resultado negativo que
+  se publica igual. La cápsula conserva además el sistema anterior de patrones
+  chartistas (CNN EfficientNet sobre GASF/GADF, CV purgada, DSR/PBO).
+
+  Todos los resultados son provisionales y están sujetos a auditoría cruzada;
+  las cifras de impacto en capital se retiraron explícitamente por no ser
+  defendibles con una cartera de juguete.
 authors:
   - name: "Wadie Albakri"
 corresponding_contributor:
   name: "Wadie Albakri"
 tags:
+  - "data-quality"
+  - "anomaly-detection"
+  - "conformal-prediction"
   - "machine-learning"
   - "deep-learning"
   - "quantitative-finance"
+  - "market-risk"
   - "time-series"
-  - "backtesting"
-  - "cross-validation"
+  - "xgboost"
   - "pytorch"
-  - "brent"
 license: "Proprietary — All Rights Reserved (see /code/LICENSE)"

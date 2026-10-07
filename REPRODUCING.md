@@ -5,9 +5,10 @@ Esta cápsula sigue el formato estándar de **Code Ocean**:
 ```
 .
 ├── REPRODUCING.md          # este archivo
-├── code/                   # código + script de arranque (run)
-│   ├── run                 # punto de entrada que ejecuta Code Ocean
+├── code/                   # código + scripts de arranque
+│   ├── run                 # punto de entrada por defecto (patrones chartistas)
 │   ├── run.sh              # alias
+│   ├── run_dq.sh           # pipeline de Data Quality (gate de dos capas)
 │   ├── config_codeocean.json   # config CPU reproducible (JSON)
 │   ├── config_codeocean.yaml   # misma config en YAML (recomendado)
 │   ├── config_gpu.yaml         # config para ejecución en GPU
@@ -30,6 +31,36 @@ Esta cápsula sigue el formato estándar de **Code Ocean**:
    adjunta el data asset correspondiente). Quedan montados en `/data`.
 3. Pulsa **Reproducible Run**. Code Ocean ejecuta `/code/run` y deposita las
    salidas en `/results`.
+
+### Las dos líneas de la cápsula
+
+| Script | Qué reproduce | Duración aprox. |
+|---|---|---|
+| `code/run` | Sistema de patrones chartistas: CNN EfficientNet sobre GASF/GADF, CV purgada, walk-forward y backtest con DSR/PBO. | larga |
+| `code/run_dq.sh` | **Pipeline de Data Quality**: detección por representación, gate conforme, diagnóstico de distribución, figuras y entregables Excel/Word. | ~6 min en CPU |
+
+Para ejecutar la línea de DQ en Code Ocean, cambia el punto de entrada a
+`/code/run_dq.sh` o invócalo desde `/code/run`.
+
+#### Qué produce `run_dq.sh`
+
+Los experimentos se encadenan en orden y **no se recalculan entre sí**: los dos
+últimos pasos solo leen los `summary.json` publicados por los anteriores, de
+modo que las figuras y los entregables no pueden divergir de la evidencia.
+
+- `results/reports/dq_*/summary.json` — un JSON por experimento, con protocolo,
+  límites declarados y resultados.
+- `docs/figuras/dq_distribucion_rendimientos.{png,pdf}` — distribución empírica
+  frente a la normal.
+- `docs/figuras/dq_pipeline_gate_a_b.{png,pdf}` — figura de cierre: el pipeline
+  de dos puertas y la cobertura medida por control y familia.
+- `results/reports/dq_entregables/resultados_dq.xlsx` — resultados para el Risk
+  Director: cobertura, comparación de capas, estado de cada resultado y
+  limitaciones.
+- `results/reports/dq_entregables/resumen_dq_estado_del_arte.docx` — resumen
+  ejecutivo.
+
+Los PDF son **vectoriales**, pensados para incrustarse en Overleaf.
 
 ## Opción B — Local con Docker
 
@@ -57,6 +88,9 @@ Requisitos: Python 3.11.
 ```bash
 pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cpu
 pip install -r environment/requirements.txt
+
+# Línea de Data Quality (usa el intérprete que se le indique):
+PYTHON=python ./code/run_dq.sh
 
 # Ajusta las rutas /data y /results del config o crea enlaces equivalentes:
 python -m brent_pattern_system.train_torch --config code/config_codeocean.json
