@@ -52,7 +52,45 @@ from experiments.portfolio_var import DEFAULT_ASSETS, load_commodities  # noqa: 
 from experiments.portfolio_var_alert import to_trading_days  # noqa: E402
 
 SEVERITY_ORDER = {"no_positivo": 3, "fuera_de_banda": 2,
+                  "retorno_3sigma_benchmark": 2,
+                  "repetidos_consecutivos_20": 2,
                   "salto_reversible": 1, "precio_congelado": 0}
+ZERO_RETURN_RUN_LIMIT = 20
+SIGMA_LOOKBACK = 60
+
+
+def rolling_log_return_3sigma(prices: np.ndarray, lookback: int = SIGMA_LOOKBACK,
+                              min_periods: int = 20) -> tuple[np.ndarray, np.ndarray]:
+    """Causal benchmark: current log return vs prior rolling mean and std."""
+    prices = np.asarray(prices, dtype=float)
+    returns = np.full(len(prices), np.nan)
+    valid = (prices[1:] > 0) & (prices[:-1] > 0)
+    positions = np.flatnonzero(valid) + 1
+    returns[positions] = np.log(prices[positions] / prices[positions - 1])
+    history = pd.Series(returns)
+    mean = history.rolling(lookback, min_periods=min_periods).mean().shift(1).to_numpy()
+    std = history.rolling(lookback, min_periods=min_periods).std(ddof=1).shift(1).to_numpy()
+    flags = np.isfinite(returns) & np.isfinite(mean) & np.isfinite(std)
+    flags &= np.abs(returns - mean) > 3.0 * std
+    return returns, flags
+
+
+def consecutive_zero_return_alert_positions(prices: np.ndarray,
+                                           threshold: int = ZERO_RETURN_RUN_LIMIT) -> np.ndarray:
+    """First session reaching threshold consecutive zero log returns."""
+    prices = np.asarray(prices, dtype=float)
+    if threshold < 1:
+        raise ValueError("threshold debe ser >= 1")
+    with np.errstate(divide="ignore", invalid="ignore"):
+        returns = np.diff(np.log(prices))
+    zero = np.isfinite(returns) & (returns == 0.0)
+    run = 0
+    positions = []
+    for i, is_zero in enumerate(zero, start=1):
+        run = run + 1 if is_zero else 0
+        if run == threshold:
+            positions.append(i)
+    return np.asarray(positions, dtype=int)
 
 
 def expected_band(prices: np.ndarray, dates: pd.DatetimeIndex, k_sigma: float,
@@ -120,7 +158,8 @@ def calibrate_tol_atr(prices: np.ndarray, target_rate: float,
 
 
 def daily_alerts(prices: np.ndarray, dates: pd.DatetimeIndex, asset: str,
-                 k_sigma: float, tol_atr: float) -> pd.DataFrame:
+                 k_sigma: float, tol_atr: float,
+                 zero_return_threshold: int = ZERO_RETURN_RUN_LIMIT) -> pd.DataFrame:
     """Alertas por sesión para un activo, con severidad y motivo."""
     band = expected_band(prices, dates, k_sigma)
     atr = common.atr_like(prices)
@@ -139,6 +178,17 @@ def daily_alerts(prices: np.ndarray, dates: pd.DatetimeIndex, asset: str,
                          "expected_return_range": [round(float(r["ret_low"]), 5),
                                                    round(float(r["ret_high"]), 5)]})
     n = len(prices)
+    log_returns, sigma_flags = rolling_log_return_3sigma(prices)
+    for t in np.flatnonzero(sigma_flags):
+        rows.append({"date": dates[int(t)], "asset": asset,
+                     "rule": "retorno_3sigma_benchmark",
+                     "severity_sigma": round(float(abs(log_returns[t])), 6),
+                     "price": float(prices[t]), "layer": "benchmark"})
+    for t in consecutive_zero_return_alert_positions(prices, zero_return_threshold):
+        rows.append({"date": dates[int(t)], "asset": asset,
+                     "rule": f"repetidos_consecutivos_{zero_return_threshold}",
+                     "severity_sigma": float(zero_return_threshold),
+                     "price": float(prices[t]), "layer": "trim"})
     for t in range(1, n - 1):
         thr = tol_atr * (atr[t] if not np.isnan(atr[t]) else 0.0)
         jump = abs(prices[t] - prices[t - 1])
@@ -198,7 +248,8 @@ class DQDailyMonitorExperiment(Experiment):
 
         frames, per_asset = [], {}
         for c in cols:
-            a = daily_alerts(px[c].to_numpy(float), dates, c, k_sigma, tol_atr)
+            a = daily_alerts(px[c].to_numpy(float), dates, c, k_sigma, tol_atr,
+                             int(cfg.get("zero_return_threshold", ZERO_RETURN_RUN_LIMIT)))
             if not a.empty:
                 frames.append(a)
             per_asset[c] = {} if a.empty else a["rule"].value_counts().to_dict()
@@ -209,11 +260,15 @@ class DQDailyMonitorExperiment(Experiment):
         ctx.log(f"  alertas: {len(alerts)} sobre {total_obs} observaciones "
                 f"({rate:.2f}% de carga) · por regla {by_rule}")
 
-        # Contraste con el control convencional (solo ve outliers de retorno).
+        # Keep the legacy quantile count while reporting the explicit 3σ benchmark.
         conv = 0
+        sigma3_count = 0
         for c in cols:
             conv += len(_naive_return_outliers(px[c].to_numpy(float)))
-        ctx.log(f"  control convencional (cuantil |retorno| 99.9%): {conv} marcas")
+            _, flags3 = rolling_log_return_3sigma(px[c].to_numpy(float))
+            sigma3_count += int(flags3.sum())
+        ctx.log(f"  baseline previo (cuantil |retorno| 99.9%): {conv}; "
+                f"benchmark causal 3σ log-retornos: {sigma3_count} marcas")
 
         # Banda esperada: cobertura empírica (¿el precio cae dentro de lo previsto?).
         ref = cols[0]
@@ -248,6 +303,8 @@ class DQDailyMonitorExperiment(Experiment):
             "alert_rate_pct": round(rate, 3), "by_rule": by_rule,
             "per_asset": per_asset,
             "conventional_flags": int(conv),
+            "benchmark_3sigma_log_return_flags": int(sigma3_count),
+            "zero_return_run_threshold": int(cfg.get("zero_return_threshold", ZERO_RETURN_RUN_LIMIT)),
             "expected_band_coverage_pct": coverage,
             "last_session": str(last_day.date()),
             "alerts_last_session": int(len(today)),
@@ -255,7 +312,9 @@ class DQDailyMonitorExperiment(Experiment):
                                     .assign(date=lambda x: x["date"].astype(str))
                                     .to_dict("records") if len(alerts) else []),
         }
-        baseline = {"method": "control convencional de outliers por cuantil de |retorno|",
+        baseline = {"method": "3σ causal sobre log-rendimientos (benchmark primario)",
+                    "flags_3sigma": int(sigma3_count),
+                    "legacy_quantile_method": "cuantil de |retorno| (99.9%)",
                     "flags": int(conv),
                     "blind_to": ["precio_congelado / relleno por forward-fill",
                                  "desviación respecto al canal proyectado (sin severidad)"]}
@@ -268,8 +327,10 @@ class DQDailyMonitorExperiment(Experiment):
             f"{len(alerts)} alertas ({rate:.2f}% de carga operativa), desglose {by_rule}. "
             f"La banda esperada a k={k_sigma}σ contiene el {coverage}% de los precios "
             f"observados en {ref}, de modo que el control acota el rendimiento admisible "
-            f"del día siguiente y marca lo que se sale. El control convencional emite "
-            f"{conv} marcas y es CIEGO al precio congelado y al relleno de calendario. "
+            f"del día siguiente y marca lo que se sale. El benchmark causal 3σ marca "
+            f"{sigma3_count} observaciones; el baseline legacy por cuantil marca {conv}. "
+            f"TRIM alerta al alcanzar {metrics['zero_return_run_threshold']} "
+            f"rendimientos logarítmicos cero consecutivos. "
             f"Última sesión ({last_day.date()}): {len(today)} alertas. "
             "El valor está cuantificado en dq_impact: depurar estos defectos corrige "
             "74,4 puntos porcentuales de distorsión en la contribución al riesgo."

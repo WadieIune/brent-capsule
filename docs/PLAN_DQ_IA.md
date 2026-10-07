@@ -59,3 +59,28 @@ añade la capa de IA de DQ. Nada de lo cerrado se reabre.
 Gate barato de DQ: inyección de defectos (rachas/repetidos/saltos/decoplamiento),
 **3σ vs TRIM vs cross-asset**, recall/precisión por familia. Si el cross-asset
 bate a 3σ donde 3σ es ciego (rachas/repetidos), queda justificada la CNN 1D.
+
+## Estado de integración — propuesta A, 2026-10-07
+
+- `dq_daily_monitor` incorpora ahora un benchmark causal de **3σ sobre
+  log-rendimientos**: media y desviación móvil de 60 sesiones, desplazadas una
+  sesión para excluir el retorno evaluado. Se conserva el antiguo cuantil 99,9 %
+  solo como diagnóstico histórico, no como benchmark principal.
+- El monitor alerta una vez al alcanzar **20 log-rendimientos exactamente cero
+  consecutivos**. Es un flag de revisión TRIM, no una orden de borrar/imputar: el
+  patrón por sí solo no demuestra que una cotización repetida sea falsa.
+- La salida distingue `layer=benchmark` de `layer=trim`; ambas quedan en el
+  ledger auditable. Los demás controles existentes se mantienen como capa de
+  revisión y tampoco convierten automáticamente un shock de mercado en error.
+- **CNN, XGBoost y VAE aún no están integrados en la ruta operativa DQ.** La CNN
+  disponible se entrenó para riesgo, el XGBoost localizado es de supervivencia y
+  el VAE modela ventanas de retornos Brent. Su reutilización como detector DQ no
+  está justificada sin etiquetas de defectos ni validación por familias. El gate
+  sintético y el detector cross-asset barato son el siguiente paso; la CNN 1D
+  solo avanza si añade valor frente a ellos a carga de falsas alarmas emparejada.
+- **Curvas ZC/OIS-RFR quedan como extensión separada.** No tratar DGS2/5/10/30,
+  SOFR y DFF como nodos de una misma curva sin resolver antes tenor, instrumento,
+  calendario, timestamp y convenciones de construcción.
+
+Esta integración de reglas es una propuesta en rama, pendiente de challenge de B;
+no cambia el veredicto del paper ni constituye aún una comparación de desempeño.

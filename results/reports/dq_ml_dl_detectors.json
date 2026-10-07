@@ -1,0 +1,45 @@
+{
+  "assets": [
+    "BRENT",
+    "WTI",
+    "GOLD",
+    "SILVER",
+    "COPPER",
+    "NATGAS"
+  ],
+  "W": 20,
+  "n_train_win": 596,
+  "n_test_win": 73,
+  "fp": 0.05,
+  "reps": 30,
+  "torch": true,
+  "recall_por_familia_a_FP": {
+    "3sigma": {
+      "decoplamiento": 0.054,
+      "stale": 0.054,
+      "salto": 0.055
+    },
+    "cross_asset_win": {
+      "decoplamiento": 0.984,
+      "stale": 1.0,
+      "salto": 0.928
+    },
+    "isolation_forest_ML": {
+      "decoplamiento": 0.063,
+      "stale": 0.025,
+      "salto": 0.102
+    },
+    "autoencoder_DL": {
+      "decoplamiento": 0.066,
+      "stale": 0.056,
+      "salto": 0.078
+    }
+  },
+  "veredicto_decoplamiento": {
+    "mejor_estadistico": 0.984,
+    "isolation_forest": 0.063,
+    "autoencoder": 0.066,
+    "ML_DL_mejora": false,
+    "lectura": "ML/DL no mejora de forma clara sobre el cross-asset de ventana"
+  }
+}
