@@ -20,15 +20,18 @@ Reglas de alerta
 | regla | qué captura |
 |---|---|
 | `fuera_de_banda` | el precio se aleja > k·σ del centro proyectado |
+| `retorno_3sigma_benchmark` | retorno logarítmico fuera de 3σ causal (benchmark) |
 | `salto_reversible` | salto > TOL_ATR·ATR que revierte al día siguiente (pico de feed) |
 | `precio_congelado` | tres cierres idénticos (relleno o feed caído) |
+| `repetidos_consecutivos_20` | 20 retornos logarítmicos cero consecutivos (regla TRIM) |
 | `no_positivo` | cotización <= 0, incompatible con el motor log-normal |
 
 Validación
 ----------
 No basta con contar alertas: se reporta la **tasa de alerta** (carga operativa),
-y se contrasta contra el control convencional de outliers por cuantil de
-`|retorno|`, señalando qué defectos ve cada uno. El valor demostrado del control
+y se contrasta contra el benchmark causal de **3σ sobre log-rendimientos**; el
+control antiguo por cuantil de `|retorno|` se conserva como diagnóstico. Las
+marcas del benchmark se etiquetan para no confundirlas con defectos confirmados. El valor demostrado del control
 está medido en `dq_impact.py`: depurar estos defectos corrige una distorsión de
 74 puntos porcentuales en la contribución al riesgo de la cartera.
 """
@@ -206,6 +209,10 @@ def daily_alerts(prices: np.ndarray, dates: pd.DatetimeIndex, asset: str,
     df = pd.DataFrame(rows)
     if df.empty:
         return df
+    if "layer" not in df:
+        df["layer"] = "control"
+    else:
+        df["layer"] = df["layer"].fillna("control")
     df["priority"] = df["rule"].map(SEVERITY_ORDER).fillna(0).astype(int)
     return df.sort_values(["priority", "severity_sigma"], ascending=False).reset_index(drop=True)
 
@@ -313,9 +320,9 @@ class DQDailyMonitorExperiment(Experiment):
                                     .to_dict("records") if len(alerts) else []),
         }
         baseline = {"method": "3σ causal sobre log-rendimientos (benchmark primario)",
-                    "flags_3sigma": int(sigma3_count),
+                    "flags": int(sigma3_count),
                     "legacy_quantile_method": "cuantil de |retorno| (99.9%)",
-                    "flags": int(conv),
+                    "legacy_quantile_flags": int(conv),
                     "blind_to": ["precio_congelado / relleno por forward-fill",
                                  "desviación respecto al canal proyectado (sin severidad)"]}
         # El monitor se acepta si es operativamente viable: cobertura de banda
