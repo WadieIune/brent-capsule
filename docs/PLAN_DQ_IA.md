@@ -1,30 +1,33 @@
 # Plan · Data Quality con capa de IA — nuevo foco del paper
 
 - **Autor:** A · **Fecha:** 2026-10-06 · instrucción del MASTER (mismo prompt a A y B).
-- **Objetivo:** centrar el paper en la **mejora del Data Quality**, la única vía
-  que ha dado valor real, integrando **CNN + XGBoost + modelo generativo** en el
-  framework de control ya creado, con **sistema de alertas real** cuyo
-  **benchmark es el control típico de 3σ sobre log-rendimientos**.
-- **Objetivo reformulado por el MASTER (2026-10-07):** desarrollar técnicas de
-  **deep learning (CNN) y ML (XGBoost) que mejoren o APOYEN a los controles
-  estadísticos actuales**, con dos fines medibles: (1) no **infra/sobre-estimar
-  capital** por una serie sucia que pasó el gate, y (2) **ganar accuracy en la
-  calidad de las series históricas de precios**. No se busca rentabilidad: el
-  régimen de canal y el tiempo de supervivencia entran como **representaciones de
-  control**, no como estrategia.
+- **Objetivo central (MASTER, 2026-10-07):** diseñar y evaluar un framework
+  escalable de Data Quality para millones de series financieras y múltiples
+  tipologías/asset classes, mejorando y automatizando controles con métodos
+  contrastados de ML/deep learning. La capa estadística existente es el
+  benchmark; la **segunda capa automática e inteligente** incluye canal,
+  supervivencia como representación, XGBoost, CNN y alertas trazables para el
+  Risk Director. Ninguna herramienta se presupone ganadora.
+- **Alcance:** la escala de millones de series es el destino arquitectónico, no
+  algo demostrado por los pilotos. Hay que probar transferencia entre familias,
+  capacidad operativa, coste, latencia, drift y calibración. Capital/riesgo es
+  impacto downstream posible, no el criterio principal ni una prueba de Basilea.
+- **No objetivo:** alpha, rentabilidad o recomendación de posición.
 
 ## Tesis (actualizada por el MASTER, 2026-10-07)
-El objetivo es mejorar la calidad y confiabilidad de las series históricas de
-precios para que su lectura de riesgo/capital no quede sesgada; no buscamos
-rentabilidad ni alpha. Los controles estándar (3σ sobre log-rendimientos)
-pueden no ver defectos estructurales relevantes: rachas estancadas,
-**repetidos consecutivos** (≥20 sesiones con rendimiento 0 → P&L mensual
-repetido, alerta TRIM), decoplamiento **cross-asset**, y formas imposibles de
-**curvas de tipos** (ZC, OIS-RFR). Una capa de IA los detecta a **tasa de falsos
-positivos controlada**, si así lo demuestra una comparación pareada. Canal y
-supervivencia se investigan como **representación adicional de DQ**: cómo una
-corrupción distorsiona régimen, geometría, episodios y vida inferida. No son
-señales de trading.
+El framework tiene dos capas: (1) controles estadísticos/deterministas actuales
+como benchmark y primera barrera; (2) controles automáticos e inteligentes que
+combinan nuevas representaciones y modelos para ampliar cobertura, automatizar
+el triage y entregar alertas accionables al Risk Director. La segunda capa debe
+ser medible, auditable y complementaria, no una caja negra que reemplace los
+controles base. Los controles estándar (3σ sobre log-rendimientos) pueden no
+ver defectos estructurales relevantes: rachas estancadas,
+**repetidos consecutivos** (>=20 sesiones con rendimiento 0, alerta TRIM),
+desacoplamiento cross-asset, spikes, splits/restatements y formas imposibles de
+curvas (ZC, OIS-RFR). XGBoost y canal/supervivencia pertenecen a la segunda
+capa; CNN y modelos generativos se evalúan como herramientas complementarias.
+Solo se automatizan alertas si comparación temporal pareada demuestra calidad
+aceptable a una tasa de falsos positivos controlada. No son señales de trading.
 
 ## Componentes
 1. **Benchmark (a batir):** 3σ sobre log-rendimientos; + controles de cola
@@ -212,14 +215,14 @@ reales. La fuga encontrada y métricas completas: `docs/hallazgos/2026-10-07-A-d
 
 ### Encuadre del paper: DQ en representación de canal — 2026-10-07
 
-El uso de canal y supervivencia se reencuadra como una **vista adicional de
-calidad del historial**, no como señal de rentabilidad. La prueba debe inyectar
-defectos conocidos en precios crudos, recalcular retornos, canales y vida
-estimada *as-of*, y medir (i) detección frente a TRIM/3σ/cross-asset, (ii)
-distorsión del régimen/features/supervivencia y (iii) propagación a volatilidad,
-VaR/ES, contribuciones y cobertura frente al mismo historial limpio. CNN/XGB
-solo se promueven si añaden cobertura a FPR común; una regla barata ganadora es
-un resultado válido. Diseño detallado y splits: `docs/PROPUESTA_DQ_REPRESENTACION_CANAL.md`.
+Canal/supervivencia y XGBoost son componentes de la **segunda capa automática
+e inteligente** para el Risk Director, no el framework completo. La capa 1
+mantiene controles estadísticos/deterministas como benchmark; la capa 2 combina
+representaciones, modelos y alertas trazables para extender cobertura y
+automatizar triage. La validación primaria es DQ (detección, FPR, transferencia,
+calibración y utilidad operativa). Distorsión del canal y riesgo/VaR son
+métricas downstream complementarias, no el objetivo central ni una evaluación
+de Basilea. Diseño: `docs/PROPUESTA_DQ_REPRESENTACION_CANAL.md`.
 
 El **piloto exploratorio** (`dq_channel_representation.py`) tenía 124 ventanas
 solapadas, calibración sobre el test y proxies de canal. La primera corrida
@@ -234,10 +237,10 @@ equiponderado como proxy de riesgo. Código/resultados en
 No es una victoria de IA: el FPR test de CNN/XGBoost es 0/71, pero hay solo 19
 observaciones limpias para calibrar; controles de canal superan 5% (ruptura
 8.45%, geometría 12.68%, oscilación 7.04%), y CNN/XGBoost tienen recall débil
-fuera de familias concretas. Sí se observa que corrupciones pueden crear/quitar
-episodios y mover el VaR proxy (−2.10% a +8.29%), sin traducirse a capital EUR.
-Próxima condición para cerrar: intervalos de incertidumbre, validación más
-amplia y challenge de B; ampliar a activos/curvas antes de afirmar robustez.
+fuera de familias concretas. La corrida cierra brechas metodológicas del piloto
+del canal, pero **no valida aún la segunda capa como framework multi-serie**.
+Siguiente evidencia: benchmark multi-tipología, transferencia por activo/fuente,
+volumen de alertas, calibración y coste/latencia a escala; challenge de B.
 
 ### Pila de 4 representaciones + XGBoost combinador — 2026-10-07 (🟡 pendiente de challenge B)
 
@@ -285,5 +288,45 @@ es el mayor sesgo de la tabla, +2,30, por sobreestimación—; y el **signo del 
 no se deduce de la etiqueta del defecto**, así que no se puede ajustar capital por
 tipo de defecto: hay que detectar, sanear y recalcular.
 
-Pendiente para sostener el objetivo del paper: enlazar con `dq_capital_impact`
-(C7) para medir error de capital evitado, no solo detección.
+Este cálculo queda como ilustración downstream del efecto de defectos sobre
+riesgo, no como criterio que sostenga el objetivo central del paper. La
+validación prioritaria es mejora/automatización de controles DQ y calidad de
+alertas para el Risk Director.
+
+### Error de capital evitado por capa — 2026-10-07 (🟡 pendiente de challenge B)
+
+Enlaza la detección (C11) con el esquema `k · VaR` de `dq_capital_impact` (C7).
+Métrica: `error_residual(gate) = media_f [(1 − recall_gate(f)) × |Δcapital(f)|]`,
+con gates **anidados** (`solo_3sigma` ⊂ `sin_ia` ⊂ `con_cnn`) y cada subconjunto
+recalibrado a su propio reparto, para que la diferencia entre dos consecutivos
+sea la aportación de la capa que los separa. Cartera estándar equiponderada, VaR
+histórico 99 %, base 100. **Análisis superficial y declarado como tal: no estima
+impacto real; lo comparable es la proporción de error evitado.**
+Detalle: `docs/hallazgos/2026-10-07-A-dq-capital-valor-anadido.md`.
+
+| gate | error de capital evitado |
+|---|---|
+| solo 3σ (statu quo) | **10,0 %** |
+| banco sin IA (8 controles) | **84,8 %** |
+| banco con CNN (9) | **86,7 %** |
+| combinador XGBoost | 81,6 % |
+
+Valor añadido: **banco sobre 3σ +74,8 pp**, **CNN sobre el banco +1,9 pp**,
+**combinador sobre el banco −5,1 pp**.
+
+**Mensaje del paper que se deriva.** El statu quo evita el 10 % del error de
+capital y el banco de representaciones el 85 %: el valor demostrado está en la
+**cobertura por representaciones**, no en la capacidad del modelo. La CNN aporta
+una mejora **real y modesta** (+1,9 pp marginales sobre un banco que ya incluye
+todo lo demás) y es el **segundo control más valioso en términos de capital**
+(63,0 %), por delante del cross-asset estadístico (54,1 %). El combinador
+aprendido **resta** (−5,1 pp): «ML que apoya» sí, «ML que sustituye» no.
+
+**Advertencia metodológica que conviene llevar al paper.** Detectar bien y evitar
+error de capital **no son lo mismo**: el control de retícula es analíticamente
+perfecto en `quantize` (recall 1,000) y es el que menos valor de capital aporta
+(10,2 %), porque `quantize` es la familia que menos mueve el capital (Δ 0,0040 en
+base 100 frente a 0,1654 de `lag1_calendar`). Priorizar controles por recall es
+un error; hay que priorizarlos por error de capital evitado. Límite principal:
+se promedia con **prevalencia uniforme** entre familias, que es falso y no hay
+dato para ponderarlo.

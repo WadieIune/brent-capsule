@@ -122,6 +122,18 @@ FEATURES = (
     "vintage_discrepancia",
 )
 
+#: Configuraciones de gate que se comparan. Están anidadas a propósito: la
+#: diferencia entre `sin_ia` y `con_cnn` es la **aportación marginal del deep
+#: learning**, y la de `sin_ia` frente a `solo_3sigma` la del resto del banco
+#: frente al control estándar. Sin este anidamiento no se puede atribuir valor.
+GATE_SUBSETS = {
+    "solo_3sigma": ("retorno_3sigma",),
+    "sin_ia": ("canal_coherencia", "canal_ruptura", "canal_geometria",
+               "canal_oscilacion", "precio_reticula", "retorno_cross_asset",
+               "retorno_3sigma", "vintage_discrepancia"),
+    "con_cnn": FEATURES,
+}
+
 
 def extract(received_p: np.ndarray, stored_p: np.ndarray, z: np.ndarray,
             cnn) -> np.ndarray:
@@ -215,6 +227,7 @@ def run(panel_path: Path, output_dir: Path, seeds=SEEDS) -> dict:
     lofo: dict[str, list[float]] = {}
     singles: dict[str, dict[str, list[float]]] = {}
     union: dict[str, list[float]] = {}
+    subsets: dict[str, dict[str, list[float]]] = {}
     importance: list[np.ndarray] = []
 
     for seed in seeds:
@@ -247,9 +260,10 @@ def run(panel_path: Path, output_dir: Path, seeds=SEEDS) -> dict:
         # Alternativa honesta al combinador aprendido: cada control conserva su
         # propio umbral conforme y se alerta si salta cualquiera, de modo que cada
         # familia mantiene la garantía de su control especializado.
-        def union_flags(evaluated_block, share):
+        def union_flags(evaluated_block, share, subset=FEATURES):
             fired = np.zeros(len(evaluated_block), dtype=bool)
-            for j in range(len(FEATURES)):
+            for name in subset:
+                j = FEATURES.index(name)
                 fired |= gate.aci_flags(
                     val_block["clean"][:, j], test_block["clean"][:, j],
                     evaluated_block[:, j], target=share)
@@ -276,6 +290,24 @@ def run(panel_path: Path, output_dir: Path, seeds=SEEDS) -> dict:
         for key in keys:
             union.setdefault(key, []).append(
                 float(np.mean(union_flags(test_block[key], share))))
+
+        # --- uniones por subconjunto: aíslan la aportación marginal de cada capa ---
+        # Cada subconjunto se calibra a SU propio reparto para que todos operen a
+        # la misma carga de alarmas; si no, el subconjunto grande ganaría recall
+        # solo por alertar más.
+        for label, subset in GATE_SUBSETS.items():
+            sh = FP_TARGET / len(subset)
+            realized = float(np.mean(union_flags(test_block["clean"], sh, subset)))
+            for _ in range(8):
+                if realized <= FP_TARGET:
+                    break
+                sh *= 0.5
+                realized = float(np.mean(union_flags(test_block["clean"], sh, subset)))
+            entry = subsets.setdefault(label, {})
+            entry.setdefault("false_positive_rate", []).append(realized)
+            for key in keys:
+                entry.setdefault(key, []).append(
+                    float(np.mean(union_flags(test_block[key], sh, subset))))
 
         # --- combinador entrenado en VALIDACIÓN, evaluado en TEST ---
         x_tr, y_tr = _labels(val_block, keys)
@@ -323,6 +355,7 @@ def run(panel_path: Path, output_dir: Path, seeds=SEEDS) -> dict:
         "vintage_alone_matched_fpr": mean(vintage_only),
         "single_controls_conformal_aci": {n: mean(d) for n, d in singles.items()},
         "union_conformal_aci": mean(union),
+        "gate_subsets_conformal_aci": {n: mean(d) for n, d in subsets.items()},
         "combiner_conformal_aci": mean(combiner),
         "combiner_leave_one_family_out_matched_fpr": mean(lofo),
         "feature_importance": dict(zip(FEATURES,

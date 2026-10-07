@@ -1,0 +1,128 @@
+{
+  "aviso": "Análisis superficial con cartera estándar equiponderada. Las cifras en base 100 NO estiman el impacto real de capital; lo comparable entre gates es la PROPORCIÓN de error evitado.",
+  "enlace": {
+    "deteccion": "/home/wadie/Escritorio/brent-capsule/results/reports/dq_representation_stack/summary.json",
+    "capital": "esquema k*VaR de dq_capital_impact (C7), multiplicador de portfolio_var"
+  },
+  "fuera_del_alcance": [
+    "correlaciones entre factores y diversificación entre mesas",
+    "riesgo específico y de default",
+    "P&L attribution por mesa y NMRF",
+    "suelo del método estándar"
+  ],
+  "protocolo": {
+    "cartera": "equiponderada sobre los cinco activos del panel",
+    "var": "histórico 99%, ventana 250 sesiones",
+    "capital": "k * VaR con k del semáforo de Basilea",
+    "episodios_por_familia": 40,
+    "metrica": "error_residual = media_f [(1 - recall_gate(f)) * |delta capital(f)|]",
+    "gates_anidados": "solo_3sigma ⊂ sin_ia ⊂ con_cnn; la diferencia aísla cada capa"
+  },
+  "capital_cartera_limpia_base100": 9.1342,
+  "error_capital_sin_ningun_control_base100": 0.0578,
+  "delta_capital_por_familia_base100": {
+    "decoupling|fresh": 0.0032,
+    "decoupling|restated": 0.1471,
+    "lag1_calendar|fresh": 0.0086,
+    "lag1_calendar|restated": 0.1654,
+    "quantize|fresh": 0.0001,
+    "quantize|restated": 0.004,
+    "reversible_jump|fresh": 0.042,
+    "reversible_jump|restated": 0.1519,
+    "source_switch|fresh": 0.0746,
+    "source_switch|restated": 0.0166,
+    "stale|fresh": 0.0086,
+    "stale|restated": 0.1252,
+    "weekly_ffill|fresh": 0.0051,
+    "weekly_ffill|restated": 0.0563
+  },
+  "gates": [
+    {
+      "gate": "sin_control",
+      "fpr_realizada": 0.0,
+      "error_capital_residual_base100": 0.0578,
+      "error_residual_pct_del_capital_limpio": 0.632,
+      "error_evitado_pct": 0.0
+    },
+    {
+      "gate": "solo_3sigma",
+      "fpr_realizada": 0.0323,
+      "error_capital_residual_base100": 0.052,
+      "error_residual_pct_del_capital_limpio": 0.569,
+      "error_evitado_pct": 10.0
+    },
+    {
+      "gate": "sin_ia",
+      "fpr_realizada": 0.0806,
+      "error_capital_residual_base100": 0.0088,
+      "error_residual_pct_del_capital_limpio": 0.096,
+      "error_evitado_pct": 84.8
+    },
+    {
+      "gate": "con_cnn",
+      "fpr_realizada": 0.0833,
+      "error_capital_residual_base100": 0.0077,
+      "error_residual_pct_del_capital_limpio": 0.084,
+      "error_evitado_pct": 86.7
+    },
+    {
+      "gate": "combinador_xgboost",
+      "fpr_realizada": 0.0511,
+      "error_capital_residual_base100": 0.0106,
+      "error_residual_pct_del_capital_limpio": 0.117,
+      "error_evitado_pct": 81.6
+    }
+  ],
+  "por_control_individual": [
+    {
+      "control": "vintage_discrepancia",
+      "recall_medio": 0.506,
+      "error_evitado_pct": 78.5
+    },
+    {
+      "control": "retorno_cnn",
+      "recall_medio": 0.409,
+      "error_evitado_pct": 63.0
+    },
+    {
+      "control": "canal_coherencia",
+      "recall_medio": 0.382,
+      "error_evitado_pct": 61.9
+    },
+    {
+      "control": "retorno_cross_asset",
+      "recall_medio": 0.327,
+      "error_evitado_pct": 54.1
+    },
+    {
+      "control": "canal_oscilacion",
+      "recall_medio": 0.184,
+      "error_evitado_pct": 25.0
+    },
+    {
+      "control": "canal_ruptura",
+      "recall_medio": 0.154,
+      "error_evitado_pct": 24.1
+    },
+    {
+      "control": "retorno_3sigma",
+      "recall_medio": 0.13,
+      "error_evitado_pct": 17.3
+    },
+    {
+      "control": "canal_geometria",
+      "recall_medio": 0.129,
+      "error_evitado_pct": 16.4
+    },
+    {
+      "control": "precio_reticula",
+      "recall_medio": 0.117,
+      "error_evitado_pct": 10.2
+    }
+  ],
+  "valor_anadido": {
+    "banco_de_controles_sobre_3sigma_pp": 74.8,
+    "cnn_sobre_el_banco_pp": 1.9,
+    "combinador_sobre_el_banco_pp": -5.1
+  }
+}
