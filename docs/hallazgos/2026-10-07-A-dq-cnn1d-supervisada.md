@@ -8,18 +8,20 @@
 
 ## Diseño
 
-CNN convolucional 1D sobre ventanas de 20 sesiones y seis series simultáneas:
-BRENT, WTI, GOLD, SILVER, COPPER y NATGAS. Rendimientos normalizados por media
-y desviación rolling de 60 sesiones, ambos desplazados una sesión. WTI usa
+CNN convolucional 1D sobre ventanas de 20 sesiones y cinco series simultáneas:
+BRENT, WTI, DTWEXBGS, COPPER y EUROSTOXX50. Los pares se eligieron por
+correlación absoluta con Brent medida solo hasta 2018, excluyendo ratios
+derivados que contienen Brent. Rendimientos normalizados por media y desviación
+rolling de 60 sesiones, ambos desplazados una sesión. WTI usa
 diferencias de precio en dólares, para preservar el settlement negativo real de
 abril de 2020; no se recorta ni elimina como si fuera corrupción. Se usan
 ventanas con stride de 5 sesiones; ventanas de 20 sesiones de purga impiden que
 una ventana cruce los cortes.
 
-- Train hasta 2018-12-31: 592 ventanas.
-- Validación 2019-01-01 a 2023-12-31: 242 ventanas; calibración de umbral al 5 %
+- Train hasta 2018-12-31: 558 ventanas.
+- Validación 2019-01-01 a 2023-12-31: 236 ventanas; calibración de umbral al 5 %
   de falsas alarmas y selección de época con inyecciones separadas.
-- Test 2024-01-03 a 2026-09-09: 128 ventanas, stride 5. Las ventanas solapan;
+- Test 2024-01-05 a 2026-09-09: 124 ventanas, stride 5. Las ventanas solapan;
   no son 128 observaciones independientes.
 - Familias inyectadas en ventanas reales: desacoplamiento Brent/pares por
   desplazamiento circular (marginal y forma univariada aproximadamente
@@ -34,25 +36,26 @@ en ventanas limpias del test:
 
 | Detector | Desacoplamiento | Stale | Salto reversible | FPR test |
 |---|---:|---:|---:|---:|
-| CNN 1D supervisada | 0,974 | 0,997 | **0,997** | 0,112 |
-| Cross-asset `1−R²` | 0,956 | **1,000** | 0,857 | 0,102 |
-| 3σ normalizado | 0,086 | 0,086 | 0,893 | **0,086** |
+| CNN 1D supervisada | 0,973 | 0,965 | **1,000** | 0,199 |
+| Cross-asset `1−R²` | **0,989** | **1,000** | 0,895 | 0,097 |
+| 3σ normalizado | 0,032 | 0,032 | 0,901 | **0,032** |
 
-La CNN añade aproximadamente **14 pp de recall en saltos reversibles** sobre el
-cross-asset; en desacoplamiento la diferencia media es ~2 pp y en stale no
-mejora. La FPR OOS de CNN es ~1 pp mayor que `1−R²` y ~2,6 pp mayor que 3σ.
-Además, en seed 123 la FPR CNN llega a 15,6 %. El umbral de validación (≈5 %) no
-mantiene exactamente esa carga OOS.
+Con el universo de pares naturales, la CNN **no mejora el resultado global**.
+Añade ~10,5 pp de recall en saltos reversibles sobre `1−R²`, pero pierde ~1,6 pp
+en desacoplamiento y ~3,5 pp en stale. Su FPR OOS media es ~19,9 %, frente a
+9,7 % de `1−R²` y 3,2 % de 3σ; llega a 23,4 % en seed 71. La calibración ≈5 %
+en validación no mantiene esa carga OOS. La ganancia en saltos no acredita una
+mejora operativa bajo el requisito de controlar falsas alarmas.
 
 ## Lectura y límites
 
-Hay una señal de valor incremental **especializada** para detectar saltos
-reversibles multiactivo; no se acredita una mejora general de calidad ni un
-despliegue operativo. La ventaja debe confirmarse con eventos de feed reales,
-revisión humana etiquetada, bootstrap por bloques/episodios (las ventanas se
-solapan), costes de revisión y una carga FPR estable. La inyección de salto es
-fácil de reconocer (±8 desviaciones normalizadas en dos días); se requieren
-severidades y defectos no vistos durante el entrenamiento.
+Hay una señal de recall incremental **especializada** para saltos reversibles,
+pero no una mejora operativa neta: la CNN supera el presupuesto de falsas
+alarmas. La prioridad es estabilizar la calibración OOS sin absorber defectos y
+volver a evaluar. Mientras tanto, el control preferible es la combinación de
+reglas deterministas y estadístico cross-asset. La ventaja debe confirmarse con
+eventos de feed reales, revisión humana etiquetada, bootstrap por episodios,
+costes de revisión y severidades/defectos no vistos durante el entrenamiento.
 
 La CNN no reemplaza TRIM (≥20 retornos cero), la regla 3σ ni el control barato
 `1−R²`; puede ser una señal adicional para priorizar episodios de salto

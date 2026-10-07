@@ -88,11 +88,13 @@ no cambia el veredicto del paper ni constituye aún una comparación de desempe�
 ### Prototipo CNN supervisado — 2026-10-07
 
 Se añadió una prueba separada en `dq_cnn1d_supervised.py`; **no** está conectada
-al monitor operativo. Sobre inyecciones sintéticas OOS 2024-2026, la CNN muestra
-ganancia frente a `1−R²` principalmente en salto reversible (~14 pp de recall
-medio), pero no en stale y solo marginal en desacoplamiento. Su FPR OOS media
-(~11,2 %) supera el 5 % calibrado. Resultado exploratorio, con 128 ventanas
-solapadas y tres semillas; ver `docs/hallazgos/2026-10-07-A-dq-cnn1d-supervisada.md`.
+al monitor operativo. Los pares de Brent se seleccionan con correlaciones de
+train; WTI se representa con Δprecio para preservar el settlement negativo. En
+inyecciones sintéticas OOS 2024-2026, la CNN gana ~10 pp de recall en saltos
+reversibles frente a `1−R²`, pero pierde en desacoplamiento/stale y su FPR OOS
+media es ~19,9 % frente a ~9,7 % del control estadístico. **No pasa el gate
+operativo.** Tres semillas y 124 ventanas solapadas; ver
+`docs/hallazgos/2026-10-07-A-dq-cnn1d-supervisada.md`.
 
 El flujo de producto conserva detección de canales y supervivencia después del
 gate DQ; no se usan como etiquetas de calidad. Las salidas de calidad deben

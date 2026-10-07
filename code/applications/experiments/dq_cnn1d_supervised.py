@@ -19,7 +19,7 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 ROOT = Path(__file__).resolve().parents[3]
-ASSETS = ("BRENT", "WTI", "GOLD", "SILVER", "COPPER", "NATGAS")
+ASSETS = ("BRENT", "WTI", "DTWEXBGS", "COPPER", "EUROSTOXX50")
 WINDOW = 20
 WINDOW_STRIDE = 5
 FIT_END = pd.Timestamp("2018-12-31")
@@ -49,13 +49,15 @@ def load_windows(panel_path: Path, window: int = WINDOW, stride: int = WINDOW_ST
     frame = pd.read_csv(panel_path, parse_dates=["date"])
     frame = frame[["date", *ASSETS]].dropna().reset_index(drop=True)
     prices = frame[list(ASSETS)].to_numpy(dtype=float)
-    if np.any(prices[:, [0, 2, 3, 4, 5]] <= 0):
-        raise ValueError("BRENT, metales y NATGAS requieren precios positivos")
+    log_cols = [i for i, asset in enumerate(ASSETS) if asset != "WTI"]
+    if np.any(prices[:, log_cols] <= 0):
+        raise ValueError("Las series logarítmicas seleccionadas requieren valores positivos")
     # WTI is represented as dollar price changes to preserve its genuine 2020
     # negative settlement; all other channels use log returns.
-    returns = np.diff(np.log(prices[:, [0, 2, 3, 4, 5]]), axis=0)
-    wti_delta = np.diff(prices[:, 1:2], axis=0)
-    returns = np.column_stack([returns[:, 0], wti_delta[:, 0], returns[:, 1:]])
+    returns = np.empty((len(prices) - 1, len(ASSETS)), dtype=float)
+    returns[:, log_cols] = np.diff(np.log(prices[:, log_cols]), axis=0)
+    wti_idx = ASSETS.index("WTI")
+    returns[:, wti_idx] = np.diff(prices[:, wti_idx])
     dates = pd.DatetimeIndex(frame["date"].iloc[1:])
     # Causal volatility normalization; each row uses only returns before its date.
     scaled = np.full_like(returns, np.nan)
@@ -216,7 +218,9 @@ def run(panel_path: Path, output_dir: Path, seed: int = 42):
     }
     output = {
         "protocol": {
-            "assets": list(ASSETS), "window_sessions": WINDOW,
+            "assets": list(ASSETS),
+            "peer_selection": "top absolute training-period return correlations with BRENT, excluding derived ratios: WTI, DTWEXBGS, COPPER, EUROSTOXX50",
+            "window_sessions": WINDOW,
             "window_stride_sessions": WINDOW_STRIDE,
             "fit_end": str(FIT_END.date()), "validation_end": str(VAL_END.date()),
             "test_start": str(starts[starts > VAL_END][0].date()),

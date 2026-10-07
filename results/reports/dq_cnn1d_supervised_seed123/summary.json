@@ -3,16 +3,16 @@
     "assets": [
       "BRENT",
       "WTI",
-      "GOLD",
-      "SILVER",
+      "DTWEXBGS",
       "COPPER",
-      "NATGAS"
+      "EUROSTOXX50"
     ],
+    "peer_selection": "top absolute training-period return correlations with BRENT, excluding derived ratios: WTI, DTWEXBGS, COPPER, EUROSTOXX50",
     "window_sessions": 20,
     "window_stride_sessions": 5,
     "fit_end": "2018-12-31",
     "validation_end": "2023-12-31",
-    "test_start": "2024-01-03",
+    "test_start": "2024-01-05",
     "target_false_positive_rate": 0.05,
     "normalization": "rolling 60-session mean/sd shifted one session; WTI uses dollar changes to preserve negative settlement; CNN input clipped to +/-15",
     "injected_families": [
@@ -23,39 +23,39 @@
     "seed": 123,
     "source": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
     "sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
-    "n_train_windows": 592,
-    "n_validation_windows": 242,
-    "n_test_windows": 128
+    "n_train_windows": 558,
+    "n_validation_windows": 236,
+    "n_test_windows": 124
   },
   "results": {
     "cnn_1d_supervisada": {
-      "threshold": 0.428307443857193,
-      "validation_false_positive_rate": 0.049586776859504134,
-      "test_false_positive_rate": 0.15625,
+      "threshold": 0.5669735074043274,
+      "validation_false_positive_rate": 0.046610169491525424,
+      "test_false_positive_rate": 0.1935483870967742,
       "recall_by_family": {
-        "decoupling": 0.9765625,
-        "stale": 1.0,
-        "reversible_jump": 0.9921875
+        "decoupling": 0.9516129032258065,
+        "stale": 0.9112903225806451,
+        "reversible_jump": 1.0
       }
     },
     "cross_asset_1_minus_r2": {
-      "threshold": 0.4899869792960456,
-      "validation_false_positive_rate": 0.049586776859504134,
-      "test_false_positive_rate": 0.1015625,
+      "threshold": 0.5080153276210538,
+      "validation_false_positive_rate": 0.046610169491525424,
+      "test_false_positive_rate": 0.0967741935483871,
       "recall_by_family": {
-        "decoupling": 0.9921875,
+        "decoupling": 0.9919354838709677,
         "stale": 1.0,
-        "reversible_jump": 0.8125
+        "reversible_jump": 0.9112903225806451
       }
     },
     "3sigma_vol_normalizada": {
-      "threshold": 7.694526195526123,
-      "validation_false_positive_rate": 0.049586776859504134,
-      "test_false_positive_rate": 0.0859375,
+      "threshold": 7.5859832763671875,
+      "validation_false_positive_rate": 0.03389830508474576,
+      "test_false_positive_rate": 0.03225806451612903,
       "recall_by_family": {
-        "decoupling": 0.0859375,
-        "stale": 0.0859375,
-        "reversible_jump": 0.8984375
+        "decoupling": 0.03225806451612903,
+        "stale": 0.03225806451612903,
+        "reversible_jump": 0.9112903225806451
       }
     }
   },

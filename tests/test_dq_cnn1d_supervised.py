@@ -47,10 +47,9 @@ def test_load_windows_preserves_negative_wti_settlement_as_dollar_change(tmp_pat
     dates = pd.date_range("2020-01-01", periods=90)
     frame = {"date": dates, "BRENT": np.linspace(50.0, 60.0, len(dates)),
              "WTI": np.linspace(45.0, 40.0, len(dates)),
-             "GOLD": np.linspace(1500.0, 1550.0, len(dates)),
-             "SILVER": np.linspace(17.0, 18.0, len(dates)),
+             "DTWEXBGS": np.linspace(110.0, 105.0, len(dates)),
              "COPPER": np.linspace(2.5, 2.8, len(dates)),
-             "NATGAS": np.linspace(2.0, 3.0, len(dates))}
+             "EUROSTOXX50": np.linspace(3000.0, 3500.0, len(dates))}
     frame["WTI"][50] = -37.63
     path = tmp_path / "panel.csv"
     pd.DataFrame(frame).to_csv(path, index=False)
