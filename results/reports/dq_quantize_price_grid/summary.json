@@ -1,6 +1,6 @@
 {
   "protocol": {
-    "source": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
+    "source": "data/panel_extendido_2026-09-09.csv",
     "question": "el hueco de `quantize` en dq_conformal_gate, \u00bfes de representaci\u00f3n o de m\u00e9todo?",
     "injection": "truncaci\u00f3n de los PRECIOS crudos del tramo de la ventana; retornos y normalizaci\u00f3n causal recalculados sobre la serie corrompida",
     "previous_injection": "en dq_conformal_gate se redondeaba el retorno YA normalizado, lo que difumina la rejilla",
@@ -23,6 +23,10 @@
     ],
     "native_tick_usd": 0.01,
     "target_false_positive_rate": 0.05,
+    "threshold_protocol": "fixed threshold calibrated on a later validation segment, purged from CNN model selection; test used only for evaluation",
+    "n_model_selection_validation": 165,
+    "n_purged_validation": 3,
+    "n_threshold_calibration_validation": 68,
     "n_windows": {
       "train": 558,
       "validation": 236,
@@ -43,72 +47,77 @@
     "0.50": 1.0,
     "1.00": 1.0
   },
+  "test_false_positive_rate_grid_control_on_prices": 0.0,
   "recall_window_detectors_on_recomputed_returns": {
     "cnn_1d": {
+      "test_false_positive_rate": 0.22419354838709676,
       "0.10": {
-        "mean": 0.05483870967741935,
-        "std": 0.006034931268990228
+        "mean": 0.2225806451612903,
+        "std": 0.08872433896435528
       },
       "0.25": {
-        "mean": 0.04677419354838709,
-        "std": 0.009404761120718226
+        "mean": 0.21774193548387094,
+        "std": 0.09279451524930662
       },
       "0.50": {
-        "mean": 0.04838709677419355,
-        "std": 0.005100447838981257
+        "mean": 0.22419354838709676,
+        "std": 0.08183000576752142
       },
       "1.00": {
-        "mean": 0.08225806451612902,
-        "std": 0.021878483816533126
+        "mean": 0.25483870967741934,
+        "std": 0.09089679228132498
       }
     },
     "cross_asset_1_minus_r2": {
+      "test_false_positive_rate": 0.3870967741935484,
       "0.10": {
-        "mean": 0.0564516129032258,
-        "std": 6.938893903907228e-18
+        "mean": 0.3870967741935484,
+        "std": 0.0
       },
       "0.25": {
-        "mean": 0.0564516129032258,
-        "std": 6.938893903907228e-18
+        "mean": 0.4032258064516129,
+        "std": 0.0
       },
       "0.50": {
-        "mean": 0.04838709677419355,
+        "mean": 0.3951612903225806,
         "std": 0.0
       },
       "1.00": {
-        "mean": 0.08064516129032258,
-        "std": 0.0
+        "mean": 0.4516129032258064,
+        "std": 5.551115123125783e-17
       }
     },
     "3sigma_vol_normalizada": {
+      "test_false_positive_rate": 0.1935483870967742,
       "0.10": {
-        "mean": 0.03225806451612903,
+        "mean": 0.1935483870967742,
         "std": 0.0
       },
       "0.25": {
-        "mean": 0.03225806451612903,
+        "mean": 0.1935483870967742,
         "std": 0.0
       },
       "0.50": {
-        "mean": 0.03225806451612903,
-        "std": 0.0
+        "mean": 0.2258064516129032,
+        "std": 2.7755575615628914e-17
       },
       "1.00": {
-        "mean": 0.03225806451612903,
+        "mean": 0.1935483870967742,
         "std": 0.0
       }
     },
     "vol_ratio_vs_pares": {
+      "test_false_positive_rate": 0.03225806451612903,
       "0.10": {
-        "mean": 0.04838709677419355,
+        "mean": 0.03225806451612903,
         "std": 0.0
       },
       "0.25": {
-        "mean": 0.0564516129032258,
-        "std": 6.938893903907228e-18
+        "mean": 0.03225806451612903,
+        "std": 0.0
       },
       "0.50": {
-        "mean": 0.06451612903225806,
+        "mean": 0.03225806451612903,
         "std": 0.0
       },
       "1.00": {

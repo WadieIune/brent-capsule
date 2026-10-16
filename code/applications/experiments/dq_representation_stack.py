@@ -16,12 +16,12 @@ Cierra las dos piezas que quedaban abiertas en `dq_channel_representation`:
 
 2. **XGBoost como COMBINADOR, no como detector más.** Toma como features las
    salidas de los controles de las cuatro representaciones y produce un veredicto
-   único por ventana bajo el mismo gate conforme. Es la pieza que convierte la
+   único por ventana con umbral calibrado fuera de test. Es la pieza que convierte la
    matriz de coberturas en una decisión operable.
 
-Separación en tres bloques para que el combinador no herede el sobreajuste de la
-CNN: la **CNN se entrena en train**, el **combinador en validación** y todo se
-evalúa en **test**. Además se reporta leave-one-family-out del combinador, que es
+Separación temporal con purga: la **CNN se ajusta con train y validación temprana**,
+el combinador con bloques de tuning y calibración separados, y todo se evalúa en
+**test**. Además se reporta leave-one-family-out del combinador, que es
 donde se vio antes que el recall dentro de distribución está inflado.
 """
 from __future__ import annotations
@@ -217,12 +217,20 @@ def run(panel_path: Path, output_dir: Path, seeds=SEEDS) -> dict:
     tr_b = bounds[:n_tr]
     va_b = bounds[n_tr:n_tr + n_va]
     te_b = bounds[n_tr + n_va:n_tr + n_va + n_te]
+    purge = int(np.ceil(pricelab.WINDOW / pricelab.WINDOW_STRIDE)) - 1
+    n_fit = int(0.70 * n_va)
+    cal_start = n_fit + purge
+    if n_va - cal_start < 20:
+        raise ValueError("Validación insuficiente para separar ajuste y calibración")
+    fit_b, cal_b = va_b[:n_fit], va_b[cal_start:]
+    fit_z, cal_z = data["val_z"][:n_fit], data["val_z"][cal_start:]
 
     families = list(channel.PRICE_FAMILIES)
     modes = ("restated", "fresh")
     keys = [f"{f}|{m}" for f in families for m in modes]
 
     vintage_only: dict[str, list[float]] = {}
+    vintage_fpr: list[float] = []
     combiner: dict[str, list[float]] = {}
     lofo: dict[str, list[float]] = {}
     singles: dict[str, dict[str, list[float]]] = {}
@@ -231,107 +239,83 @@ def run(panel_path: Path, output_dir: Path, seeds=SEEDS) -> dict:
     importance: list[np.ndarray] = []
 
     for seed in seeds:
-        cnn = base.fit_cnn(data["train_z"], data["val_z"], seed=seed)
-        rng = np.random.default_rng(seed)
-        val_block = build_block(prices, va_b, scaled, cnn, families, modes, rng)
-        test_block = build_block(prices, te_b, scaled, cnn, families, modes, rng)
+        cnn = base.fit_cnn(data["train_z"], fit_z, seed=seed)
+        fit_block = build_block(prices, fit_b, scaled, cnn, families, modes,
+                                np.random.default_rng(seed))
+        cal_block = build_block(prices, cal_b, scaled, cnn, families, modes,
+                                np.random.default_rng(seed + 10_000))
+        test_block = build_block(prices, te_b, scaled, cnn, families, modes,
+                                 np.random.default_rng(seed + 20_000))
 
-        # --- vintage solo, para ver su alcance y su espacio nulo ---
+        # --- vintage solo, threshold fitted on the held-out calibration block ---
         v = FEATURES.index("vintage_discrepancia")
+        vintage_threshold = gate.calibration_threshold(
+            cal_block["clean"][:, v], FP_TARGET)
+        vintage_fpr.append(float(np.mean(test_block["clean"][:, v] > vintage_threshold)))
         for key in keys:
-            vintage_only.setdefault(key, []).append(gate.matched_fpr_recall(
-                lambda m, idx=v: m[:, idx], test_block["clean"],
-                test_block[key], FP_TARGET))
+            vintage_only.setdefault(key, []).append(float(np.mean(
+                test_block[key][:, v] > vintage_threshold)))
 
-        # --- cada control, SOLO, bajo el mismo gate: la comparación justa ---
-        # Comparar el combinador contra "el mejor control de cada familia" sería
-        # un oráculo: ese mejor control cambia de familia en familia y nadie sabe
-        # a priori cuál usar. Un control único tiene que servir para todas.
+        # --- Each control uses a frozen threshold calibrated off-test. ---
         for j, name in enumerate(FEATURES):
-            cal = val_block["clean"][:, j]
-            clean_stream = test_block["clean"][:, j]
-            singles.setdefault(name, {}).setdefault("false_positive_rate", []).append(
-                float(np.mean(gate.aci_flags(cal, clean_stream, clean_stream))))
+            threshold = gate.calibration_threshold(cal_block["clean"][:, j], FP_TARGET)
+            singles.setdefault(name, {}).setdefault("test_false_positive_rate", []).append(
+                float(np.mean(test_block["clean"][:, j] > threshold)))
             for key in keys:
                 singles[name].setdefault(key, []).append(float(np.mean(
-                    gate.aci_flags(cal, clean_stream, test_block[key][:, j]))))
+                    test_block[key][:, j] > threshold)))
 
-        # --- unión de controles gateados por separado (presupuesto repartido) ---
-        # Alternativa honesta al combinador aprendido: cada control conserva su
-        # propio umbral conforme y se alerta si salta cualquiera, de modo que cada
-        # familia mantiene la garantía de su control especializado.
+        # Union of controls: split the nominal calibration budget by Bonferroni.
         def union_flags(evaluated_block, share, subset=FEATURES):
             fired = np.zeros(len(evaluated_block), dtype=bool)
             for name in subset:
                 j = FEATURES.index(name)
-                fired |= gate.aci_flags(
-                    val_block["clean"][:, j], test_block["clean"][:, j],
-                    evaluated_block[:, j], target=share)
+                threshold = gate.calibration_threshold(cal_block["clean"][:, j], share)
+                fired |= evaluated_block[:, j] > threshold
             return fired
 
-        # Bonferroni (alpha/m) se queda corto: los controles están correlacionados
-        # y la FPR conjunta realizada se dispara. Se intenta apretar el reparto
-        # hasta meter la FPR conjunta en el objetivo, pero NO siempre se consigue:
-        # `aci_flags` tiene un suelo de alpha en 1e-3 y la calibración son 236
-        # ventanas, así que el umbral satura en el máximo del limpio de validación
-        # y la FPR restante la fija la deriva, no el reparto. Cuando no converge se
-        # registra, porque entonces la unión compara con MÁS presupuesto de alarmas
-        # que el combinador y la diferencia de recall no es gratis.
+        # No tune the union against test FPR. Report the realized held-out rate.
         share = FP_TARGET / len(FEATURES)
         realized = float(np.mean(union_flags(test_block["clean"], share)))
-        for _ in range(8):
-            if realized <= FP_TARGET:
-                break
-            share *= 0.5
-            realized = float(np.mean(union_flags(test_block["clean"], share)))
         union.setdefault("per_control_share", []).append(share)
-        union.setdefault("fpr_target_reached", []).append(float(realized <= FP_TARGET))
-        union.setdefault("false_positive_rate", []).append(realized)
+        union.setdefault("test_false_positive_rate", []).append(realized)
         for key in keys:
             union.setdefault(key, []).append(
                 float(np.mean(union_flags(test_block[key], share))))
 
-        # --- uniones por subconjunto: aíslan la aportación marginal de cada capa ---
-        # Cada subconjunto se calibra a SU propio reparto para que todos operen a
-        # la misma carga de alarmas; si no, el subconjunto grande ganaría recall
-        # solo por alertar más.
+        # Subset unions are parallel comparisons, not a sequential router.
         for label, subset in GATE_SUBSETS.items():
             sh = FP_TARGET / len(subset)
             realized = float(np.mean(union_flags(test_block["clean"], sh, subset)))
-            for _ in range(8):
-                if realized <= FP_TARGET:
-                    break
-                sh *= 0.5
-                realized = float(np.mean(union_flags(test_block["clean"], sh, subset)))
             entry = subsets.setdefault(label, {})
-            entry.setdefault("false_positive_rate", []).append(realized)
+            entry.setdefault("test_false_positive_rate", []).append(realized)
             for key in keys:
                 entry.setdefault(key, []).append(
                     float(np.mean(union_flags(test_block[key], sh, subset))))
 
-        # --- combinador entrenado en VALIDACIÓN, evaluado en TEST ---
-        x_tr, y_tr = _labels(val_block, keys)
+        # --- Fit on the tuning segment, calibrate on a later purged segment. ---
+        x_tr, y_tr = _labels(fit_block, keys)
         model = _combiner(seed).fit(x_tr, y_tr)
         importance.append(model.feature_importances_)
         score = lambda m, mdl=model: mdl.predict_proba(m)[:, 1]
-        calibration = score(val_block["clean"])
-        clean_stream = score(test_block["clean"])
-        combiner.setdefault("false_positive_rate", []).append(
-            float(np.mean(gate.aci_flags(calibration, clean_stream, clean_stream))))
+        calibration = score(cal_block["clean"])
+        threshold = gate.calibration_threshold(calibration, FP_TARGET)
+        combiner.setdefault("test_false_positive_rate", []).append(
+            float(np.mean(score(test_block["clean"]) > threshold)))
         for key in keys:
             combiner.setdefault(key, []).append(float(np.mean(
-                gate.aci_flags(calibration, clean_stream, score(test_block[key])))))
+                score(test_block[key]) > threshold)))
 
         # --- leave-one-family-out del combinador ---
         for held in families:
             kept = [k for k in keys if not k.startswith(f"{held}|")]
-            x_h, y_h = _labels(val_block, kept)
+            x_h, y_h = _labels(fit_block, kept)
             partial = _combiner(seed).fit(x_h, y_h)
             s = lambda m, mdl=partial: mdl.predict_proba(m)[:, 1]
+            lofo_threshold = gate.calibration_threshold(s(cal_block["clean"]), FP_TARGET)
             for mode in modes:
-                lofo.setdefault(f"{held}|{mode}", []).append(
-                    gate.matched_fpr_recall(s, test_block["clean"],
-                                            test_block[f"{held}|{mode}"], FP_TARGET))
+                lofo.setdefault(f"{held}|{mode}", []).append(float(np.mean(
+                    s(test_block[f"{held}|{mode}"]) > lofo_threshold)))
 
     mean = lambda d: {k: float(np.mean(v)) for k, v in d.items()}
     output = {
@@ -345,19 +329,26 @@ def run(panel_path: Path, output_dir: Path, seeds=SEEDS) -> dict:
                 "fresh": f"el defecto solo toca las {SNAPSHOT_LAG} sesiones posteriores al snapshot; vintage es ciego por construcción",
             },
             "snapshot_lag_sessions": SNAPSHOT_LAG,
-            "splits": "CNN en train, combinador en validación, evaluación en test",
+            "splits": "CNN train + model-selection validation; detector fit on early validation; threshold calibration on later purged validation; test used once",
             "combiner": "XGBClassifier(300, depth 3, min_child_weight 10, lr 0.05)",
-            "gate": "conforme-adaptativo ACI sobre validación limpia",
+            "threshold_protocol": "frozen validation order-statistic thresholds; nominal 5% target; realized test FPR reported, no clean-test feedback",
+            "threshold_guarantee": "No distribution-free guarantee claimed; temporal dependence and drift remain.",
+            "validation_model_selection_windows": int(n_fit),
+            "validation_purged_windows": int(purge),
+            "validation_calibration_windows": int(len(cal_b)),
+            "single_observation_calibration_resolution": float(1.0 / len(cal_b)),
+            "bonferroni_share_below_resolution": bool(FP_TARGET / len(FEATURES) < 1.0 / len(cal_b)),
             "n_windows": data["n"],
             "seeds": list(seeds),
             "target_false_positive_rate": FP_TARGET,
         },
-        "vintage_alone_matched_fpr": mean(vintage_only),
-        "single_controls_conformal_aci": {n: mean(d) for n, d in singles.items()},
-        "union_conformal_aci": mean(union),
-        "gate_subsets_conformal_aci": {n: mean(d) for n, d in subsets.items()},
-        "combiner_conformal_aci": mean(combiner),
-        "combiner_leave_one_family_out_matched_fpr": mean(lofo),
+        "vintage_alone_validation_threshold": {**mean(vintage_only),
+                                               "test_false_positive_rate": float(np.mean(vintage_fpr))},
+        "single_controls_validation_threshold": {n: mean(d) for n, d in singles.items()},
+        "union_validation_threshold": mean(union),
+        "gate_subsets_validation_threshold": {n: mean(d) for n, d in subsets.items()},
+        "combiner_validation_threshold": mean(combiner),
+        "combiner_leave_one_family_out_validation_threshold": mean(lofo),
         "feature_importance": dict(zip(FEATURES,
                                        np.mean(importance, axis=0).round(4).tolist())),
     }
@@ -375,20 +366,16 @@ def main() -> None:
     args = parser.parse_args()
     r = run(args.panel, args.output)
     fams = r["protocol"]["families"]
-    vin, comb, lofo = (r["vintage_alone_matched_fpr"], r["combiner_conformal_aci"],
-                       r["combiner_leave_one_family_out_matched_fpr"])
+    vin, comb, lofo = (r["vintage_alone_validation_threshold"], r["combiner_validation_threshold"],
+                       r["combiner_leave_one_family_out_validation_threshold"])
 
-    singles, uni = r["single_controls_conformal_aci"], r["union_conformal_aci"]
+    singles, uni = r["single_controls_validation_threshold"], r["union_validation_threshold"]
     keys = [f"{f}|{m}" for f in fams for m in ("restated", "fresh")]
     best_single = {k: max(singles[n][k] for n in singles) for k in keys}
 
-    reached = uni["fpr_target_reached"] >= 1.0
-    print(f"\nTodo bajo el mismo gate conforme, objetivo FPR {FP_TARGET:.0%}. "
-          f"FPR realizada: combinador {comb['false_positive_rate']:.3f}, "
-          f"unión {uni['false_positive_rate']:.3f}"
-          + ("" if reached else "  <-- la unión NO baja al objetivo: gasta "
-             f"{uni['false_positive_rate'] / comb['false_positive_rate']:.1f}x "
-             "el presupuesto del combinador, su recall no es gratis"))
+    print(f"\nUmbrales congelados con objetivo nominal {FP_TARGET:.0%}; "
+          f"FPR realizada OOS: combinador {comb['test_false_positive_rate']:.3f}, "
+          f"unión {uni['test_false_positive_rate']:.3f}. No se reajustan usando el test.")
     print(f"  {'familia':18s} {'modo':10s} {'vintage':>9s} {'mejor1':>8s} "
           f"{'UNIÓN':>8s} {'XGB':>8s} {'XGB.LOFO':>9s}")
     for f in fams:

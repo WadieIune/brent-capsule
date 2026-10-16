@@ -29,6 +29,45 @@ capa; CNN y modelos generativos se evalúan como herramientas complementarias.
 Solo se automatizan alertas si comparación temporal pareada demuestra calidad
 aceptable a una tasa de falsos positivos controlada. No son señales de trading.
 
+### Actualización del diseño — 2026-10-16
+
+La propuesta del paper se concreta como un framework **estadístico + IA,
+multirrepresentación y condicionado por tipología**, no como una competición
+entre una red y 3σ. Los log-retornos son adecuados para cambios proporcionales
+en precios positivos y ayudan a eliminar unidades de precio, pero no igualan
+volatilidades entre activos y no son válidos para niveles negativos/cero, tipos
+o spreads. Se mantienen diferencias aditivas en unidad nativa para esas series,
+estandarización únicamente con historia pasada cuando corresponda y controles
+paralelos en precio/vintage para no borrar cambios de nivel, tick o restatement.
+
+La prueba rolling 2026-10-16 está documentada en
+`docs/hallazgos/2026-10-16-rolling-returns-vs-precios.md`. Sobre el panel
+BRENT/WTI/DTWEXBGS/COPPER/EUROSTOXX50, el canal acumulado de retornos no mostró
+mejora robusta frente al canal de precio; el XGBoost de controles de precio
+obtuvo AUC OOS 0,890 frente a 0,880 para controles de retorno y 0,873 al añadir
+score CNN. La CNN sola obtuvo AUC 0,790 y FPR OOS 15,1% frente al 5% nominal.
+Se conserva como evidencia experimental negativa/inconclusa, no como prueba de
+que la IA carezca de valor. Confirma que representación, discriminación y
+calibración operativa deben evaluarse por separado.
+
+La extensión causal de umbral rodante tampoco resolvió el problema: para
+XGBoost de precio, incluir scores pasados baja FPR de 20,4% a 7,0%, pero el
+recall de `source_switch` cae de 94,4% a 45,4% y el de `quantize` de 22,0% a
+8,3%. Actualizar solo con scores no alertados eleva FPR a 22,6% por sesgo de
+selección. En este benchmark, recalibrar sin controlar/adjudicar el conjunto de
+referencia solo mueve el intercambio FPR/recall; no alcanza un punto operativo
+fiable. Detalle y cifras: el mismo hallazgo rolling.
+
+**Dirección siguiente:** (1) fijar una matriz de controles baratos y sus
+espacios nulos por tipología; (2) diseñar calibración adaptativa sobre
+observaciones adjudicadas/monitorizadas, no sobre el conjunto truncado de
+no-alertas, con ventanas de purga; (3) comprobar aportación incremental
+de canal/supervivencia *as-of*, CNN y XGBoost a presupuesto comparable de
+alarmas; (4) validar transferencia por episodio, activo, familia y fuente con
+incidentes adjudicados. El flujo de alertas recomienda revisión y conserva
+evidencia; no corrige precios automáticamente. Millones de series siguen
+siendo objetivo de diseño hasta que se mida throughput, latencia y coste.
+
 ## Componentes
 1. **Benchmark (a batir):** 3σ sobre log-rendimientos; + controles de cola
    (Hampel/Tukey/iForest) y el control geométrico ya existente.

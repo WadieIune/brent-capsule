@@ -138,8 +138,8 @@ def run(panel_path: Path, stack_summary: Path, output_dir: Path) -> dict:
 
     gates = {"sin_control": {k: 0.0 for k in keys}}
     gates.update({name: block for name, block
-                  in detection["gate_subsets_conformal_aci"].items()})
-    gates["combinador_xgboost"] = detection["combiner_conformal_aci"]
+                  in detection["gate_subsets_validation_threshold"].items()})
+    gates["combinador_xgboost"] = detection["combiner_validation_threshold"]
 
     rows = []
     for name, recalls in gates.items():
@@ -156,7 +156,7 @@ def run(panel_path: Path, stack_summary: Path, output_dir: Path) -> dict:
     # perfecto en una familia que no mueve capital no evita error. Esto separa
     # "detecta bien" de "evita error de capital", que no es lo mismo.
     per_control = []
-    for name, recalls in detection["single_controls_conformal_aci"].items():
+    for name, recalls in detection["single_controls_validation_threshold"].items():
         residual = float(np.mean([(1.0 - recalls.get(k, 0.0)) * errors[k] for k in keys]))
         per_control.append({
             "control": name,

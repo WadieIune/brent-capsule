@@ -29,30 +29,40 @@
   "colas_normal_vs_empirica": [
     {
       "umbral_sigmas": 1,
+      "n_observaciones": 4668,
+      "n_excedencias_empiricas": 809,
       "frecuencia_normal": 0.31731050786291415,
       "frecuencia_empirica": 0.1733076263924593,
       "veces_mas_frecuente": 0.5
     },
     {
       "umbral_sigmas": 2,
+      "n_observaciones": 4668,
+      "n_excedencias_empiricas": 167,
       "frecuencia_normal": 0.04550026389635839,
       "frecuencia_empirica": 0.03577549271636675,
       "veces_mas_frecuente": 0.8
     },
     {
       "umbral_sigmas": 3,
+      "n_observaciones": 4668,
+      "n_excedencias_empiricas": 52,
       "frecuencia_normal": 0.0026997960632601866,
       "frecuencia_empirica": 0.011139674378748929,
       "veces_mas_frecuente": 4.1
     },
     {
       "umbral_sigmas": 4,
+      "n_observaciones": 4668,
+      "n_excedencias_empiricas": 26,
       "frecuencia_normal": 6.334248366623973e-05,
       "frecuencia_empirica": 0.005569837189374464,
       "veces_mas_frecuente": 87.9
     },
     {
       "umbral_sigmas": 5,
+      "n_observaciones": 4668,
+      "n_excedencias_empiricas": 15,
       "frecuencia_normal": 5.733031437583866e-07,
       "frecuencia_empirica": 0.003213367609254499,
       "veces_mas_frecuente": 5605.0
@@ -90,34 +100,34 @@
       },
       {
         "gate": "solo_3sigma",
-        "fpr_realizada": 0.0323,
-        "distorsion_residual": 0.01004,
-        "distorsion_corregida_pct": 9.9
+        "fpr_realizada": 0.0,
+        "distorsion_residual": 0.0061,
+        "distorsion_corregida_pct": 45.3
       },
       {
         "gate": "sin_ia",
-        "fpr_realizada": 0.0806,
-        "distorsion_residual": 0.00245,
-        "distorsion_corregida_pct": 78.0
+        "fpr_realizada": 0.0,
+        "distorsion_residual": 0.00021,
+        "distorsion_corregida_pct": 98.1
       },
       {
         "gate": "con_cnn",
-        "fpr_realizada": 0.0833,
-        "distorsion_residual": 0.00216,
-        "distorsion_corregida_pct": 80.6
+        "fpr_realizada": 0.0,
+        "distorsion_residual": 0.00018,
+        "distorsion_corregida_pct": 98.4
       },
       {
         "gate": "combinador_xgboost",
-        "fpr_realizada": 0.0511,
-        "distorsion_residual": 0.00274,
-        "distorsion_corregida_pct": 75.5
+        "fpr_realizada": 0.0,
+        "distorsion_residual": 0.00055,
+        "distorsion_corregida_pct": 95.1
       }
     ],
     "diferencias_pp": {
-      "banco_sobre_3sigma_pp": 68.1,
-      "cnn_sobre_el_banco_pp": 2.6,
-      "combinador_sobre_el_banco_pp": -5.1
+      "banco_sobre_3sigma_pp": 52.8,
+      "cnn_sobre_el_banco_pp": 0.3,
+      "combinador_sobre_el_banco_pp": -3.3
     }
   },
-  "figura": "/home/wadie/Escritorio/brent-capsule/docs/figuras/dq_distribucion_rendimientos.png"
+  "figura": "/home/wadie/Escritorio/brent-capsule/results/figures/dq/dq_distribucion_rendimientos.png"
 }

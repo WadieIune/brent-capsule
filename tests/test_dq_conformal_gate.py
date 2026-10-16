@@ -95,43 +95,44 @@ def test_volatility_ratio_score_detects_rescaling():
             > gate.volatility_ratio_score(windows).mean())
 
 
-def test_aci_holds_the_false_alarm_budget_under_a_level_shift():
-    """Un umbral congelado se descalibra con deriva; ACI vuelve al objetivo."""
+def test_frozen_calibration_does_not_use_clean_test_feedback_under_drift():
+    """Drift is reported as OOS FPR, not hidden by an oracle update."""
     rng = np.random.default_rng(11)
     calibration = rng.normal(0, 1, size=400)
     drifted = rng.normal(1.5, 1, size=600)          # deriva de nivel en el flujo limpio
-    frozen = float(np.quantile(calibration, 0.95))
-    frozen_fpr = float(np.mean(drifted > frozen))
-    aci_fpr = float(np.mean(gate.aci_flags(calibration, drifted, drifted, target=0.05)))
-    assert frozen_fpr > 0.30                        # el congelado se dispara
-    assert abs(aci_fpr - 0.05) < 0.03               # el adaptativo se mantiene
+    flags = gate.calibrated_flags(calibration, drifted, target=0.05)
+    assert float(np.mean(flags)) > 0.30
 
 
-def test_aci_is_causal_in_the_evaluated_stream():
-    """El futuro del flujo evaluado no puede cambiar las alertas ya emitidas."""
+def test_test_scores_cannot_change_a_frozen_calibration_threshold():
     rng = np.random.default_rng(13)
     calibration = rng.normal(0, 1, size=200)
-    clean = rng.normal(0, 1, size=100)
     evaluated = rng.normal(0, 1, size=100)
-    first = gate.aci_flags(calibration, clean, evaluated)
+    first = gate.calibrated_flags(calibration, evaluated)
     altered = evaluated.copy()
-    altered[60:] += 50.0
-    second = gate.aci_flags(calibration, clean, altered)
-    np.testing.assert_array_equal(first[:60], second[:60])
+    altered += 50.0
+    second = gate.calibrated_flags(calibration, evaluated)
+    np.testing.assert_array_equal(first, second)
+    assert not np.array_equal(first, gate.calibrated_flags(calibration, altered))
 
 
-def test_aci_rejects_mismatched_stream_lengths():
-    rng = np.random.default_rng(17)
+def test_calibration_threshold_rejects_empty_scores_and_invalid_target():
     try:
-        gate.aci_flags(rng.normal(size=50), rng.normal(size=10), rng.normal(size=11))
+        gate.calibration_threshold(np.array([]), target=0.05)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("se esperaban errores para calibración vacía")
+    try:
+        gate.calibration_threshold(np.arange(10), target=1.0)
     except ValueError:
         return
-    raise AssertionError("se esperaba ValueError por longitudes distintas")
+    raise AssertionError("se esperaba ValueError para target fuera de (0,1)")
 
 
 def test_matched_fpr_recall_imposes_the_budget_on_clean_data():
     rng = np.random.default_rng(19)
     clean = rng.normal(0, 1, size=(2000, 20, 5)).astype(np.float32)
     scorer = gate.score_3sigma
-    recall_on_clean = gate.matched_fpr_recall(scorer, clean, clean, target=0.05)
-    assert abs(recall_on_clean - 0.05) < 0.01
+    recall_on_calibration = gate.matched_fpr_recall(scorer, clean, clean, target=0.05)
+    assert abs(recall_on_calibration - 0.05) < 0.01

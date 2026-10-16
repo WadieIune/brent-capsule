@@ -2,25 +2,22 @@ metadata_version: 1
 name: "Data Quality en series financieras — gate de dos capas con controles por representación, CNN 1D y XGBoost"
 description: >
   Framework de control de calidad de dato para series temporales financieras,
-  evaluado con defectos inyectados de verdad conocida y presupuesto de falsas
-  alarmas común. El gate tiene dos capas: Gate A reúne los controles
+  evaluado con defectos sintéticos de verdad conocida. Los umbrales se calibran
+  en validación con un objetivo nominal común; la FPR OOS se reporta y puede
+  diferir. El gate tiene dos capas: Gate A reúne los controles
   deterministas y estadísticos clásicos (3σ, checks TRIM de repetidos, rangos,
   calendario); Gate B mira el mismo dato en cuatro REPRESENTACIONES distintas
   —precio crudo, retorno frente a pares, canal/geometría y vintage frente al
   snapshot almacenado— e incorpora la capa de IA: una CNN 1D supervisada y
-  XGBoost como combinador de señales. Todos los controles operan bajo un gate
-  conforme-adaptativo (Adaptive Conformal Inference) que calibra el umbral sobre
-  la distribución empírica en vez de sobre un supuesto de normalidad, lo que
-  importa porque las colas observadas superan a la gaussiana por un factor de 4
-  a 3σ y de varios órdenes de magnitud a 5σ.
+  XGBoost como combinador de señales. Los umbrales empíricos se congelan antes
+  del test; no se reclama garantía conformal ni control bajo drift. El análisis
+  de colas es descriptivo y usa estandarización ex post.
 
-  Resultado principal: ninguna representación domina. Cada familia de defecto la
-  cubre bien un control distinto y varias las ve un solo control, de modo que el
-  valor está en la cobertura combinada y no en la capacidad de ningún modelo. La
-  CNN 1D aporta una mejora real y modesta, y es el mejor control en las familias
-  sin estadístico cerrado evidente; XGBoost como combinador rinde por debajo de
-  la unión de los mismos controles con umbral propio, un resultado negativo que
-  se publica igual. La cápsula conserva además el sistema anterior de patrones
+  Evidencia exploratoria: varios controles cubren familias sintéticas distintas,
+  pero la FPR realizada difiere y los mejores controles por familia se eligen
+  sobre el mismo test. No se demuestra superioridad generalizable de CNN ni
+  XGBoost; hace falta evaluación externa y etiquetas de incidentes reales. La
+  cápsula conserva además el sistema anterior de patrones
   chartistas (CNN EfficientNet sobre GASF/GADF, CV purgada, DSR/PBO).
 
   Todos los resultados son provisionales y están sujetos a auditoría cruzada;
@@ -33,7 +30,7 @@ corresponding_contributor:
 tags:
   - "data-quality"
   - "anomaly-detection"
-  - "conformal-prediction"
+  - "threshold-calibration"
   - "machine-learning"
   - "deep-learning"
   - "quantitative-finance"

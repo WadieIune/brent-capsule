@@ -37,7 +37,7 @@ Esta cápsula sigue el formato estándar de **Code Ocean**:
 | Script | Qué reproduce | Duración aprox. |
 |---|---|---|
 | `code/run` | Sistema de patrones chartistas: CNN EfficientNet sobre GASF/GADF, CV purgada, walk-forward y backtest con DSR/PBO. | larga |
-| `code/run_dq.sh` | **Pipeline de Data Quality**: detección por representación, gate conforme, diagnóstico de distribución, figuras y entregables Excel/Word. | ~6 min en CPU |
+| `code/run_dq.sh` | **Pipeline de Data Quality**: detección por representación, umbrales congelados en validación, diagnóstico de distribución, figuras y entregables Excel/Word. | ~6 min en CPU |
 
 Para ejecutar la línea de DQ en Code Ocean, cambia el punto de entrada a
 `/code/run_dq.sh` o invócalo desde `/code/run`.
@@ -50,9 +50,9 @@ modo que las figuras y los entregables no pueden divergir de la evidencia.
 
 - `results/reports/dq_*/summary.json` — un JSON por experimento, con protocolo,
   límites declarados y resultados.
-- `docs/figuras/dq_distribucion_rendimientos.{png,pdf}` — distribución empírica
+- `results/figures/dq/dq_distribucion_rendimientos.{png,pdf}` — distribución empírica
   frente a la normal.
-- `docs/figuras/dq_pipeline_gate_a_b.{png,pdf}` — figura de cierre: el pipeline
+- `results/figures/dq/dq_pipeline_gate_a_b.{png,pdf}` — figura de cierre: la arquitectura
   de dos puertas y la cobertura medida por control y familia.
 - `results/reports/dq_entregables/resultados_dq.xlsx` — resultados para el Risk
   Director: cobertura, comparación de capas, estado de cada resultado y

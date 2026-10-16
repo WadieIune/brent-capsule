@@ -149,6 +149,7 @@ def build(panel_path: Path, seeds: tuple[int, ...] = gate.SEEDS) -> dict:
     clean_p = np.asarray([prices[a:b + 1] for a, b in bounds], dtype=float)
 
     train_z, val_z = clean_z[is_train], clean_z[is_val]
+    val_p = clean_p[is_val]
     test_z, test_p = clean_z[is_test], clean_p[is_test]
     test_bounds = [bd for bd, keep in zip(bounds, is_test) if keep]
 
@@ -165,7 +166,8 @@ def build(panel_path: Path, seeds: tuple[int, ...] = gate.SEEDS) -> dict:
         injected_p[step] = np.asarray(ps, dtype=float)
 
     return {
-        "train_z": train_z, "val_z": val_z, "test_z": test_z, "test_p": test_p,
+        "train_z": train_z, "val_z": val_z, "val_p": val_p,
+        "test_z": test_z, "test_p": test_p,
         "injected_z": injected_z, "injected_p": injected_p,
         "n": {"train": int(is_train.sum()), "validation": int(is_val.sum()),
               "test": int(is_test.sum())},
@@ -177,17 +179,25 @@ def build(panel_path: Path, seeds: tuple[int, ...] = gate.SEEDS) -> dict:
 def run(panel_path: Path, output_dir: Path, seeds: tuple[int, ...] = gate.SEEDS) -> dict:
     data = build(panel_path, seeds)
     train_z, val_z, test_z = data["train_z"], data["val_z"], data["test_z"]
+    purge = int(np.ceil(WINDOW / WINDOW_STRIDE)) - 1
+    n_fit_stop = int(0.70 * len(val_z))
+    cal_start = n_fit_stop + purge
+    if len(val_z) - cal_start < 20:
+        raise ValueError("Validación insuficiente para calibrar umbrales")
+    val_fit_z, val_cal_z = val_z[:n_fit_stop], val_z[cal_start:]
+    val_cal_p = data["val_p"][cal_start:]
 
     # El control de rejilla no se entrena: una sola evaluación basta.
     price_results = {}
+    price_threshold = gate.calibration_threshold(grid_step_score(val_cal_p), FP_TARGET)
+    price_fpr = float(np.mean(grid_step_score(data["test_p"]) > price_threshold))
     for step, inj_p in data["injected_p"].items():
-        price_results[f"{step:.2f}"] = gate.matched_fpr_recall(
-            grid_step_score, data["test_p"], inj_p, FP_TARGET)
+        price_results[f"{step:.2f}"] = float(np.mean(grid_step_score(inj_p) > price_threshold))
 
     # Los cuatro detectores del arnés original, sobre la MISMA inyección fiel.
     z_results: dict[str, dict[str, list[float]]] = {}
     for seed in seeds:
-        cnn = base.fit_cnn(train_z, val_z, seed=seed)
+        cnn = base.fit_cnn(train_z, val_fit_z, seed=seed)
         detectors = {
             "cnn_1d": lambda x, m=cnn: base.score_cnn(m, x),
             "cross_asset_1_minus_r2": base.score_cross_asset,
@@ -195,9 +205,12 @@ def run(panel_path: Path, output_dir: Path, seeds: tuple[int, ...] = gate.SEEDS)
             "vol_ratio_vs_pares": gate.volatility_ratio_score,
         }
         for name, scorer in detectors.items():
+            threshold = gate.calibration_threshold(scorer(val_cal_z), FP_TARGET)
+            z_results.setdefault(name, {}).setdefault("test_false_positive_rate", []).append(
+                float(np.mean(scorer(test_z) > threshold)))
             for step, inj_z in data["injected_z"].items():
                 z_results.setdefault(name, {}).setdefault(f"{step:.2f}", []).append(
-                    gate.matched_fpr_recall(scorer, test_z, inj_z, FP_TARGET))
+                    float(np.mean(scorer(inj_z) > threshold)))
 
     output = {
         "protocol": {
@@ -209,13 +222,19 @@ def run(panel_path: Path, output_dir: Path, seeds: tuple[int, ...] = gate.SEEDS)
             "injected_steps_usd": list(INJECTED_STEPS),
             "native_tick_usd": 0.01,
             "target_false_positive_rate": FP_TARGET,
+            "threshold_protocol": "fixed threshold calibrated on a later validation segment, purged from CNN model selection; test used only for evaluation",
+            "n_model_selection_validation": int(n_fit_stop),
+            "n_purged_validation": int(purge),
+            "n_threshold_calibration_validation": int(len(val_cal_z)),
             "n_windows": data["n"],
             "test_start": data["test_start"],
             "seeds": data["seeds"],
         },
         "recall_grid_control_on_prices": price_results,
+        "test_false_positive_rate_grid_control_on_prices": price_fpr,
         "recall_window_detectors_on_recomputed_returns": {
-            name: {step: {"mean": float(np.mean(v)), "std": float(np.std(v))}
+            name: {step: (float(np.mean(v)) if step == "test_false_positive_rate" else
+                          {"mean": float(np.mean(v)), "std": float(np.std(v))})
                    for step, v in steps.items()}
             for name, steps in z_results.items()
         },
@@ -235,7 +254,8 @@ def main() -> None:
     result = run(args.panel, args.output)
 
     steps = [f"{s:.2f}" for s in INJECTED_STEPS]
-    print(f"\nRecall a FPR emparejada ({FP_TARGET:.0%}); azar ~{FP_TARGET:.3f}. "
+    print(f"\nRecall a umbral de validación (objetivo nominal {FP_TARGET:.0%}); "
+          f"FPR OOS del control de rejilla {result['test_false_positive_rate_grid_control_on_prices']:.3f}. "
           f"Truncación del precio a paso (tick nativo 0,01 $):")
     header = f"  {'detector':26s} " + " ".join(f"{'$' + s:>9s}" for s in steps)
     print(header)

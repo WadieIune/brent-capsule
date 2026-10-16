@@ -65,21 +65,23 @@ CONTROL_DESC = {
 
 ESTADO = [
     ("Cobertura complementaria por representación", "🟡 provisional",
-     "Cada familia de defecto la cubre bien un control distinto y varias las ve uno solo. "
+     "Los controles muestran perfiles de cobertura distintos y varias familias quedan cubiertas "
+     "por un único control en este test. "
      "Medido con defectos de verdad conocida sobre test temporal y presupuesto de falsas "
-     "alarmas común. Pendiente de auditoría cruzada."),
-    ("Calibración conforme del umbral", "🟡 provisional",
-     "El gate conforme-adaptativo alcanza el presupuesto de falsas alarmas fijado sin suponer "
-     "una forma de distribución. Un umbral paramétrico 3σ no lo consigue sobre estas colas."),
+     "alarmas nominal calibrado en validación; la FPR se mide en test y puede diferir. "
+     "Pendiente de auditoría cruzada."),
+    ("Calibración empírica del umbral", "🟡 provisional",
+     "Se congela un umbral empírico usando un bloque de validación separado y purgado. No se "
+     "reclama garantía conformal ni control de FPR bajo drift."),
     ("Alcance del control de vintage", "🟡 provisional",
      "Alcanza recall 1,00 cuando el defecto reescribe historia ya publicada y es ciego por "
      "construcción cuando llega con el dato nuevo, porque no hay snapshot con el que comparar."),
-    ("Aportación de la CNN 1D", "🟡 provisional",
-     "Es el mejor control en las familias sin estadístico cerrado evidente, y el que más cubre "
-     "en el escenario de dato nuevo. La mejora sobre el banco completo es real y modesta."),
-    ("XGBoost como combinador", "🟡 provisional · resultado negativo",
-     "Rinde por debajo de la unión de los mismos controles con umbral propio, y diluye los "
-     "controles que resuelven una familia de forma exacta. Se publica como negativo."),
+    ("Aportación de la CNN 1D", "🟡 exploratorio",
+     "La evaluación sintética no demuestra superioridad generalizable. La selección de "
+     "ganadores se hace sobre el mismo test; hacen falta prueba externa y etiquetas reales."),
+    ("XGBoost como combinador", "🟡 no concluyente",
+     "Su recall y el de la unión se observan con FPR OOS distintas. No se puede afirmar que "
+     "uno supere al otro sin comparar a un mismo punto de operación o sobre curvas ROC/PR."),
     ("Impacto en capital", "fuera de alcance",
      "No se reporta ninguna cifra. Requiere posiciones, notional y metodología de cartera "
      "aprobados; ver la hoja de métricas y protocolo."),
@@ -191,8 +193,11 @@ LIMITES = [
      "no son independientes y cualquier intervalo implícito es optimista."),
     ("Saneo idealizado", "Donde se proyecta corrección, se supone que detectar equivale a corregir "
      "sin error ni coste. No se modela el coste de investigar una alerta."),
-    ("FPR no idénticas", "Gate A opera a 0,032 y Gate B a 0,083 de falsas alarmas: la comparación "
-     "es generosa en alarmas para Gate B."),
+    ("FPR observada no igualada", "La FPR de test puede diferir entre controles pese a calibrar "
+     "umbrales al mismo objetivo nominal; no interpretar recall como comparación a operación idéntica."),
+    ("Resolución de calibración", "El bloque de calibración es finito. La cuota de Bonferroni por "
+     "control puede quedar por debajo de una observación (1/n), en cuyo caso el umbral empírico "
+     "se sitúa en el máximo de calibración y no puede realizar exactamente el objetivo nominal."),
     ("Un solo activo y un solo panel", "Todo el banco se ha medido sobre Brent y sus cuatro pares. "
      "La transferencia a otras asset classes NO está demostrada."),
     ("Capital", "No se reporta ninguna cifra de capital. Sería k·VaR con el semáforo de Basilea, "
@@ -210,16 +215,16 @@ METRICAS = [
      "De los tramos LIMPIOS, qué fracción levantó alerta igualmente. Es el coste operativo: "
      "cada falsa alarma es trabajo de revisión que no encuentra nada. Objetivo fijado: 5 %.",
      "FP / (FP + TN)"),
-    ("Recall a presupuesto común",
-     "Comparar recalls solo tiene sentido si todos los controles operan a la MISMA carga de "
-     "alarmas. Si no, el que más alerta parece el más sensible. Todo el Excel está medido así.",
-     "recall | FPR = 5 %"),
+    ("Recall a objetivo nominal",
+     "Los umbrales se fijan en una porción de validación limpia con un objetivo nominal del 5 %. "
+     "La tasa realizada se mide en el test posterior y puede diferir por deriva y dependencia.",
+     "recall; FPR OOS aparte"),
     ("Recall de la peor familia",
      "El mínimo sobre las familias de defecto. Un control con buena media y un cero en una "
      "familia tiene un punto ciego, y eso importa más que la media.",
      "min_familias(recall)"),
     ("Azar",
-     "Nivel de recall que alcanzaría un detector que alertase al azar al 5 %. En las tablas, "
+     "Referencia aproximada para un detector aleatorio con prevalencia de alertas del 5 %. En tablas, "
      "las celdas en gris están en el azar: ese control NO ve esa familia.",
      "≈ 0,048"),
     ("Precisión / PPV",
@@ -241,18 +246,17 @@ PROTOCOLO = [
      "observaciones independientes y cualquier intervalo de confianza implícito es optimista."),
     ("Partición temporal",
      "Estrictamente cronológica, sin mezclar. Entrenamiento hasta 2018-12-31 (558 ventanas). "
-     "Validación 2019-2023 (236). Test desde 2024-01-05 (124). La CNN se entrena en "
-     "entrenamiento, el combinador XGBoost en validación y TODO se evalúa en test."),
+     "Validación 2019-2023 (236), separada en ajuste temprano y calibración posterior con "
+     "purga por solapamiento. CNN y XGBoost se ajustan sin test; los umbrales se congelan "
+     "antes de evaluar el bloque desde 2024-01-05 (124 ventanas)."),
     ("Ground truth",
      "Defectos SINTÉTICOS inyectados sobre los precios crudos, con verdad conocida por "
      "construcción. Tras inyectar se RECALCULAN retornos y normalización causal, para que el "
      "defecto se propague como lo haría en producción. No hay etiquetas de incidentes reales."),
     ("Calibración del umbral",
-     "Gate conforme-adaptativo (Adaptive Conformal Inference). El umbral se calibra sobre "
-     "tramos limpios de VALIDACIÓN y se reajusta en línea con la falsa alarma observada, sin "
-     "suponer una forma de distribución — que es donde falla un 3σ paramétrico sobre estas "
-     "colas. La garantía NO es incondicional: depende de la dependencia entre ventanas, del "
-     "drift y del tamaño de la muestra de calibración, y aquí las ventanas solapan."),
+     "Umbral empírico de orden estadístico calibrado en un segmento tardío de validación, "
+     "separado del ajuste por una purga de ventanas solapadas. Queda congelado antes del test. "
+     "La FPR de test se informa sin feedback; no se reclama garantía conformal ni control bajo drift."),
     ("Sin fuga temporal",
      "Normalización causal con media y desviación móviles de 60 sesiones desplazadas una. WTI "
      "se representa con diferencias en dólares para preservar su settlement negativo real de "
@@ -303,8 +307,8 @@ def _recall_fill(value: float, chance: float) -> PatternFill:
 
 def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     families = stack["protocol"]["families"]
-    singles = stack["single_controls_conformal_aci"]
-    subsets = stack["gate_subsets_conformal_aci"]
+    singles = stack["single_controls_validation_threshold"]
+    subsets = stack["gate_subsets_validation_threshold"]
     n_test = stack["protocol"]["n_windows"]["test"]
     target = stack["protocol"]["target_false_positive_rate"]
     chance = int(target * n_test) / n_test
@@ -325,29 +329,27 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
          "distinto, y varias familias las ve UN SOLO control. El valor está en la cobertura "
          "combinada, no en la capacidad de ningún modelo."),
         ("Qué aporta el deep learning",
-         "La CNN 1D es el mejor control en salto reversible, desacople y cambio de fuente: los "
-         "defectos sin estadístico cerrado evidente. Y en el escenario de DATO NUEVO —el "
-         "frecuente, donde el control de vintage no puede ayudar— es el mejor control en 4 de "
-         "las 7 familias. Aporta de forma real y MODESTA; no sustituye a ningún control "
-         "explícito, y en dato nuevo lo es dentro de un campo débil (recalls de 0,10 a 0,76)."),
+         "La CNN forma parte del banco de detectores, pero esta evaluación sintética no demuestra "
+         "superioridad generalizable. Los mejores controles por familia se seleccionan sobre el "
+         "mismo test y son resultados exploratorios; requieren validación externa y etiquetas reales."),
         ("El frente abierto",
          "Cuando el defecto llega con el dato nuevo en vez de reescribir historia publicada, la "
          "cobertura cae para TODOS los controles. El control de vintage, que alcanza 1,00 en "
          "casi todas las familias con restatement, es ciego por construcción ahí: no hay "
          "snapshot anterior con el que comparar. Es donde hay que seguir trabajando."),
-        ("Qué NO aporta el machine learning",
-         "XGBoost como combinador de señales PIERDE contra la unión de controles con umbral "
-         "propio, y en pérdida de precisión destruye un control que acierta el 100 %. "
-         "«ML que apoya» sí; «ML que sustituye» no."),
+        ("Qué no está demostrado sobre el machine learning",
+         "No se demuestra superioridad de CNN ni XGBoost. La FPR OOS de las configuraciones "
+         "difiere y la comparación XGBoost-unión no está igualada en operación; hacen falta "
+         "curvas de rendimiento y validación externa."),
         ("Comparaciones válidas",
-         "Solo son interpretables las comparaciones a la MISMA tasa de falsas alarmas. La hoja "
-         "3 compara control contra control a presupuesto común. La hoja 4 describe puntos de "
-         "operación distintos y su diferencia de recall NO mide valor incremental."),
+         "Los umbrales se calibran con un objetivo nominal común en validación, pero la FPR "
+         "observada en test difiere entre controles. Las comparaciones por familia son "
+         "descriptivas y exploratorias; no identifican valor incremental de CNN o XGBoost."),
         ("Por qué 3σ no basta",
          f"En Brent, |z|>3 ocurre el {dist['colas_normal_vs_empirica'][2]['frecuencia_empirica']:.2%} "
          f"de las sesiones frente al {dist['colas_normal_vs_empirica'][2]['frecuencia_normal']:.2%} "
-         "que predice una normal: 4,1 veces más. Un umbral 3σ no puede separar una cola real "
-         "de mercado de un defecto de dato."),
+         "de referencia gaussiana. Es una estadística descriptiva estandarizada ex post, no un "
+         "test de defectos ni evidencia de que 3σ distinga errores de mercado."),
         ("Lo que NO se afirma",
          "No se da ninguna cifra de capital. No se demuestra transferencia a otras asset "
          "classes. No se afirma prevalencia real de defectos. Ver hoja 8."),
@@ -389,32 +391,32 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     ws.freeze_panes = "A5"
 
     # --- 2. Cobertura por control y familia ---
-    ws = _sheet(wb, "3 Cobertura", f"Recall por control y familia, a presupuesto de falsas "
-                f"alarmas común ({target:.0%}). Azar ≈ {chance:.3f}; en gris lo que está en el azar. "
+    ws = _sheet(wb, "3 Cobertura", f"Recall por control y familia; objetivo nominal de calibración "
+                f"{target:.0%}, FPR de test observada y no igualada. Azar ≈ {chance:.3f}; en gris lo que está en el azar. "
                 "«Reescribe historia» = el defecto altera datos ya publicados; «dato nuevo» = solo "
                 "afecta a las sesiones recientes.")
-    labels = ["Control", "Capa", "Representación"] + \
+    labels = ["Control", "Capa", "Representación", "FPR test"] + \
              [f"{f}\n(reescribe)" for f in families] + [f"{f}\n(dato nuevo)" for f in families]
-    _header(ws, 4, labels, [28, 8, 14] + [13] * (2 * len(families)))
+    _header(ws, 4, labels, [28, 8, 14, 11] + [13] * (2 * len(families)))
     for r, (control, (capa, repre, _)) in enumerate(CONTROL_DESC.items(), start=5):
         ws.cell(row=r, column=1, value=control).border = BORDER
         ws.cell(row=r, column=2, value=capa).border = BORDER
         ws.cell(row=r, column=3, value=repre).border = BORDER
+        ws.cell(row=r, column=4, value=round(singles[control]["test_false_positive_rate"], 3)).border = BORDER
         for j, mode in enumerate(("restated", "fresh")):
             for k, fam in enumerate(families):
                 value = singles[control][f"{fam}|{mode}"]
-                cell = ws.cell(row=r, column=4 + j * len(families) + k, value=round(value, 3))
+                cell = ws.cell(row=r, column=5 + j * len(families) + k, value=round(value, 3))
                 cell.fill, cell.border = _recall_fill(value, chance), BORDER
                 cell.alignment = Alignment(horizontal="center")
 
     # --- 3. Gate A vs Gate B ---
     ws = _sheet(wb, "4 Gate A vs Gate B",
-                "ATENCIÓN AL LEER ESTA HOJA: cada configuración opera a una tasa de falsas "
-                "alarmas DISTINTA, así que la diferencia de recall entre filas NO aísla el valor "
-                "incremental de ninguna capa. Se incluye porque describe el punto de operación de "
-                "cada configuración, no como medida de mejora. La comparación que sí es válida "
-                "—control contra control a presupuesto común— está en la hoja 3.")
-    _header(ws, 4, ["Configuración", "Qué incluye", "Falsas alarmas medidas",
+                "Los umbrales se calibran con el mismo objetivo nominal en validación, pero la FPR "
+                "realizada en test difiere. Las diferencias de recall son descriptivas y no aíslan "
+                "el valor incremental de ninguna capa. Este benchmark mide controles en paralelo; "
+                "no valida un router secuencial.")
+    _header(ws, 4, ["Configuración", "Qué incluye", "FPR observada en test",
                     "Recall medio", "Recall de la peor familia"], [22, 56, 20, 16, 22])
     keys = [f"{f}|{m}" for f in families for m in ("restated", "fresh")]
     descripciones = {
@@ -425,23 +427,22 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     for r, (name, block) in enumerate(subsets.items(), start=5):
         values = [block[k] for k in keys]
         for col, value in enumerate([name, descripciones.get(name, ""),
-                                     round(block["false_positive_rate"], 3),
+                                     round(block["test_false_positive_rate"], 3),
                                      round(sum(values) / len(values), 3),
                                      round(min(values), 3)], start=1):
             cell = ws.cell(row=r, column=col, value=value)
             cell.border, cell.alignment = BORDER, WRAP
     row = 5 + len(subsets) + 1
-    ws.cell(row=row, column=1, value="Aportación marginal de la CNN sobre el banco").font = Font(bold=True)
+    ws.cell(row=row, column=1, value="Diferencia descriptiva: banco con CNN menos banco sin CNN").font = Font(bold=True)
     delta = (sum(subsets["con_cnn"][k] for k in keys) - sum(subsets["sin_ia"][k] for k in keys)) / len(keys)
     ws.cell(row=row, column=4, value=round(delta, 3)).font = Font(bold=True)
     ws.cell(row=row + 1, column=1,
-            value="Esa diferencia marginal es la única de esta hoja medida entre dos "
-                  "configuraciones a falsas alarmas casi iguales (0,081 y 0,083), así que es la "
-                  "única interpretable como aportación. Las demás filas difieren también en "
-                  "punto de operación.").font = Font(italic=True, size=9)
+            value="Diferencia exploratoria post hoc sobre el mismo test; no es una estimación "
+                  "confirmatoria de aportación incremental. Requiere test externo y protocolo "
+                  "preespecificado.").font = Font(italic=True, size=9)
 
     # --- 4. Familias de defecto ---
-    ws = _sheet(wb, "5 Familias", "Qué es cada familia de defecto y qué control la cubre mejor.")
+    ws = _sheet(wb, "5 Familias", "Mejor control observado por familia, selección post hoc en el mismo test; lectura exploratoria.")
     _header(ws, 4, ["Familia", "Qué es", "Mejor control (reescribe)", "Recall",
                     "Mejor control (dato nuevo)", "Recall"], [20, 62, 26, 10, 26, 10])
     for r, fam in enumerate(families, start=5):
@@ -516,8 +517,8 @@ def _p(doc, text, size=10, bold=False, italic=False, color=None, space=6):
 
 def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     families = stack["protocol"]["families"]
-    singles = stack["single_controls_conformal_aci"]
-    subsets = stack["gate_subsets_conformal_aci"]
+    singles = stack["single_controls_validation_threshold"]
+    subsets = stack["gate_subsets_validation_threshold"]
     tails = {r["umbral_sigmas"]: r for r in dist["colas_normal_vs_empirica"]}
 
     doc = Document()
@@ -531,13 +532,12 @@ def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
             "log-rendimientos. Ese umbral lleva dentro un supuesto de normalidad que los datos "
             "no cumplen. En Brent, entre 2007 y 2026, un movimiento de más de 3σ ocurre el "
             f"{tails[3]['frecuencia_empirica']:.2%} de las sesiones, frente al "
-            f"{tails[3]['frecuencia_normal']:.2%} que predice una normal: "
-            f"{tails[3]['veces_mas_frecuente']:.1f} veces más. A 5σ la razón llega a "
-            f"{tails[5]['veces_mas_frecuente']:.0f}.")
-    _p(doc, "La consecuencia operativa es la que importa: si un umbral dispara cuatro veces más "
-            "de lo que su propio supuesto promete, no puede separar una cola real de mercado de "
-            "un defecto de dato. Bajo normalidad las dos cosas son «imposibles». Subir el umbral "
-            "no resuelve nada; hay que mirar el dato desde otro sitio.")
+            f"{tails[3]['frecuencia_normal']:.2%} de referencia gaussiana. La estandarización "
+            "usa la muestra completa y es descriptiva; no constituye un detector de defectos ni "
+            "un umbral desplegable.")
+    _p(doc, "Una cola más pesada cuestiona el supuesto gaussiano del umbral, pero no permite "
+            "clasificar una observación como movimiento de mercado o error de datos. Esa "
+            "distinción requiere controles adicionales y etiquetas de incidentes.")
     _p(doc, "Advertencia: de esto NO se deduce ninguna dirección de sesgo en capital. Eso "
             "dependería de la cartera, el horizonte y la metodología, y no se calcula aquí.",
        italic=True, color="777777")
@@ -555,14 +555,14 @@ def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
         "evidencia y score calibrado. Revisión humana; nunca corrección automática.",
     ):
         doc.add_paragraph(texto, style="List Bullet")
-    _p(doc, "Todos los controles operan bajo un gate conforme-adaptativo, que calibra el umbral "
-            "sobre la distribución empírica observada en vez de sobre una forma supuesta. Esa es "
-            "la vía para respetar un presupuesto de falsas alarmas cuando la distribución tiene "
-            "las colas que tiene.")
+    _p(doc, "Los umbrales se calibran una vez sobre un segmento limpio tardío de validación, "
+            "separado del ajuste por una purga, y quedan congelados antes del test. La FPR OOS se "
+            "reporta sin feedback. No se reclama garantía conformal ni estabilidad bajo drift.")
 
     doc.add_heading("3. Resultado principal: ninguna representación domina", level=1)
-    _p(doc, "Medido sobre siete familias de defecto inyectadas en los precios y con el "
-            "presupuesto de falsas alarmas igualado, el resultado es una matriz de coberturas "
+    _p(doc, "Medido sobre siete familias de defecto sintéticas, con umbrales calibrados al mismo "
+            "objetivo nominal en validación y FPR observada de forma independiente en test, el "
+            "resultado es una matriz de coberturas "
             "complementarias, no un ranking. Cada familia la cubre bien un control distinto, y "
             "varias familias las ve un solo control.")
     tabla = doc.add_table(rows=1, cols=5)
@@ -591,29 +591,21 @@ def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     doc.add_heading("4. Qué aporta —y qué no— la capa de IA", level=1)
     keys = [f"{f}|{m}" for f in families for m in ("restated", "fresh")]
     media = {n: sum(b[k] for k in keys) / len(keys) for n, b in subsets.items()}
-    _p(doc, f"Recall medio por configuración, cada una a su propio presupuesto de falsas alarmas: "
+    _p(doc, f"Recall medio descriptivo por configuración con FPR OOS no igualada "
             f"solo 3σ {media['solo_3sigma']:.3f}; banco de representaciones sin IA "
             f"{media['sin_ia']:.3f}; banco completo con la CNN {media['con_cnn']:.3f}.")
-    _p(doc, "La lectura es inequívoca y conviene no adornarla. El salto grande no lo da el deep "
-            "learning: lo da pasar de un único control sobre retornos a un banco que mira el dato "
-            "en cuatro representaciones. La CNN añade encima una mejora real pero modesta.")
-    _p(doc, "Dónde sí es la mejor opción la CNN: en salto reversible "
-            f"({singles['retorno_cnn']['reversible_jump|restated']:.2f}), desacople "
-            f"({singles['retorno_cnn']['decoupling|restated']:.2f}) y cambio de fuente, que son "
-            "las familias donde el defecto es un patrón temporal multivariante sin estadístico "
-            "cerrado evidente. Donde existe un control dedicado, la red pierde contra él.")
+    _p(doc, "Estas cifras no aíslan el efecto de la CNN: cambian las tasas de falsas alarmas "
+            "realizadas y la composición de controles. La selección del mejor control por familia "
+            "se hace sobre el mismo test y es exploratoria, no evidencia confirmatoria.")
     fresh_best = [max(singles, key=lambda c: singles[c][f"{f}|fresh"]) for f in families]
     n_cnn = fresh_best.count("retorno_cnn")
-    _p(doc, f"Un matiz que refuerza a la red y que conviene no pasar por alto: en el escenario "
-            f"de DATO NUEVO —el operativamente frecuente, donde vintage no puede ayudar— la CNN "
-            f"es el mejor control en {n_cnn} de las {len(families)} familias. Ahora bien, lo es "
-            "en un campo débil: los recalls ahí van de 0,10 a 0,76, así que es la mejor opción "
-            "disponible, no una solución. Ese escenario es el frente abierto del framework.")
-    _p(doc, "Resultado negativo que hay que publicar igual: XGBoost como combinador de las "
-            "señales rinde por debajo de la unión de los mismos controles con umbral propio. En "
-            "pérdida de precisión llega a destruir un control que acierta el 100 %, diluyéndolo "
-            "entre el resto. La conclusión es que el ML ayuda cuando ningún control es decisivo y "
-            "estorba cuando uno lo es.")
+    _p(doc, f"En este test, la CNN resulta el máximo por familia en {n_cnn} de {len(families)} "
+            "familias de dato nuevo. Como el ganador se selecciona post hoc y no hay etiquetas "
+            "reales ni prevalencias observadas, este recuento solo genera una hipótesis para una "
+            "evaluación externa preespecificada.")
+    _p(doc, "La comparación XGBoost-unión no es concluyente: sus FPR OOS son distintas, por lo "
+            "que la diferencia de recall mezcla sensibilidad con punto de operación. No se atribuye "
+            "ventaja ni perjuicio al combinador sin comparación a FPR equivalente y validación externa.")
 
     doc.add_heading("5. Los modelos de riesgo que consumen la serie", level=1)
     _p(doc, "El gate de calidad entrega una serie validada a los modelos de riesgo. A ellos "

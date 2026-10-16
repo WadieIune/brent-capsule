@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Gate DQ conforme-adaptativo: reevalúa CNN 1D vs controles baratos a presupuesto
-de falsas alarmas REALMENTE impuesto.
+"""Gate DQ con umbrales de validación congelados: reevalúa CNN 1D vs controles.
 
 Motivación (challenge a `dq_cnn1d_supervised`): aquel experimento calibró el umbral
 sobre la validación 2019-2023 y lo congeló para el test 2024-2026. La deriva de
@@ -8,10 +7,9 @@ distribución hizo que la CNN operase al 19,9 % de FPR frente al 9,7 % del contr
 cross-asset, y el veredicto ("la CNN no pasa el gate") comparó detectores en puntos
 de operación distintos. Este módulo separa las dos preguntas:
 
-  1. **Poder discriminante** — recall a FPR realizada emparejada y AUC-ROC/AUC-PR.
-  2. **Calibración** — un gate conforme-adaptativo (ACI, Gibbs & Candès 2021) que
-     ajusta el umbral en línea y mantiene la tasa de falsas alarmas en el objetivo
-     bajo deriva, en vez de congelar un cuantil de validación.
+  1. **Poder discriminante** — recall a umbral nominal calibrado fuera de test.
+  2. **Evaluación temporal** — la FPR observada en test se informa; no se ajusta
+     el umbral con el propio test ni se reclama garantía conformal.
 
 Añade además los dos controles que el experimento original no hacía:
 
@@ -59,6 +57,8 @@ base = _load_base()
 FAMILIES = base.FAMILIES
 FIT_END = base.FIT_END
 VAL_END = base.VAL_END
+WINDOW = base.WINDOW
+WINDOW_STRIDE = base.WINDOW_STRIDE
 FP_TARGET = base.FP_TARGET
 fit_cnn = base.fit_cnn
 inject = base.inject
@@ -68,8 +68,6 @@ score_cross_asset = base.score_cross_asset
 score_3sigma = base.score_3sigma
 
 SEEDS = (42, 71, 123, 7, 2024)
-ACI_GAMMA = 0.02
-ACI_WINDOW = 236
 
 
 def inject_rescale(window: np.ndarray, rng: np.random.Generator) -> np.ndarray:
@@ -180,34 +178,31 @@ def volatility_ratio_score(windows: np.ndarray) -> np.ndarray:
     return np.abs(np.log((target + 1e-12) / (peers + 1e-12)))
 
 
-def aci_flags(calibration: np.ndarray, clean_stream: np.ndarray, evaluated: np.ndarray,
-              target: float = FP_TARGET, gamma: float = ACI_GAMMA,
-              window: int = ACI_WINDOW) -> np.ndarray:
-    """Adaptive Conformal Inference sobre un flujo causal.
+def calibration_threshold(scores: np.ndarray, target: float = FP_TARGET) -> float:
+    """Freeze a high-score threshold using calibration data only.
 
-    En cada paso el umbral es el cuantil ``1 - alpha_t`` de las puntuaciones limpias
-    más recientes; ``alpha_t`` se corrige con la falsa alarma efectivamente observada
-    en el flujo limpio. ``evaluated`` se puntúa en ese mismo punto de operación, de
-    modo que recall y FPR son comparables entre detectores.
+    The empirical order statistic is conservative at finite calibration sizes.
+    It does not imply a distribution-free guarantee for dependent windows.
     """
-    if len(clean_stream) != len(evaluated):
-        raise ValueError("El flujo limpio y el evaluado deben tener la misma longitud")
-    history = list(calibration)
-    alpha = target
-    flags = np.empty(len(evaluated), dtype=bool)
-    for t in range(len(evaluated)):
-        level = float(np.clip(alpha, 1e-3, 0.5))
-        threshold = float(np.quantile(np.asarray(history[-window:]), 1.0 - level))
-        flags[t] = evaluated[t] > threshold
-        alpha += gamma * (target - (1.0 if clean_stream[t] > threshold else 0.0))
-        history.append(float(clean_stream[t]))
-    return flags
+    scores = np.asarray(scores, dtype=float).reshape(-1)
+    if not len(scores) or not 0.0 < target < 1.0:
+        raise ValueError("Se requieren scores de calibración y target entre 0 y 1")
+    allowed = int(np.floor(target * len(scores)))
+    rank = max(0, len(scores) - allowed - 1)
+    return float(np.partition(scores, rank)[rank])
 
 
-def matched_fpr_recall(scorer, clean: np.ndarray, injected: np.ndarray,
-                       target: float = FP_TARGET) -> float:
-    """Recall con el presupuesto de falsas alarmas impuesto por construcción."""
-    threshold = float(np.quantile(scorer(clean), 1.0 - target))
+def calibrated_flags(calibration_scores: np.ndarray, evaluated_scores: np.ndarray,
+                     target: float = FP_TARGET) -> np.ndarray:
+    """Apply a frozen validation-calibrated threshold; no test feedback is used."""
+    threshold = calibration_threshold(calibration_scores, target)
+    return np.asarray(evaluated_scores) > threshold
+
+
+def matched_fpr_recall(scorer, calibration_clean: np.ndarray,
+                       injected: np.ndarray, target: float = FP_TARGET) -> float:
+    """Recall at a nominal FPR target, with threshold fitted off-test."""
+    threshold = calibration_threshold(scorer(calibration_clean), target)
     return float(np.mean(scorer(injected) > threshold))
 
 
@@ -235,14 +230,21 @@ def _mean_std(values: list[float]) -> dict[str, float]:
 
 def run(panel_path: Path, output_dir: Path, seeds: tuple[int, ...] = SEEDS) -> dict:
     train, validation, test, data_hash = _split(panel_path)
+    purge = int(np.ceil(WINDOW / WINDOW_STRIDE)) - 1
+    n_cal = max(20, int(round(0.25 * len(validation))))
+    fit_stop_end = len(validation) - n_cal - purge
+    if fit_stop_end < 20:
+        raise ValueError("Validación insuficiente para separar tuning y calibración")
+    fit_stop = validation[:fit_stop_end]
+    calibration_windows = validation[fit_stop_end + purge:]
     all_families = list(FAMILIES) + list(UNSEEN_FAMILIES)
 
     matched: dict[str, dict[str, list[float]]] = {}
-    conformal: dict[str, dict[str, list[float]]] = {}
+    calibrated: dict[str, dict[str, list[float]]] = {}
     lofo: dict[str, list[float]] = {}
 
     for seed in seeds:
-        cnn = fit_cnn(train, validation, seed=seed)
+        cnn = fit_cnn(train, fit_stop, seed=seed)
         rng = np.random.default_rng(seed + 2)
         injected = _inject_all(test, rng)
         detectors = {
@@ -253,19 +255,20 @@ def run(panel_path: Path, output_dir: Path, seeds: tuple[int, ...] = SEEDS) -> d
         }
         for name, scorer in detectors.items():
             clean_test = scorer(test)
-            matched.setdefault(name, {}).setdefault("false_positive_rate", []).append(
-                float(np.mean(clean_test > np.quantile(clean_test, 1.0 - FP_TARGET))))
+            calibration_scores = scorer(calibration_windows)
+            threshold = calibration_threshold(calibration_scores, FP_TARGET)
+            matched.setdefault(name, {}).setdefault("test_false_positive_rate", []).append(
+                float(np.mean(clean_test > threshold)))
             for family in all_families:
                 matched[name].setdefault(family, []).append(
-                    matched_fpr_recall(scorer, test, injected[family]))
+                    float(np.mean(scorer(injected[family]) > threshold)))
 
-            calibration = scorer(validation)
-            conformal.setdefault(name, {}).setdefault("false_positive_rate", []).append(
-                float(np.mean(aci_flags(calibration, clean_test, clean_test))))
+            calibrated.setdefault(name, {}).setdefault("test_false_positive_rate", []).append(
+                float(np.mean(calibrated_flags(calibration_scores, clean_test))))
             for family in all_families:
-                conformal[name].setdefault(family, []).append(
-                    float(np.mean(aci_flags(calibration, clean_test,
-                                            scorer(injected[family])))))
+                calibrated[name].setdefault(family, []).append(
+                    float(np.mean(calibrated_flags(calibration_scores,
+                                                   scorer(injected[family])))))
 
         # leave-one-family-out: la CNN se reentrena sin la familia que se le mide.
         # `fit_cnn` lee `FAMILIES` del módulo base al etiquetar, así que se restringe
@@ -274,11 +277,11 @@ def run(panel_path: Path, output_dir: Path, seeds: tuple[int, ...] = SEEDS) -> d
             original = base.FAMILIES
             base.FAMILIES = tuple(f for f in original if f != held_out)
             try:
-                partial = fit_cnn(train, validation, seed=seed)
+                partial = fit_cnn(train, fit_stop, seed=seed)
             finally:
                 base.FAMILIES = original
             lofo.setdefault(held_out, []).append(
-                matched_fpr_recall(lambda x: score_cnn(partial, x), test,
+                matched_fpr_recall(lambda x: score_cnn(partial, x), calibration_windows,
                                    injected[held_out]))
 
     output = {
@@ -288,19 +291,20 @@ def run(panel_path: Path, output_dir: Path, seeds: tuple[int, ...] = SEEDS) -> d
             "seeds": list(seeds),
             "n_train_windows": len(train),
             "n_validation_windows": len(validation),
+            "n_model_selection_windows": len(fit_stop),
+            "n_purged_validation_windows": purge,
+            "n_calibration_windows": len(calibration_windows),
             "n_test_windows": len(test),
             "target_false_positive_rate": FP_TARGET,
+            "threshold_protocol": "fixed order-statistic threshold calibrated on a later validation segment, purged from model selection; test FPR is reported without test feedback",
             "trained_families": list(FAMILIES),
             "unseen_families": list(UNSEEN_FAMILIES),
-            "aci": {"gamma": ACI_GAMMA, "calibration_window": ACI_WINDOW,
-                    "reference": "Gibbs & Candes (2021), Adaptive Conformal Inference"},
-            "matched_protocol": "umbral = cuantil (1-alpha) de las puntuaciones limpias de test; impone la FPR por construccion y aisla el poder discriminante",
-            "conformal_protocol": "umbral causal recalibrado en linea sobre el flujo limpio; es el protocolo operativo",
+            "threshold_guarantee": "No distribution-free guarantee claimed; temporal dependence and drift remain.",
         },
         "matched_fpr": {d: {k: _mean_std(v) for k, v in fam.items()}
                         for d, fam in matched.items()},
-        "conformal_aci": {d: {k: _mean_std(v) for k, v in fam.items()}
-                          for d, fam in conformal.items()},
+        "validation_calibrated": {d: {k: _mean_std(v) for k, v in fam.items()}
+                                  for d, fam in calibrated.items()},
         "cnn_leave_one_family_out": {k: _mean_std(v) for k, v in lofo.items()},
         "interpretation": (
             "Benchmark de defectos sinteticos. El recall de la CNN dentro de sus familias de "
@@ -319,7 +323,7 @@ def _print_table(title: str, block: dict, families: list[str]) -> None:
     print(header)
     for name, stats in block.items():
         cells = " ".join(f"{stats[f]['mean']:10.3f}" for f in families)
-        print(f"  {name:24s} {stats['false_positive_rate']['mean']:7.3f}  {cells}")
+        print(f"  {name:24s} {stats['test_false_positive_rate']['mean']:7.3f}  {cells}")
 
 
 def main() -> None:
@@ -331,11 +335,11 @@ def main() -> None:
     args = parser.parse_args()
     result = run(args.panel, args.output)
     families = list(FAMILIES) + list(UNSEEN_FAMILIES)
-    _print_table("A) FPR emparejada por construccion (poder discriminante)",
+    _print_table("A) Umbral congelado en calibración; FPR OOS observada",
                  result["matched_fpr"], families)
-    _print_table("B) Gate conforme-adaptativo ACI (protocolo operativo)",
-                 result["conformal_aci"], families)
-    print("\nC) CNN leave-one-family-out (recall fuera de distribucion, FPR emparejada)")
+    _print_table("B) Umbral congelado en validación; FPR OOS observada",
+                 result["validation_calibrated"], families)
+    print("\nC) CNN leave-one-family-out (recall; umbral de calibración nominal)")
     for family, stats in result["cnn_leave_one_family_out"].items():
         inside = result["matched_fpr"]["cnn_1d"][family]["mean"]
         print(f"  {family:24s} dentro={inside:.3f}  retenida={stats['mean']:.3f}")

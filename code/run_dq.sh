@@ -2,7 +2,7 @@
 # Pipeline de Data Quality — cápsula Code Ocean.
 #
 # Reproduce la línea DQ completa de extremo a extremo: detección por
-# representación, gate conforme, diagnóstico de distribución, figuras y
+# representación, umbrales congelados en validación, diagnóstico de distribución, figuras y
 # entregables (Excel + Word). Lee de /data y escribe en /results.
 #
 # El orden importa: `dq_representation_stack` publica los recalls por familia
@@ -41,7 +41,7 @@ step () {
 # 1-3 · Detección: cada experimento publica su propio summary.json.
 step "CNN 1D supervisada frente a controles baratos" \
      "${EXP}/dq_cnn1d_supervised.py" --panel "${PANEL}"
-step "Gate conforme-adaptativo y familias no vistas" \
+step "Umbrales congelados y familias no vistas" \
      "${EXP}/dq_conformal_gate.py" --panel "${PANEL}"
 step "Pérdida de precisión: control de retícula sobre precios" \
      "${EXP}/dq_quantize_price_grid.py" --panel "${PANEL}"
@@ -55,9 +55,11 @@ step "Vintage + XGBoost combinador (pila de 4 representaciones)" \
 
 # 5-6 · Diagnóstico y figuras.
 step "Distribución de rendimientos frente a la normal" \
-     "${EXP}/dq_return_distribution.py" --panel "${PANEL}"
+     "${EXP}/dq_return_distribution.py" --panel "${PANEL}" \
+     --figure "${ROOT}/results/figures/dq/dq_distribucion_rendimientos.png"
 step "Figura de cierre: pipeline Gate A / Gate B" \
-     "${EXP}/dq_pipeline_figure.py"
+     "${EXP}/dq_pipeline_figure.py" \
+     --figure "${ROOT}/results/figures/dq/dq_pipeline_gate_a_b.png"
 
 # 7 · Entregables. No recalculan nada: leen los JSON publicados arriba.
 step "Entregables para Risk Director (Excel + Word)" \

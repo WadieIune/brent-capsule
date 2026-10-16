@@ -85,6 +85,8 @@ def tail_table(z: np.ndarray) -> list[dict]:
         normal = float(2 * stats.norm.sf(k))
         rows.append({
             "umbral_sigmas": k,
+            "n_observaciones": int(len(z)),
+            "n_excedencias_empiricas": int(np.sum(np.abs(z) > k)),
             "frecuencia_normal": normal,
             "frecuencia_empirica": empirical,
             "veces_mas_frecuente": round(empirical / normal, 1) if normal > 0 else None,
@@ -161,7 +163,7 @@ def figure(z: np.ndarray, tails: list[dict], gates: list[dict], path: Path) -> N
     ax.set_xticklabels([f"{k}σ" for k in ks])
     for row in tails:
         if row["umbral_sigmas"] >= 3:
-            ax.annotate(f"×{row['veces_mas_frecuente']:.0f}",
+            ax.annotate(f"n={row['n_excedencias_empiricas']}",
                         (row["umbral_sigmas"] + width / 2, row["frecuencia_empirica"]),
                         textcoords="offset points", xytext=(0, 5),
                         ha="center", fontsize=9, color="#4C72B0", weight="bold")
@@ -232,8 +234,8 @@ def run(panel_path: Path, stack_summary: Path, output_dir: Path,
     keys = sorted(distortion)
     total = float(np.mean([distortion[k] for k in keys]))
     gate_recalls = {"sin_control": {k: 0.0 for k in keys}}
-    gate_recalls.update(detection["gate_subsets_conformal_aci"])
-    gate_recalls["combinador_xgboost"] = detection["combiner_conformal_aci"]
+    gate_recalls.update(detection["gate_subsets_validation_threshold"])
+    gate_recalls["combinador_xgboost"] = detection["combiner_validation_threshold"]
 
     gates = []
     for name, recalls in gate_recalls.items():
@@ -341,11 +343,10 @@ def main() -> None:
     print("  sensibilidad de la curtosis a los dias mas extremos:")
     for row in r["curtosis_sensibilidad"]:
         print(f"    excluidos {row['excluidos']:2d} dias -> {row['curtosis_exceso']:6.1f}")
-    print(f"\n  {'umbral':>7s} {'predice la normal':>18s} {'ocurre':>10s} {'ratio':>8s}")
+    print(f"\n  {'umbral':>7s} {'predice la normal':>18s} {'ocurre':>10s} {'casos':>8s}")
     for row in r["colas_normal_vs_empirica"]:
-        ratio = row["veces_mas_frecuente"]
         print(f"  {row['umbral_sigmas']:6d}σ {row['frecuencia_normal']:18.4%} "
-              f"{row['frecuencia_empirica']:10.4%} {ratio:7.1f}x")
+              f"{row['frecuencia_empirica']:10.4%} {row['n_excedencias_empiricas']:8d}")
 
     print("\nComparacion de gates: DEGRADADA a proyeccion no validada por el")
     print("challenge del 2026-10-07; se guarda en el JSON bajo")

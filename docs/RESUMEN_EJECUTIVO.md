@@ -18,12 +18,11 @@ gaussiana: entre 4,2 y 6,1 veces más. Todas tienen curtosis de exceso positiva.
 Ver la [figura de distribuciones](../results/reports/dq_return_distributions/empirical_vs_gaussian_returns.png)
 y el [resumen numérico](../results/reports/dq_return_distributions/distribution_metrics.json).
 
-La consecuencia operativa es la que importa: un umbral que dispara varias veces
-más de lo que su propio supuesto promete **no puede separar una cola real de
-mercado de un defecto de dato**. Eso motiva buscar cobertura en otras
-representaciones del dato, no en subir el umbral. No permite inferir ninguna
-dirección de sesgo en capital, que dependería de cartera, horizonte y
-metodología y aquí no se calcula.
+La comparación cuestiona la calibración gaussiana, pero **no permite clasificar
+un movimiento como cola real de mercado o defecto de dato**. Eso motiva evaluar
+otras representaciones y controles con etiquetas de incidentes. No permite
+inferir ninguna dirección de sesgo en capital, que dependería de cartera,
+horizonte y metodología y aquí no se calcula.
 
 Advertencia de alcance: esa comparación es descriptiva y de muestra completa,
 con *look-ahead* por la estandarización ex post. No es un umbral desplegable.
@@ -44,13 +43,13 @@ validada a los modelos de riesgo.
 3. **Salida:** alerta trazable con serie, tramo, controles activados, evidencia
    y score calibrado. Revisión humana; nunca corrección automática.
 
-Todos los controles operan bajo un gate conforme-adaptativo, que calibra el
-umbral sobre la distribución empírica observada en lugar de sobre una forma
-supuesta. Esa garantía **no es incondicional**: depende de la dependencia entre
-ventanas, del *drift* y del tamaño de la muestra de calibración.
+Los umbrales se calibran una vez sobre un bloque tardío de validación, purgado
+del ajuste, y quedan congelados antes del test. La FPR observada fuera de muestra
+se reporta sin feedback. No se reclama garantía conformal ni estabilidad bajo
+*drift*.
 
-Figuras: [arquitectura del sistema](figuras/dq_encaje_produccion.pdf) y
-[cobertura por control y familia](figuras/dq_pipeline_gate_a_b.pdf).
+Figuras regeneradas por el runner: [arquitectura y cobertura](../results/figures/dq/dq_pipeline_gate_a_b.pdf),
+[diagnóstico de distribuciones](../results/figures/dq/dq_distribucion_rendimientos.pdf).
 
 ## Cómo se mide
 
@@ -58,7 +57,8 @@ Detección sobre defectos de **verdad conocida** inyectados en los precios
 crudos, con retornos y normalización recalculados para que el defecto se
 propague como en producción. Partición cronológica: entrenamiento hasta
 2018-12-31, validación 2019-2023, test desde 2024-01-05. Métrica principal
-**recall a presupuesto de falsas alarmas común**; no se reporta precisión/PPV
+**recall con umbrales calibrados a objetivo nominal común; FPR OOS no igualada**;
+no se reporta precisión/PPV
 porque exigiría una prevalencia real que no se tiene.
 
 **Esto no es un backtest.** El gate no toma posiciones: se valida midiendo
@@ -66,29 +66,37 @@ detección. El backtest valida a los modelos de riesgo aguas abajo.
 
 ## Evidencia
 
-**Ninguna representación domina.** Cada familia de defecto la cubre bien un
-control distinto y varias las ve uno solo. El resultado es una matriz de
-coberturas complementarias con huecos declarados, no un ranking.
+**Evidencia exploratoria, no confirmatoria.** Los resultados son una matriz de
+coberturas sobre defectos sintéticos. Las FPR observadas difieren entre controles
+y el mejor control por familia se selecciona sobre el mismo test; no demuestra
+superioridad generalizable ni aportación incremental.
 
-**Dónde aporta la capa de IA.** La CNN 1D es el mejor control en las familias
-cuyo defecto es un patrón temporal multivariante sin estadístico cerrado
-evidente, y es el control que más cubre en el escenario de defecto que llega con
-el **dato nuevo** —el frecuente—, aunque ahí lo es dentro de un campo débil.
-Donde existe un control dedicado, la red pierde contra él.
+**Hipótesis sobre la capa de IA.** La CNN 1D forma parte del banco y hay familias
+sintéticas donde muestra cobertura. El diseño actual no permite atribuirle una
+mejora causal: falta prueba externa, selección preespecificada y etiquetas de
+incidentes reales. No se afirma que un escenario sea frecuente sin datos de
+prevalencia.
 
-**Resultado negativo que se publica igual.** XGBoost como combinador rinde por
-debajo de la unión de los mismos controles con umbral propio, y llega a diluir
-un control que resuelve su familia de forma exacta. «ML que apoya» sí; «ML que
-sustituye» no.
+**XGBoost: comparación no concluyente.** Su FPR OOS y la de la unión de controles
+son distintas; por tanto, la diferencia de recall mezcla sensibilidad con punto
+de operación. Hace falta comparar a FPR equivalente o mediante curvas ROC/PR,
+con protocolo preespecificado y validación externa.
 
 **Alcance del control de vintage.** Alcanza recall 1,00 cuando el defecto
 reescribe historia ya publicada, y es ciego **por construcción** cuando llega
 con el dato nuevo, porque no hay snapshot con el que comparar. Complementa en el
 eje de la procedencia; no resuelve la calidad por sí solo.
 
-Solo son interpretables las comparaciones a la **misma** tasa de falsas alarmas.
-Las configuraciones de capa que operan a tasas distintas describen puntos de
-operación, y su diferencia de recall no mide valor incremental.
+El objetivo de calibración es común, pero las tasas de falsas alarmas realizadas
+en test no son iguales. Las diferencias de recall describen estos experimentos;
+no miden por sí solas valor incremental de CNN o XGBoost. El benchmark ejecuta
+los detectores en paralelo y no valida un router secuencial.
+
+La calibración es discreta por el tamaño limitado del bloque. Al repartir el
+objetivo nominal de la unión entre varios controles, algunas cuotas quedan por
+debajo de una observación de calibración; el umbral cae en el máximo empírico y
+no representa exactamente la FPR nominal. Esto limita la interpretación
+operativa y ayuda a explicar las FPR OOS elevadas observadas.
 
 ## Los modelos de riesgo que consumen la serie
 

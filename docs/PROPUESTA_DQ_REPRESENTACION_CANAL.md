@@ -35,7 +35,8 @@ impacto downstream, no el objetivo primario.
 ## Framework propuesto
 
 1. **Contrato y tipología:** unidad, calendario, frecuencia, precisión/tick,
-   fuente, límites, relaciones conocidas y transformaciones corporativas.
+   fuente, límites, relaciones conocidas, transformaciones corporativas y
+   transformación estadística compatible con la semántica de la serie.
 2. **Capa 1 — controles deterministas:** esquema/completitud, duplicados, faltantes,
    orden temporal, stale y rachas de retornos cero (incluido TRIM >=20 sesiones),
    rangos/positividad, 3σ y robust-statistics, saltos/reversiones, ticks,
@@ -52,6 +53,33 @@ impacto downstream, no el objetivo primario.
    cuando sea válido, calibración por tipología/fuente, drift, latencia,
    throughput, coste, fallback determinista y versionado reproducible. Millones
    de series es requisito objetivo, no capacidad demostrada por los pilotos.
+
+### Contrato de representación por tipología
+
+No se fuerza una única transformación para todas las series. Los log-retornos
+son la vista principal para cambios proporcionales de precios positivos y
+comparan cambios en una unidad adimensional; **no igualan la volatilidad** entre
+activos. Para comparar magnitudes entre activos se conserva también una vista
+estandarizada por volatilidad histórica causal, estimada solo con observaciones
+anteriores a la fecha evaluada. Las señales de precio absoluto, unidad, rejilla y
+vintage permanecen disponibles en paralelo: ni log-retornos ni z-scores deben
+borrar defectos de nivel, tick, split o restatement.
+
+| Tipología | Representación temporal | Controles que deben conservar la vista original |
+|---|---|---|
+| Precios estrictamente positivos (equity, FX, commodities positivos) | `log(P_t/P_{t-1})`; opcionalmente z causal sobre historia previa | Límites/unidad, tick, split y ajustes corporativos, stale y comparación vintage |
+| Precio que puede ser cero o negativo (WTI en episodios de settlement negativo) | `ΔP` en unidad nativa y escala robusta causal estimada en train; no aplicar log | Nivel y signo, límites contractuales, tick, vintage |
+| Tipos, curvas y spreads en bps | Diferencia aditiva en bps; features cross-tenor y residuo contra curva suave | Monotonía/no-arbitraje cuando aplique, tenores, calendario, convención, fuente y smoothness paramétrica |
+| Volatilidad/índice estrictamente positivo | Log-cambio para movimiento proporcional y nivel en unidad original | Límites, unidad, saltos y revisión de metodología |
+| Series derivadas o con whitelist de repeticiones | Transformación definida por linaje y reglas del instrumento | Repetición por diseño, calendario, propagación/ffill y sincronía con componentes |
+
+La transformación se registra en el contrato con versión y motivo; no se
+selecciona mirando el test. Un benchmark de retornos no sustituye los controles
+de precio. En particular, canal/supervivencia puede calcular geometría sobre
+log-precio relativo (equivalente a la trayectoria acumulada de log-retornos,
+salvo inicialización), mientras tick, vintage y nivel siguen operando sobre la
+serie fuente. Supervivencia es contexto/persistencia *as-of*, no etiqueta de
+defecto ni prueba de calidad por sí misma.
 
 ## Hipótesis falsables
 
@@ -114,6 +142,37 @@ alterar episodios del canal y riesgo estimado; no que CNN/XGBoost sean mejores
 detectores. La validación pequeña, intervalos amplios, un único panel y una
 sola cartera proxy impiden una conclusión confirmatoria fuerte. Ver el
 hallazgo para las cifras completas y límites.
+
+## Experimento de retornos rolling — 2026-10-16
+
+**Estado:** evidencia provisional, pendiente de challenge cruzado; no se eleva a conclusión confirmatoria del paper.
+
+La hipótesis de que usar retornos en los controles de canal resolvería la falta
+de valor incremental se probó en un benchmark aislado con transformaciones
+causales y defectos inyectados en precio. Protocolo, cifras y limitaciones:
+`docs/hallazgos/2026-10-16-rolling-returns-vs-precios.md`; salida íntegra:
+`results/reports/dq_rolling_return_channel/summary.json`.
+
+En ventanas rolling, canal sobre retornos acumulados y canal sobre precios
+tuvieron AUC descriptiva 0,857 y 0,855 respectivamente, y FPR OOS 26,6% y
+27,4%. La pequeña diferencia no confirma una mejora robusta. XGBoost con
+controles de precio obtuvo AUC 0,890, frente a 0,880 con controles de retorno y
+0,873 al añadir el score CNN a estos últimos. La CNN sola tuvo AUC 0,790, pero
+FPR OOS 15,1% ante un objetivo nominal del 5%. Esto no valida un combinador ni
+una calibración operativa: son ventanas solapadas, la calibración es pequeña y
+las etiquetas son sintéticas. La lectura compatible con la tesis del paper es
+cobertura por representación especializada más calibración transferible, no
+superioridad genérica de IA ni sustitución de precio por retornos.
+
+Se añadió una comparación de calibración causal rodante. Actualizar con todos
+los scores pasados redujo FPR del XGBoost de precio de 20,4% a 7,0%, pero el
+recall de `source_switch` bajó de 94,4% a 45,4% y el de `quantize` de 22,0% a
+8,3%. Actualizar solo con observaciones no alertadas elevó la FPR a 22,6% para
+ese mismo detector: la selección por score trunca la cola y sesga la
+recalibración. Ninguna política alcanzó un gate operativo estable. Por tanto,
+la transferencia de calibración bajo drift es un problema central del
+framework, no algo que se resuelva aplicando una ventana móvil sin control de
+calidad del conjunto calibrador.
 
 ## Representaciones y controles
 
@@ -180,13 +239,20 @@ comprimió colas y no justifica augmentación.
 
 ## Secuencia de trabajo
 
-1. Congelar el benchmark de B (TRIM + controles cross-asset) y definir pares.
-2. Añadir vista de canal al arnés de inyección: medir cambios de régimen,
-   features y supervivencia *as-of*.
-3. Probar reglas baratas en espacio de canal y declarar sus espacios nulos.
-4. Entrenar/evaluar CNN y XGBoost en exactamente esos splits y cargas FPR.
-5. Medir propagación del defecto a métricas de riesgo y cerrar el paper con una
-   matriz de coberturas, resultados positivos/negativos y limitaciones.
+1. Congelar el benchmark por tipología: TRIM, 3σ/MAD sobre transformación
+   compatible, controles de tick/vintage y cross-asset/shape; documentar pares.
+2. Diseñar calibración rodante con conjunto de referencia adjudicado o
+   controles explícitos de contaminación; medir transferencia bajo drift y
+   reportar el intercambio FPR/recall. El rolling no supervisado explorado no
+   pasa el gate.
+3. Añadir canal y supervivencia *as-of* al arnés de inyección, como features
+   contextuales y no como etiquetas; medir cambios de forma, régimen y vida.
+4. Evaluar reglas, CNN y XGBoost en los mismos splits y a presupuesto comparable
+   de falsas alarmas, con familias/activos/fuentes retenidos.
+5. Validar eventos reales adjudicados y medir impacto DQ downstream. Mantener
+   estrés de mercado legítimo como negativo limpio salvo evidencia de corrupción.
+6. Medir carga de revisión, latencia, throughput, drift y coste antes de afirmar
+   escalabilidad; cerrar el paper con matriz de cobertura, negativos y límites.
 
 No modificar el flujo productivo hasta que este gate pase auditoría y challenge
 cruzado.

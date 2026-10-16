@@ -95,10 +95,18 @@ def p_weekly_ffill(prices, lo, hi, rng):
 
 
 def p_source_switch(prices, lo, hi, rng):
-    """Empalme de proveedores: salto de nivel a mitad de ventana sin corregir."""
+    """Empalme de proveedores: salto de nivel a mitad de ventana sin corregir.
+
+    El factor es simétrico en log: tan probable hacia arriba como hacia abajo.
+    Antes solo se inyectaba al alza, de modo que un detector aprendido nunca veía
+    el empalme a la baja y no podía aprender ese lado del patrón.
+    """
     out = prices.copy()
     cut = int(rng.integers(lo + (hi - lo) // 3, lo + 2 * (hi - lo) // 3))
-    out[cut:hi, 0] *= float(rng.uniform(1.04, 1.10))
+    factor = float(rng.uniform(1.04, 1.10))
+    if rng.random() < 0.5:
+        factor = 1.0 / factor
+    out[cut:hi, 0] *= factor
     return out
 
 
@@ -224,8 +232,16 @@ def run(panel_path: Path, output_dir: Path, seeds=gate.SEEDS) -> dict:
 
     clean_p = data["test_p"]
     clean_z = data["test_z"]
-    # Ventanas de precio de VALIDACIÓN: calibran el gate sin tocar el test.
+    # Keep a later, purged validation block for threshold calibration.
     val_p = np.asarray([prices[a:b + 1] for a, b in val_bounds], dtype=float)
+    purge = int(np.ceil(pricelab.WINDOW / pricelab.WINDOW_STRIDE)) - 1
+    n_fit_stop = int(0.70 * n_val)
+    cal_start = n_fit_stop + purge
+    if n_val - cal_start < 20:
+        raise ValueError("Validación insuficiente para calibrar umbrales")
+    val_fit_p, val_cal_p = val_p[:n_fit_stop], val_p[cal_start:]
+    val_fit_z = data["val_z"][:n_fit_stop]
+    val_cal_z = data["val_z"][cal_start:]
 
     rng = np.random.default_rng(20261007)
     injected_p, injected_z = {}, {}
@@ -243,21 +259,17 @@ def run(panel_path: Path, output_dir: Path, seeds=gate.SEEDS) -> dict:
     conformal: dict[str, dict[str, float]] = {}
 
     def add_price_control(name, scorer):
-        """Mide el control en los DOS protocolos.
-
-        `matched` fija el umbral sobre el test limpio: aísla poder discriminante
-        pero no es operativo. `conformal` calibra sobre validación limpia y
-        recalibra en línea (ACI), que es el gate real. B pidió explícitamente que
-        el segundo acompañe al primero.
-        """
-        results[name] = {f: gate.matched_fpr_recall(scorer, clean_p, injected_p[f], FP_TARGET)
+        """Calibrate on a held-out validation tail; evaluate once on test."""
+        calibration_scores = scorer(val_cal_p)
+        clean_test_scores = scorer(clean_p)
+        entry = {"test_false_positive_rate": float(np.mean(
+            gate.calibrated_flags(calibration_scores, clean_test_scores)))}
+        results[name] = {f: gate.matched_fpr_recall(scorer, val_cal_p,
+                                                    injected_p[f], FP_TARGET)
                          for f in families}
-        calibration, clean_stream = scorer(val_p), scorer(clean_p)
-        entry = {"false_positive_rate":
-                 float(np.mean(gate.aci_flags(calibration, clean_stream, clean_stream)))}
         for f in families:
-            entry[f] = float(np.mean(
-                gate.aci_flags(calibration, clean_stream, scorer(injected_p[f]))))
+            entry[f] = float(np.mean(gate.calibrated_flags(
+                calibration_scores, scorer(injected_p[f]))))
         conformal[name] = entry
 
     for name, scorer in CHANNEL_CONTROLS.items():
@@ -268,21 +280,22 @@ def run(panel_path: Path, output_dir: Path, seeds=gate.SEEDS) -> dict:
     z_acc: dict[str, dict[str, list[float]]] = {}
     z_conf: dict[str, dict[str, list[float]]] = {}
     for seed in seeds:
-        cnn = base.fit_cnn(data["train_z"], data["val_z"], seed=seed)
+        cnn = base.fit_cnn(data["train_z"], val_fit_z, seed=seed)
         detectors = {
             "cnn_1d": lambda x, m=cnn: base.score_cnn(m, x),
             "cross_asset_1_minus_r2": base.score_cross_asset,
             "3sigma_vol_normalizada": base.score_3sigma,
         }
         for name, scorer in detectors.items():
-            calibration, clean_stream = scorer(data["val_z"]), scorer(clean_z)
-            z_conf.setdefault(name, {}).setdefault("false_positive_rate", []).append(
-                float(np.mean(gate.aci_flags(calibration, clean_stream, clean_stream))))
+            calibration = scorer(val_cal_z)
+            clean_test_scores = scorer(clean_z)
+            z_conf.setdefault(name, {}).setdefault("test_false_positive_rate", []).append(
+                float(np.mean(gate.calibrated_flags(calibration, clean_test_scores))))
             for f in families:
                 z_acc.setdefault(name, {}).setdefault(f, []).append(
-                    gate.matched_fpr_recall(scorer, clean_z, injected_z[f], FP_TARGET))
+                    gate.matched_fpr_recall(scorer, val_cal_z, injected_z[f], FP_TARGET))
                 z_conf[name].setdefault(f, []).append(float(np.mean(
-                    gate.aci_flags(calibration, clean_stream, scorer(injected_z[f])))))
+                    gate.calibrated_flags(calibration, scorer(injected_z[f])))))
     for name, by_family in z_acc.items():
         results[name] = {f: float(np.mean(v)) for f, v in by_family.items()}
     for name, by_family in z_conf.items():
@@ -305,11 +318,14 @@ def run(panel_path: Path, output_dir: Path, seeds=gate.SEEDS) -> dict:
             "approx_chance_recall": float(chance),
             "n_windows": data["n"],
             "seeds": list(seeds),
-            "matched_protocol": "umbral = cuantil (1-alpha) del test limpio; aisla poder discriminante, NO es operativo",
-            "conformal_protocol": "umbral calibrado en validación limpia y recalibrado en línea (ACI); es el gate operativo",
+            "threshold_protocol": "umbral fijo calibrado en el bloque final de validación, con purga temporal; FPR realizada medida una vez en test sin feedback",
+            "n_model_selection_validation": int(n_fit_stop),
+            "n_purged_validation": int(purge),
+            "n_threshold_calibration_validation": int(len(val_cal_p)),
+            "guarantee": "Sin garantía de distribución libre: las ventanas temporales pueden depender y presentar drift.",
         },
         "recall_matched_fpr": results,
-        "recall_conformal_aci": conformal,
+        "recall_validation_threshold": conformal,
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "summary.json").write_text(json.dumps(output, indent=2), encoding="utf-8")
@@ -336,16 +352,16 @@ def main() -> None:
             print(f"  --- representación: {group} ---")
             for name in names:
                 row = block[name]
-                fpr = f"{row['false_positive_rate']:7.3f} " if show_fpr else ""
+                fpr = f"{row['test_false_positive_rate']:7.3f} " if show_fpr else ""
                 cells = " ".join(
                     f"{row[f]:10.3f}" + ("*" if row[f] <= chance + 1e-9 else " ")
                     for f in families)
                 print(f"  {name:26s} {fpr}{cells}")
 
-    table(f"A) FPR emparejada por construcción ({FP_TARGET:.0%}) — poder discriminante",
+    table(f"A) Umbral calibrado fuera de test (objetivo {FP_TARGET:.0%})",
           result["recall_matched_fpr"], show_fpr=False)
-    table(f"B) Gate conforme-adaptativo ACI ({FP_TARGET:.0%}) — protocolo OPERATIVO",
-          result["recall_conformal_aci"], show_fpr=True)
+    table(f"B) Umbral congelado en validación; FPR OOS observada",
+          result["recall_validation_threshold"], show_fpr=True)
     print("\n  * = en el azar (ciego). "
           f"\n  -> {args.output / 'summary.json'}")
 
