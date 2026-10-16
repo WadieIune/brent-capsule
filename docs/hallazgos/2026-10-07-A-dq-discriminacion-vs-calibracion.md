@@ -358,3 +358,57 @@ presupuesto medido: hay una razón estructural para no prometer por debajo de ~0
 Lo que **sigue en pie** del §14: el suelo de 0,083 ± 0,004, la curva de
 operación, y la correlación de 0,09 entre alertas. Lo que **no**: atribuir el
 exceso a deriva, porque el término de resolución sigue activo.
+
+## 16 · Los deterministas SÍ gastan presupuesto: la premisa del gate era falsa
+
+- **Código:** `code/applications/experiments/dq_contract_perturbation.py`
+  · **Tests:** `tests/test_dq_contract_perturbation.py` (5)
+  · **Artefactos:** `results/reports/dq_contract_perturbation/summary.json`
+- **Origen:** punto 5 del challenge de B del 2026-10-16.
+
+El gate reparte el presupuesto de falsas alarmas **solo entre los siete
+controles estadísticos**, apoyándose en que vintage y retícula tienen puntuación
+limpia constante y por tanto no gastan. B señaló que esa propiedad es
+**condicional al contrato de la serie, no universal**. Medido, tenía razón, y el
+resultado es más fuerte de lo que sugería.
+
+Cada escenario es una **operación legítima del contrato**, no un defecto, así que
+toda alerta es falsa alarma por construcción:
+
+| escenario legítimo | retícula | vintage |
+|---|---|---|
+| tick ampliado por el mercado (0,01 → 0,05) | **1,000** | **1,000** |
+| ajuste corporativo retroactivo | 0,000 | **1,000** |
+| settlement tardío (ajuste del 0,05 %) | 0,000 | **1,000** |
+| redenominación de unidad | **1,000** | **1,000** |
+
+**No gastan «algo» de presupuesto: saturan.** Ante un cambio legítimo de tick, el
+gate alertaría sobre el 100 % de las ventanas limpias.
+
+### Tres consecuencias
+
+**1 · El reparto de α entre los siete estadísticos solo vale mientras el contrato
+se mantenga.** No es un error del reparto: es que su validez es condicional, y
+esa condición no estaba declarada ni vigilada. Con el contrato estable, los
+deterministas gastan cero y el reparto es correcto; con el contrato alterado,
+cualquier presupuesto es irrelevante porque el gate satura igual.
+
+**2 · La vigilancia del contrato tiene que ser parte del gate, no un supuesto.**
+Un cambio de tick, de unidad o de política de snapshot debe **detectarse y
+reconocerse** como tal, no entrar por la vía de los defectos. Hoy el framework no
+tiene esa pieza, y sin ella los controles deterministas son indesplegables ante
+cualquier evolución normal del contrato.
+
+**3 · `vintage` necesita umbral de MATERIALIDAD, no de ruido numérico.** Su
+tolerancia actual es `1e-6`, pensada para absorber error de coma flotante. Un
+ajuste de settlement del **0,05 %** —rutinario y legítimo— ya la supera y dispara
+en todas las ventanas. Un control de vintage desplegable necesita un umbral
+económico, no uno numérico, y esa decisión es de negocio: cuánta revisión
+retroactiva se considera material.
+
+### Lo que esto cambia en lo ya publicado
+
+El resumen ejecutivo y el Excel describen el reparto de α sin declarar que
+depende de la estabilidad del contrato. Hay que añadir esa condición. El suelo de
+0,083 y la curva de operación **no se ven afectados**: se midieron con contrato
+estable, que es el supuesto bajo el que siguen siendo válidos.

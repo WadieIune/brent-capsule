@@ -1,0 +1,40 @@
+{
+  "protocol": {
+    "source": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
+    "pregunta": "¿los controles deterministas gastan presupuesto de falsas alarmas ante operaciones legítimas del contrato de la serie?",
+    "interpretacion": "cada escenario es una operación LEGÍTIMA, no un defecto, así que toda alerta es una falsa alarma por construcción",
+    "origen": "punto 5 del challenge de B del 2026-10-16",
+    "escenarios": [
+      "tick ampliado por el mercado",
+      "ajuste corporativo retroactivo",
+      "settlement tardío",
+      "redenominación de unidad"
+    ],
+    "controles": [
+      "precio_reticula",
+      "vintage_discrepancia"
+    ],
+    "n_ventanas_test": 124,
+    "n_ventanas_calibracion": 236
+  },
+  "fpr_por_escenario": {
+    "tick ampliado por el mercado": {
+      "precio_reticula": 1.0,
+      "vintage_discrepancia": 1.0
+    },
+    "ajuste corporativo retroactivo": {
+      "precio_reticula": 0.0,
+      "vintage_discrepancia": 1.0
+    },
+    "settlement tardío": {
+      "precio_reticula": 0.0,
+      "vintage_discrepancia": 1.0
+    },
+    "redenominación de unidad": {
+      "precio_reticula": 1.0,
+      "vintage_discrepancia": 1.0
+    }
+  },
+  "peor_fpr_observada": 1.0,
+  "veredicto": "La premisa «los deterministas no consumen presupuesto» NO es universal: alcanzan 1.000 de falsas alarmas ante contratos perturbados. El reparto de alpha solo entre los estadísticos vale mientras el contrato se mantenga, y exige vigilar el contrato como parte del gate."
+}

@@ -19,7 +19,15 @@ causas, y las dos se corrigen aquí.
   del nominal es una alerta. Estimarles un cuantil es un error de categoría, y
   medido: la recalibración rodante le sube la FPR a vintage de 0,000 a 0,129.
 
-**2 · El presupuesto de falsas alarmas solo lo reparten quienes lo gastan.**
+**2 · El presupuesto de falsas alarmas solo lo reparten quienes lo gastan —y eso
+es CONDICIONAL al contrato.**
+
+`dq_contract_perturbation.py` mide que ante operaciones legítimas del contrato
+—ampliación del tick, redenominación de unidad, ajuste corporativo retroactivo o
+settlement tardío— los controles deterministas alcanzan **FPR 1,000**: no gastan
+«algo» de presupuesto, saturan. El reparto de abajo vale **mientras el contrato
+se mantenga estable**, y esa condición hay que vigilarla como parte del gate, no
+suponerla.
 
 Repartir α entre los nueve controles pedía estimar cuantiles de 0,0056 con 59
 ventanas de calibración, tres veces más fino que la resolución de la muestra: el
