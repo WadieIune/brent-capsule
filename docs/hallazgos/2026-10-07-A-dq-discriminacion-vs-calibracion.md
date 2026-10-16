@@ -268,3 +268,63 @@ anticipado, no en desplazar al control estadístico de su familia.
   combinador sigue sin comparación a FPR equivalente, y la supervivencia aún no
   se ha usado como control de calidad. Son las dos piezas pendientes para
   responder del todo a la objeción del MASTER.
+
+## 14 · Calibración rodante por clase de control: mejora, pero no cierra
+
+- **Código:** `code/applications/experiments/dq_rolling_gate.py` · **Tests:**
+  `tests/test_dq_rolling_gate.py` (7) · **Artefactos:**
+  `results/reports/dq_rolling_gate/summary.json`.
+
+Implementado lo que proponía el §3: los **deterministas** —vintage, retícula—
+con umbral **semántico** sobre su valor nominal, y los **estadísticos** con
+cuantil rodante sobre el flujo observado. Como los deterministas no gastan
+falsas alarmas, el presupuesto α se reparte **solo entre los siete
+estadísticos**, lo que sube el *share* por control de 0,0056 a 0,0071.
+
+| protocolo | FPR OOS | recall medio | peor familia |
+|---|---|---|---|
+| umbral congelado, uniforme sobre los 9 | 0,129 | 0,629 | 0,137 |
+| **rodante por clase, ventana 236** | **0,116** | **0,646** | **0,124** |
+| rodante por clase, ventana 60 | 0,218 | 0,730 | 0,226 |
+
+Mejora en los dos ejes frente al congelado, pero **es modesta y sigue 2,3× por
+encima del 5 % nominal**. No es el cierre que esperaba.
+
+### Por qué no cierra: la descomposición
+
+| ventana | resolución vs *share* 0,0071 | suma de FPR individuales | FPR de la unión |
+|---|---|---|---|
+| 60 | 0,0167 — insuficiente | 0,282 | 0,202 |
+| 120 | 0,0083 — insuficiente | 0,234 | 0,161 |
+| 236 | 0,0042 — **suficiente** | **0,129** | 0,113 |
+
+Dos efectos, y solo uno es arreglable:
+
+1. **Resolución.** Con ventana 60 no se puede estimar un cuantil de 0,0071.
+   Ampliar a 236 baja la suma de FPR individuales de 0,282 a 0,129. Arreglado.
+2. **Deriva residual.** Aun con resolución suficiente, **cada control realiza
+   2,6× su tasa nominal**. Eso ya no es estimación: es que el cuantil del tramo
+   reciente no predice la cola del siguiente.
+
+La correlación media entre las alertas de los controles estadísticos es **0,09**,
+o sea casi independientes. Por eso la unión ≈ suma de las tasas individuales
+(0,129 → 0,113), y de ahí se sigue el resultado estructural:
+
+> Con *m* controles casi independientes, cada uno excediendo su nominal por un
+> factor de deriva *k*, la unión aterriza en **≈ k·α** con independencia de *m*.
+> Repartir mejor el presupuesto no ayuda: lo que hay que reducir es *k*.
+
+Con *k* ≈ 2,3 medido, la unión cae en 0,115, que es exactamente lo observado.
+Esto explica también por qué el reparto por clase mejora poco: corrige el término
+de resolución, no el de deriva.
+
+### Qué queda sobre la mesa
+
+Tres salidas, y ninguna es gratis. **Declarar el presupuesto real** —operar a un
+12 % admitido en vez de prometer un 5 % que no se cumple—; **reducir *m***,
+quedándose con los controles de mayor cobertura por familia; o **conseguir más
+historia de calibración**, que es lo que de verdad reduce *k* y hoy está limitado
+por tener un solo activo y 124 ventanas de test solapadas.
+
+Lo que **no** debe hacerse es seguir ajustando el reparto: está demostrado que
+ese término ya no es el que manda.

@@ -68,6 +68,12 @@ incidentes adjudicados. El flujo de alertas recomienda revisión y conserva
 evidencia; no corrige precios automáticamente. Millones de series siguen
 siendo objetivo de diseño hasta que se mida throughput, latencia y coste.
 
+Se añadió un núcleo uniserie tipado en `code/applications/dq_framework.py`
+(3σ/Hampel causal, TRIM, checks de contrato y entrada alineada de señales de
+segunda capa). Sirve para validar semántica e interfaces; todavía no integra el
+featurizador de canal/supervivencia ni constituye un benchmark de rendimiento o
+de escalabilidad.
+
 ## Componentes
 1. **Benchmark (a batir):** 3σ sobre log-rendimientos; + controles de cola
    (Hampel/Tukey/iForest) y el control geométrico ya existente.

@@ -81,6 +81,23 @@ salvo inicialización), mientras tick, vintage y nivel siguen operando sobre la
 serie fuente. Supervivencia es contexto/persistencia *as-of*, no etiqueta de
 defecto ni prueba de calidad por sí misma.
 
+### Núcleo ejecutable del framework
+
+El primer núcleo tipado está implementado en `code/applications/dq_framework.py`.
+`SeriesContract` obliga a declarar tipología y unidad; el motor genera retornos
+compatibles, z-score y Hampel causales, alertas TRIM al completar 20 retornos
+cero, repetidos, timestamps y no-positivos donde la semántica lo requiere.
+Admite scores contextuales de canal/supervivencia y scores CNN/XGBoost solo si
+vienen alineados por timestamp y acompañados de un umbral congelado; las
+salidas son alertas de revisión con evidencia, nunca una corrección del dato.
+
+Este núcleo aún no calcula por sí mismo la geometría ni la supervivencia, no
+entrena modelos, no calibra umbrales y no es una ejecución multi-millón. Es el
+contrato de integración para esos adaptadores. Está cubierto por
+`tests/test_dq_framework.py`; la prueba de escala requerirá una capa batch,
+medición de memoria/throughput/latencia y replay estratificado por tipología,
+no la extrapolación de este test unitario.
+
 ## Hipótesis falsables
 
 H1: el framework por tipología identifica defectos conocidos con mayor cobertura

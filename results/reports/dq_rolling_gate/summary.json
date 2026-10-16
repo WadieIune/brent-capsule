@@ -1,0 +1,77 @@
+{
+  "protocol": {
+    "source": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
+    "seeds": [
+      42,
+      71,
+      123
+    ],
+    "target_false_positive_rate": 0.05,
+    "rolling_window": 236,
+    "control_class": {
+      "canal_coherencia": "estadistico",
+      "canal_ruptura": "estadistico",
+      "canal_geometria": "estadistico",
+      "canal_oscilacion": "estadistico",
+      "retorno_cnn": "estadistico",
+      "retorno_cross_asset": "estadistico",
+      "retorno_3sigma": "estadistico",
+      "precio_reticula": "determinista",
+      "vintage_discrepancia": "determinista"
+    },
+    "statistical_share": 0.0071428571428571435,
+    "rationale": "los deterministas no consumen presupuesto de falsas alarmas, así que alpha se reparte solo entre los estadísticos",
+    "n_windows": {
+      "train": 558,
+      "validation": 236,
+      "test": 124
+    },
+    "families": [
+      "stale",
+      "reversible_jump",
+      "decoupling",
+      "lag1_calendar",
+      "weekly_ffill",
+      "source_switch",
+      "quantize"
+    ],
+    "modes": [
+      "restated",
+      "fresh"
+    ]
+  },
+  "gate_por_clase_rodante": {
+    "false_positive_rate": 0.11559139784946237,
+    "stale|restated": 1.0,
+    "stale|fresh": 0.2069892473118279,
+    "reversible_jump|restated": 0.9650537634408601,
+    "reversible_jump|fresh": 0.7311827956989246,
+    "decoupling|restated": 1.0,
+    "decoupling|fresh": 0.29838709677419356,
+    "lag1_calendar|restated": 1.0,
+    "lag1_calendar|fresh": 0.2768817204301075,
+    "weekly_ffill|restated": 1.0,
+    "weekly_ffill|fresh": 0.1532258064516129,
+    "source_switch|restated": 1.0,
+    "source_switch|fresh": 0.28494623655913975,
+    "quantize|restated": 1.0,
+    "quantize|fresh": 0.12365591397849462
+  },
+  "gate_umbral_congelado_uniforme": {
+    "false_positive_rate": 0.12903225806451613,
+    "stale|restated": 1.0,
+    "stale|fresh": 0.22580645161290322,
+    "reversible_jump|restated": 0.9408602150537635,
+    "reversible_jump|fresh": 0.6370967741935484,
+    "decoupling|restated": 1.0,
+    "decoupling|fresh": 0.228494623655914,
+    "lag1_calendar|restated": 1.0,
+    "lag1_calendar|fresh": 0.24193548387096775,
+    "weekly_ffill|restated": 1.0,
+    "weekly_ffill|fresh": 0.1639784946236559,
+    "source_switch|restated": 1.0,
+    "source_switch|fresh": 0.22580645161290325,
+    "quantize|restated": 1.0,
+    "quantize|fresh": 0.13709677419354838
+  }
+}
