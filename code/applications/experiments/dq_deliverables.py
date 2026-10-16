@@ -100,6 +100,22 @@ FUENTES_AGUAS_ABAJO = {
 FUENTE_OPERACION = "dq_rolling_gate/summary.json"
 
 
+def _limite_representable() -> tuple[int, int, float]:
+    """Observaciones efectivas de calibración y α mínimo representable.
+
+    Se lee del propio módulo del gate en vez de escribirse a mano: si cambia la
+    ventana, el número de controles o el solape, el entregable lo recoge solo.
+    """
+    import importlib.util
+    ruta = Path(__file__).resolve().parent / "dq_rolling_gate.py"
+    spec = importlib.util.spec_from_file_location("dq_rolling_gate", ruta)
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    estadisticos = sum(1 for c in gate.CONTROL_CLASS.values() if c == "estadistico")
+    return (estadisticos, gate.effective_sample_size(),
+            gate.minimum_resolvable_alpha(estadisticos))
+
+
 def _dig(payload: dict, path: str, source: str):
     """Navega un camino `a.b.c` y falla con un mensaje que dice dónde se rompió.
 
@@ -311,6 +327,10 @@ def _recall_fill(value: float, chance: float) -> PatternFill:
     return PatternFill("solid", fgColor="5BA85B")
 
 
+#: Longitud de la ventana de recalibración, para el texto del entregable.
+ROLLING_LABEL = 236
+
+
 def build_excel(stack: dict, dist: dict, aguas_abajo: list, operacion: list,
                 path: Path) -> None:
     families = stack["protocol"]["families"]
@@ -415,6 +435,7 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, operacion: list,
         ws.cell(row=r, column=2).font = Font(bold=True)
 
     suelo = min(f["fpr_realizada_media"] for f in operacion)
+    n_est, n_efectivo, alpha_min = _limite_representable()
     fila = 5 + len(operacion) + 1
     for texto in (
         f"SUELO MEDIDO: el gate no baja de {suelo:.3f} de ventanas limpias marcadas. Pedir un "
@@ -422,10 +443,16 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, operacion: list,
         "suponiendo un 5 % o un 1 % es dimensionar mal.",
         "Por encima del suelo el intercambio es real y suave: más carga de revisión compra más "
         "cobertura. El punto se elige por capacidad disponible, no por un número de referencia.",
-        "El exceso sobre el nominal tiene dos causas medidas. La resolución de la muestra de "
-        "calibración ya está corregida ampliando la ventana. La que queda es deriva: cada "
-        "control realiza ~2,6 veces su tasa nominal porque el tramo reciente no predice la cola "
-        "del siguiente. Esa es la que fija el suelo y no se arregla repartiendo mejor.",
+        f"POR QUÉ EXISTE EL SUELO: las ventanas de 20 sesiones con paso 5 solapan al 75 %, así "
+        f"que una recalibración de {ROLLING_LABEL} puntuaciones contiene solo {n_efectivo} "
+        f"observaciones EFECTIVAS. Con {n_est} controles estadísticos, el α más pequeño que esa "
+        f"muestra puede representar es {n_est}/{n_efectivo} = {alpha_min:.3f}. Por debajo, la "
+        "petición no es representable: el umbral cae en el máximo empírico y el gate entrega su "
+        "suelo. El suelo es consecuencia del tamaño de la muestra, no una curiosidad.",
+        "CORRECCIÓN REGISTRADA: una versión anterior atribuía el exceso a «resolución corregida "
+        "más deriva de 2,6x». Esa atribución contaba las puntuaciones consecutivas como "
+        "independientes y queda RETIRADA. El suelo y la curva no se ven afectados: son "
+        "observaciones, no atribuciones causales.",
     ):
         cell = ws.cell(row=fila, column=1, value=texto)
         cell.alignment, cell.font = WRAP, Font(size=9, italic=True)

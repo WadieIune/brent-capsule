@@ -29,6 +29,52 @@ capa; CNN y modelos generativos se evalúan como herramientas complementarias.
 Solo se automatizan alertas si comparación temporal pareada demuestra calidad
 aceptable a una tasa de falsos positivos controlada. No son señales de trading.
 
+### Vigilancia de régimen de mercado: objetivo separado de DQ
+
+El MASTER precisa que la segunda capa debe incluir una alerta tipo
+*early-warning*: dado el historial disponible en la fecha `t`, advertir de una
+probable transición a volatilidad ampliada y/o cola bajista en un horizonte
+futuro. No se espera que supere una regla determinista como TRIM para descubrir
+20 retornos exactamente cero: TRIM es el control base de una condición
+cuantitativa ya observable. El posible valor añadido está en señales temporales
+complementarias y en detectar deterioro/cambio antes de que el umbral estático
+se active.
+
+Mantener dos canales de alerta distintos:
+
+1. **DQ/integridad:** datos ausentes, stale, duplicados, saltos/reversiones,
+   cambios de vintage, incoherencia cross-asset o de forma. Un movimiento de
+   mercado legítimo no se corrige ni se etiqueta automáticamente como error.
+2. **Régimen/riesgo:** alerta de cambio estadístico o transición futura, aunque
+   los datos sean correctos. Se entrega al Risk Director para revisión; no es
+   forecast de dirección/P&L ni instrucción automática de reducir posición.
+
+La capa descriptiva candidata calcula *as-of* por activo ventanas rodantes de
+volatilidad (20/60/90), frecuencia y rachas de retornos cero, cuantiles/medidas
+de cola, asimetría, autocorrelación y lags, missing/stale y correlaciones
+cross-asset. Canal y supervivencia pueden entrar como covariables de estado,
+nunca como detección probada por defecto. Estacionalidad debe probarse contra
+una referencia sin estacionalizar y ajustarse solo con train.
+
+Antes de entrenar una CNN/XGBoost de régimen, pre-registrar los horizontes
+(candidatos: 20 y 60 sesiones) y la definición del evento (p.ej. volatilidad
+realizada futura excede cuantiles fijados en train, y cola negativa futura
+definida por un umbral separado). Comparar primero reglas de cambio en features
+rolling, EWMA, CUSUM/Page-Hinkley y un baseline de persistencia; después HMM/
+change-point y modelos supervisados. Splits cronológicos purgados; test por
+episodios, activos y fuentes reservados; ninguna etiqueta ni umbral puede usar
+información posterior a `t`.
+
+Métricas primarias: recall por episodio y familia de evento, tasa de falsas
+alertas por serie-tiempo, precisión bajo prevalencia natural, lead time y
+demora de detección, duración/repetición de alertas y carga de revisión. Separar
+alerta previa de detección contemporánea. Lehman, COVID, Ucrania y Tariff/
+Liberation Day solo se usan donde cobertura y etiquetas adjudicadas lo permiten;
+movimiento extremo observado no implica corrupción. La capacidad de anticipar
+régimen sería una contribución distinta de mejorar DQ y debe presentarse como
+tal. El escalado a millones de series requiere después medir throughput,
+latencia, coste y drift; no se infiere de estos pilotos.
+
 ### Actualización del diseño — 2026-10-16
 
 La propuesta del paper se concreta como un framework **estadístico + IA,

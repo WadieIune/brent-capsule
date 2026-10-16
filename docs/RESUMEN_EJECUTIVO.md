@@ -58,32 +58,45 @@ curva es estable dentro de esta muestra.
 
 ### Por qué existe ese suelo
 
-El exceso sobre el nominal se descompone en dos términos medidos, y solo uno es
-corregible:
+Porque **por debajo de cierto presupuesto la petición no es representable** con
+la muestra de calibración disponible.
 
-- **Resolución de la muestra de calibración.** Con siete controles estadísticos
-  el presupuesto por control es 0,0071, y una ventana rodante de 60 solo resuelve
-  1/60 = 0,0167. Ampliar la ventana a 236 baja la suma de tasas individuales de
-  0,282 a 0,129. **Corregido.**
-- **Deriva residual.** Aun con resolución suficiente, cada control realiza **2,6
-  veces** su tasa nominal: el cuantil del tramo reciente no predice la cola del
-  siguiente. **No corregido, y es el que fija el suelo.**
+Las ventanas de análisis son de 20 sesiones con paso 5, de modo que dos
+puntuaciones consecutivas comparten el 75 % de sus datos: de cada cuatro, solo
+una está en fase no solapada. Una ventana de recalibración de 236 puntuaciones
+contiene por tanto **59 observaciones efectivas**, no 236, y eso ignorando aún la
+dependencia serial del propio mercado.
 
-La correlación media entre las alertas de los controles estadísticos es **0,09**,
-es decir, casi independientes, de modo que la unión equivale a la suma de las
-tasas individuales. De ahí se sigue la regla de composición:
+De ahí sale el límite:
 
-> Con *m* controles casi independientes, cada uno excediendo su tasa nominal por
-> un factor de deriva *k*, la unión aterriza en **≈ k·α con independencia de
-> *m***. Repartir mejor el presupuesto entre controles no ayuda; lo que hay que
-> reducir es *k*.
+| | |
+|---|---|
+| observaciones efectivas de calibración | **59** |
+| presupuesto por control con 7 estadísticos | α / 7 |
+| **α mínimo representable** | **7 / 59 = 0,119** |
 
-Con *k* ≈ 2,3 medido, la regla predice 0,115 y se observa 0,113. Esto también
-dice qué **no** hay que seguir intentando: afinar el reparto del presupuesto es
-un término que ya no manda.
+Pedir un α por debajo de 0,119 no cambia el comportamiento del gate: el umbral
+por control cae en el máximo empírico de la muestra y la unión entrega su suelo.
+Eso explica la observación de la tabla anterior —pedir 0,005 o 0,010 da
+exactamente el mismo 0,083— y convierte el suelo en una **consecuencia del
+tamaño de la muestra**, no en una curiosidad empírica.
 
-Reducir *k* exige más historia de calibración, y eso hoy está limitado por
-trabajar sobre un solo activo con 124 ventanas de test solapadas al 75 %.
+Es también la razón estructural por la que este documento declara el presupuesto
+medido en lugar de prometer uno nominal: **no se puede prometer por debajo de lo
+que la calibración es capaz de representar.**
+
+Bajar el suelo exige más historia de calibración efectiva, y hoy eso está
+limitado por trabajar sobre un solo activo con ventanas solapadas al 75 %.
+
+> **Corrección registrada.** Una versión anterior de esta sección descomponía el
+> exceso en «resolución corregida más deriva residual de 2,6×». Esa atribución
+> contaba las 236 puntuaciones como independientes y **queda retirada**: con la
+> muestra efectiva, el término de resolución sigue activo y el exceso no es
+> atribuible a deriva. Challenge en
+> `auditorias/2026-10-16-B-challenge-dq-calibracion-por-clase.md`, respuesta en
+> `auditorias/2026-10-16-A-respuesta-challenge-calibracion-por-clase.md`.
+> El suelo, la curva de operación y la correlación de 0,09 entre alertas no se
+> ven afectados: son observaciones, no atribuciones causales.
 
 ## Calibración por clase de control
 
