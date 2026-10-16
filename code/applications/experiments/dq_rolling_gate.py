@@ -38,10 +38,9 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 ALPHA = 0.05
-#: La ventana debe poder resolver el share por control: con 7 estadísticos el
-#: share es 0,00714 y una ventana de 60 solo resuelve 1/60 = 0,0167, tres veces
-#: más grueso. Medido, pasar de 60 a 236 baja la suma de FPR individuales de
-#: 0,282 a 0,129. Lo que queda por encima del nominal ya es deriva, no resolución.
+#: Ventana de recalibración, en número de puntuaciones consecutivas. Ampliarla de
+#: 60 a 236 baja la suma de tasas individuales de 0,282 a 0,129, pero **no** deja
+#: el share por control dentro de la resolución: ver `effective_sample_size`.
 ROLLING_WINDOW = 236
 SEEDS = (42, 71, 123)
 
@@ -76,6 +75,31 @@ def _load(name: str):
 
 stack = _load("dq_representation_stack")
 pricelab, base, channel = stack.pricelab, stack.base, stack.channel
+
+
+def effective_sample_size(window: int = ROLLING_WINDOW) -> int:
+    """Puntuaciones INDEPENDIENTES dentro de una ventana de recalibración.
+
+    Las ventanas de análisis son de `WINDOW` sesiones con paso `WINDOW_STRIDE`,
+    así que dos puntuaciones consecutivas comparten el 75 % de sus datos. Contar
+    las 236 como si fuesen independientes sobreestima la resolución por un factor
+    de 4: solo hay una de cada cuatro en fase no solapada.
+
+    Es la corrección del punto 3 del challenge de B
+    (`docs/auditorias/2026-10-16-B-challenge-dq-calibracion-por-clase.md`). Y
+    sigue siendo optimista: ignora la dependencia serial del propio mercado.
+    """
+    fases = pricelab.WINDOW // pricelab.WINDOW_STRIDE
+    return max(1, window // fases)
+
+
+def minimum_resolvable_alpha(n_statistical: int, window: int = ROLLING_WINDOW) -> float:
+    """Presupuesto conjunto más pequeño que la muestra puede representar.
+
+    Por debajo de este α la petición no es representable: el umbral por control
+    cae en el máximo empírico y el gate entrega su suelo, dé igual lo que se pida.
+    """
+    return n_statistical / effective_sample_size(window)
 
 
 def assert_degenerate(scores: np.ndarray, name: str) -> float:

@@ -328,3 +328,33 @@ por tener un solo activo y 124 ventanas de test solapadas.
 
 Lo que **no** debe hacerse es seguir ajustando el reparto: está demostrado que
 ese término ya no es el que manda.
+
+## 15 · Corrección del §14 tras el challenge de B
+
+> **La descomposición «resolución corregida + deriva residual 2,6×» del §14 queda
+> RETIRADA.** Contaba 236 puntuaciones consecutivas como independientes, y las
+> ventanas de 20 sesiones con paso 5 solapan al 75 %: la muestra efectiva es
+> **59**, no 236. Challenge aceptado sin reservas en
+> `docs/auditorias/2026-10-16-B-challenge-dq-calibracion-por-clase.md`; respuesta
+> en `docs/auditorias/2026-10-16-A-respuesta-challenge-calibracion-por-clase.md`.
+
+Corregido el tamaño muestral, aparece el límite que explica la observación:
+
+```
+muestra efectiva                         59
+α mínimo representable con 7 controles   7/59 = 0,119
+α configurado                            0,050  →  NO representable
+```
+
+**Por debajo de 0,119 la petición no es representable.** El umbral por control
+cae en el máximo empírico y el gate entrega su suelo, se pida lo que se pida. Eso
+deriva exactamente lo que se observaba sin explicación: pedir 0,005 o 0,010 da el
+mismo 0,083.
+
+El suelo deja de ser una curiosidad empírica y pasa a ser **consecuencia del
+tamaño de la muestra de calibración**. Y refuerza la decisión de declarar el
+presupuesto medido: hay una razón estructural para no prometer por debajo de ~0,12.
+
+Lo que **sigue en pie** del §14: el suelo de 0,083 ± 0,004, la curva de
+operación, y la correlación de 0,09 entre alertas. Lo que **no**: atribuir el
+exceso a deriva, porque el término de resolución sigue activo.

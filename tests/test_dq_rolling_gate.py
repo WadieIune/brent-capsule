@@ -48,16 +48,33 @@ def test_se_rompe_si_un_control_declarado_determinista_no_lo_es():
         gate.assert_degenerate(rng.normal(1.0, 0.3, size=60), "control_inventado")
 
 
-def test_la_ventana_rodante_resuelve_el_share_por_control():
-    """Si la ventana no resuelve el share, el umbral colapsa al máximo empírico.
+def test_el_tamano_muestral_efectivo_descuenta_el_solape():
+    """Contar las puntuaciones consecutivas como independientes sobreestima.
 
-    Es la causa medida de que la unión se disparara: con 60 ventanas no se puede
-    estimar un cuantil de 0,0071.
+    Las ventanas de 20 sesiones con paso 5 solapan al 75 %: de cada cuatro
+    puntuaciones consecutivas solo una está en fase no solapada. La versión
+    anterior de este test comparaba el share con 1/ventana y daba por resuelto
+    algo que no lo está — verificaba aritmética de ventanas, no tamaño muestral.
+    """
+    assert gate.effective_sample_size(236) == 59
+    assert gate.effective_sample_size(60) == 15
+
+
+def test_el_presupuesto_configurado_NO_es_representable_y_queda_declarado():
+    """El límite se declara en vez de fingir que está resuelto.
+
+    Con 7 controles estadísticos y 59 puntuaciones efectivas, el α más pequeño
+    representable es 7/59 ≈ 0,119. El α configurado está por debajo, así que la
+    petición no es representable y el gate entrega su suelo. Eso es exactamente
+    lo que se observa, y es la razón de declarar el presupuesto medido en vez de
+    prometer el nominal.
     """
     estadisticos = sum(1 for c in gate.CONTROL_CLASS.values() if c == "estadistico")
-    share = gate.ALPHA / estadisticos
-    assert 1 / gate.ROLLING_WINDOW <= share, (
-        f"ventana {gate.ROLLING_WINDOW} no resuelve un share de {share:.5f}")
+    minimo = gate.minimum_resolvable_alpha(estadisticos)
+    assert minimo == pytest.approx(estadisticos / 59)
+    assert gate.ALPHA < minimo, (
+        "si el configurado pasara a ser representable, hay que rehacer la "
+        "atribución del exceso: dejaría de estar limitado por resolución")
 
 
 def test_el_gate_combina_las_dos_clases():
