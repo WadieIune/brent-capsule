@@ -17,7 +17,7 @@ Reproducción: `./.venv/bin/python code/applications/experiments/dq_rolling_retu
 - Los defectos se inyectan en precios y después se vuelven a calcular retornos y normalización causal. Así se evita inyectar defectos directamente en una representación que no sería la de producción.
 - Se comparan canal en precios, retornos acumulados rebasados, retornos crudos y retornos z normalizados causalmente; CNN y XGBoost se entrenan con tres semillas. Entrenamiento CNN en NVIDIA RTX 5060 Laptop GPU.
 - Umbrales congelados a partir de una partición temporal posterior de validación limpia; el test no se emplea para seleccionar umbrales.
-- XGBoost compara controles de precio, controles de retorno y controles de retorno más score CNN.
+- XGBoost compara controles de precio frente a un banco ampliado de retorno con features de canal, cross-asset, 3σ, Hampel causal, z-score objetivo y TRIM; una tercera variante añade score CNN al mismo banco ampliado.
 - Se compara umbral congelado con dos umbrales rodantes causales de tamaño 68: (i) actualización con todos los scores pasados del flujo observado y (ii) actualización solo con scores previos no alertados. Ninguno usa el score de la ventana evaluada para fijar su propio umbral. Los recalls sintéticos rodantes se evalúan contrafactualmente con el umbral formado por el flujo original no modificado, que no cuenta con adjudicación exhaustiva de calidad.
 
 ## Resultado
@@ -27,11 +27,16 @@ Reproducción: `./.venv/bin/python code/applications/experiments/dq_rolling_retu
 | Canal-precio, coherencia | 27,4% | 0,855 |
 | Canal-retorno acumulado, coherencia | 26,6% | 0,857 |
 | CNN sobre retornos z | 15,1% | 0,790 |
+| TRIM, racha de 20 retornos cero | 0,0% | 0,695 |
+| Hampel causal sobre retorno objetivo | 6,5% | 0,617 |
+| Máximo z rolling, activo objetivo | 9,7% | 0,607 |
 | XGBoost, controles de precio | 20,4% | 0,890 |
-| XGBoost, controles de retorno | 46,8% | 0,880 |
-| XGBoost, controles de retorno + CNN | 26,3% | 0,873 |
+| XGBoost, banco ampliado de controles de retorno | 34,1% | 0,883 |
+| XGBoost, banco ampliado + CNN | 26,1% | 0,875 |
 
-La representación acumulada de retornos ofrece una diferencia pequeña frente al canal-precio en coherencia: +0,002 de AUC y -0,008 de FPR. No es evidencia de mejora robusta. El XGBoost con controles de precio tiene la mayor AUC de estas configuraciones. Añadir el score CNN a los controles de retorno baja la FPR observada frente a ese XGBoost sin CNN, pero empeora AUC y recall en defectos `source_switch` y `quantize`; no demuestra valor incremental general de la CNN.
+La representación acumulada de retornos ofrece una diferencia pequeña frente al canal-precio en coherencia: +0,002 de AUC y -0,008 de FPR. No es evidencia de mejora robusta. En el banco ampliado, añadir CNN reduce la FPR de 34,1% a 26,1%, pero también reduce AUC de 0,883 a 0,875 y el recall medio de `source_switch` de 76,3% a 63,2%; no demuestra valor incremental general de CNN. XGBoost de precio mantiene la mayor AUC (0,890) y la FPR más baja entre los combinadores (20,4%). Todos los combinadores superan ampliamente el presupuesto nominal de 5% en test.
+
+TRIM cumple exactamente su regla operativa y detecta todas las ventanas etiquetadas como `stale`, sin alertar en las ventanas limpias de este panel. Su AUC agregada no debe compararse como si fuera un detector universal: por construcción no detecta los otros defectos y su resultado positivo depende de que el `stale` sintético produzca 20 retornos exactamente cero. Hampel causal presenta FPR 6,5%, pero baja discriminación agregada (AUC 0,617) y no constituye una victoria global.
 
 La CNN sola discrimina algunos defectos de forma útil (AUC global 0,790; AUC 0,939 para `reversible_jump`, 0,940 para `decoupling`) pero su FPR OOS es 15,1%, tres veces el objetivo nominal del 5%. No es todavía un control operativo calibrado.
 
@@ -41,14 +46,14 @@ La CNN sola discrimina algunos defectos de forma útil (AUC global 0,790; AUC 0,
 |---|---:|---:|---:|---:|---:|
 | CNN sobre retornos z | 15,1% | 9,1% | 19,1% | 46,2% → 29,0% | 14,8% → 9,7% |
 | XGBoost, controles de precio | 20,4% | 7,0% | 22,6% | 94,4% → 45,4% | 22,0% → 8,3% |
-| XGBoost, controles de retorno | 46,8% | 10,2% | 48,9% | 84,4% → 39,0% | 51,1% → 11,0% |
+| XGBoost, banco ampliado de retorno | 34,1% | 11,6% | 36,3% | 76,3% → 40,1% | 36,8% → 10,8% |
 
 La actualización con todos los scores pasados reduce falsas alarmas, pero queda
 por encima del 5% en estos modelos y pierde sensibilidad en familias retenidas.
 Los scores crecen dentro del test y los umbrales finales suben frente a los
 iniciales; la bajada de FPR no es una mejora gratuita. La variante que aprende
 solo de no-alertas excluye de forma endógena la cola alta, reduce sus umbrales y
-aumenta FPR (en XGBoost de retorno, 46,8% → 48,9%). “No alertado” no equivale a
+aumenta FPR (en el XGBoost de retorno ampliado, 34,1% → 36,3%). “No alertado” no equivale a
 “limpio”, y “alertado” no equivale a “defecto”.
 
 **Conclusión de calibración:** recalibrar por rolling sin adjudicación ni
@@ -71,6 +76,19 @@ No se recomienda reemplazar los controles de precio ni presentar que CNN/XGBoost
 - La calibración dispone de 68 ventanas, por lo que la resolución mínima de la FPR empírica es aproximadamente 1,47 puntos porcentuales. El drift explica que la FPR OOS difiera del 5% nominal.
 - Los escenarios de estrés de Lehman, COVID, Ucrania y Liberation Day no se han evaluado aquí como episodios adjudicados; Liberation Day cae dentro del test, pero sigue siendo movimiento real que no debe etiquetarse automáticamente como defecto.
 - La supervivencia del canal no se evaluó como detector supervisado en este experimento. Sus features deben probarse como aporte incremental en datos/episodios reservados, no asumirse útiles por describir persistencia.
+
+## Reutilización del arnés legado
+
+No se toma `code/applications/experiments/dq_synthetic_validation.py` como
+benchmark temporal de referencia: el registro de challenges lo mantiene
+provisional (C3), su resultado histórico fue `reject`, y la inspección del código confirma que no separa
+entrenamiento, calibración y test cronológicos. En particular, Hampel usa
+ventana centrada; Tukey estima sus vallas sobre la serie completa ya corrupta;
+Isolation Forest se ajusta sobre la serie completa evaluada. Esto no invalida
+que el experimento responda a su pregunta histórica pre-registrada, pero sí
+impide usar sus métricas como prueba OOS de este framework. El nuevo núcleo
+`code/applications/dq_framework.py` ofrece baselines causales; todavía debe
+integrarse en un arnés pareado que incluya canal/supervivencia y modelos.
 
 ## Próximo experimento
 

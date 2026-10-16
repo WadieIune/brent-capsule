@@ -1,7 +1,8 @@
-"""Aplicación 11 — Monitor DQ diario: banda esperada de rendimientos y alertas.
+"""Prototipo histórico de monitor DQ diario para series de precio positivas.
 
-Sistema operativo de control de calidad de precio para ejecutar **cada día**
-antes de alimentar el motor de riesgo. Para cada activo ajusta el canal sobre la
+No es aún un framework multi-tipología validado ni debe conectarse como control
+universal antes de enrutar las series firmadas (p. ej., WTI negativo) a una
+transformación aditiva. Para cada activo positivo ajusta el canal sobre la
 ventana previa —sin incluir la observación evaluada, de modo que no hay fuga— y
 proyecta un paso adelante:
 
@@ -24,16 +25,17 @@ Reglas de alerta
 | `salto_reversible` | salto > TOL_ATR·ATR que revierte al día siguiente (pico de feed) |
 | `precio_congelado` | tres cierres idénticos (relleno o feed caído) |
 | `repetidos_consecutivos_20` | 20 retornos logarítmicos cero consecutivos (regla TRIM) |
-| `no_positivo` | cotización <= 0, incompatible con el motor log-normal |
+| `no_positivo` | marca cotizaciones <= 0; solo es defecto en contratos positivos (este prototipo no enruta aún por tipología) |
 
-Validación
+Evaluación
 ----------
 No basta con contar alertas: se reporta la **tasa de alerta** (carga operativa),
 y se contrasta contra el benchmark causal de **3σ sobre log-rendimientos**; el
 control antiguo por cuantil de `|retorno|` se conserva como diagnóstico. Las
-marcas del benchmark se etiquetan para no confundirlas con defectos confirmados. El valor demostrado del control
-está medido en `dq_impact.py`: depurar estos defectos corrige una distorsión de
-74 puntos porcentuales en la contribución al riesgo de la cartera.
+marcas del benchmark se etiquetan para no confundirlas con defectos confirmados.
+Una carga baja o cobertura retrospectiva no valida recall, calibración OOS ni
+impacto en capital. La cifra de impacto atribuida anteriormente a `dq_impact.py`
+fue retirada tras auditoría y no debe citarse como evidencia de este monitor.
 """
 from __future__ import annotations
 
@@ -312,6 +314,7 @@ class DQDailyMonitorExperiment(Experiment):
             "conventional_flags": int(conv),
             "benchmark_3sigma_log_return_flags": int(sigma3_count),
             "zero_return_run_threshold": int(cfg.get("zero_return_threshold", ZERO_RETURN_RUN_LIMIT)),
+            "decision_scope": "operational_feasibility_only_not_detection_or_capital_validation",
             "expected_band_coverage_pct": coverage,
             "last_session": str(last_day.date()),
             "alerts_last_session": int(len(today)),
@@ -339,8 +342,8 @@ class DQDailyMonitorExperiment(Experiment):
             f"TRIM alerta al alcanzar {metrics['zero_return_run_threshold']} "
             f"rendimientos logarítmicos cero consecutivos. "
             f"Última sesión ({last_day.date()}): {len(today)} alertas. "
-            "El valor está cuantificado en dq_impact: depurar estos defectos corrige "
-            "74,4 puntos porcentuales de distorsión en la contribución al riesgo."
+            "Esta decisión solo refleja carga y cobertura operativa del prototipo; "
+            "no valida detección OOS ni impacto en capital."
         )
         return ExperimentResult(metrics=metrics, baseline=baseline, artifacts=artifacts,
                                 decision=decision, notes=notes)

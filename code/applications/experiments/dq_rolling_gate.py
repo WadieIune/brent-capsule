@@ -115,15 +115,16 @@ def rolling_flags(calibration: np.ndarray, observed: np.ndarray,
 
 
 def gate_flags(calibration: np.ndarray, observed: np.ndarray,
-               evaluated: np.ndarray, features: tuple[str, ...]) -> np.ndarray:
+               evaluated: np.ndarray, features: tuple[str, ...],
+               alpha: float = ALPHA) -> np.ndarray:
     """Unión de los controles, cada uno calibrado según su clase.
 
-    El presupuesto `ALPHA` se reparte solo entre los estadísticos: los
+    El presupuesto `alpha` se reparte solo entre los estadísticos: los
     deterministas no gastan falsas alarmas, así que incluirlos en el reparto solo
     serviría para exigirle a la muestra de calibración una resolución que no tiene.
     """
     statistical = [n for n in features if CONTROL_CLASS[n] == "estadistico"]
-    share = ALPHA / len(statistical)
+    share = alpha / len(statistical)
     fired = np.zeros(len(evaluated), dtype=bool)
     for j, name in enumerate(features):
         if CONTROL_CLASS[name] == "determinista":
@@ -132,6 +133,13 @@ def gate_flags(calibration: np.ndarray, observed: np.ndarray,
             fired |= rolling_flags(calibration[:, j], observed[:, j],
                                    evaluated[:, j], alpha=share)
     return fired
+
+
+#: Objetivos nominales que se barren para construir la curva de operación. El
+#: nominal NO se cumple fuera de muestra —ese es el resultado—, así que lo que se
+#: publica es la FPR REALIZADA frente al recall, para que el consumidor del gate
+#: dimensione su capacidad de revisión sobre un número medido y no prometido.
+NOMINAL_SWEEP = (0.005, 0.01, 0.02, 0.05, 0.10)
 
 
 def run(panel: Path, output_dir: Path, seeds=SEEDS) -> dict:
@@ -148,12 +156,14 @@ def run(panel: Path, output_dir: Path, seeds=SEEDS) -> dict:
 
     por_clase: dict = {}
     congelado: dict = {}
+    bloques: dict = {}
     for seed in seeds:
         cnn = base.fit_cnn(data["train_z"], data["val_z"], seed=seed)
         rng = np.random.default_rng(seed)
         val = stack.build_block(prices, val_bounds, scaled, cnn, families, modes, rng)
         test = stack.build_block(prices, test_bounds, scaled, cnn, families, modes, rng)
         cal, clean = val["clean"], test["clean"]
+        bloques[seed] = (cal, clean, test)
 
         por_clase.setdefault("false_positive_rate", []).append(
             float(np.mean(gate_flags(cal, clean, clean, stack.FEATURES))))
@@ -169,6 +179,22 @@ def run(panel: Path, output_dir: Path, seeds=SEEDS) -> dict:
             congelado.setdefault(key, []).append(
                 float(np.mean((test[key] > frozen_thr).any(axis=1))))
 
+    # --- curva de operación: FPR realizada frente a recall, por nominal ---
+    curva = []
+    for nominal in NOMINAL_SWEEP:
+        fpr_s, rec_s = [], []
+        for seed, (cal, clean, test) in bloques.items():
+            flags = lambda ev: gate_flags(cal, clean, ev, stack.FEATURES, alpha=nominal)
+            fpr_s.append(float(np.mean(flags(clean))))
+            rec_s.append(float(np.mean([np.mean(flags(test[k])) for k in keys])))
+        curva.append({
+            "alpha_nominal": nominal,
+            "fpr_realizada_media": float(np.mean(fpr_s)),
+            "fpr_realizada_std": float(np.std(fpr_s)),
+            "recall_medio": float(np.mean(rec_s)),
+            "factor_de_exceso": float(np.mean(fpr_s) / nominal),
+        })
+
     mean = lambda d: {k: float(np.mean(v)) for k, v in d.items()}
     output = {
         "protocol": {
@@ -182,6 +208,7 @@ def run(panel: Path, output_dir: Path, seeds=SEEDS) -> dict:
                          "así que alpha se reparte solo entre los estadísticos",
             "n_windows": data["n"], "families": families, "modes": list(modes),
         },
+        "curva_de_operacion": curva,
         "gate_por_clase_rodante": mean(por_clase),
         "gate_umbral_congelado_uniforme": mean(congelado),
     }
@@ -213,6 +240,13 @@ def main() -> None:
     print(f"\n  {'familia · modo':28s} {'congelado':>10s} {'por clase':>10s}")
     for k in keys:
         print(f"  {k:28s} {a[k]:10.3f} {b[k]:10.3f}")
+    print("\n  CURVA DE OPERACIÓN · el nominal no se cumple; dimensiona sobre la columna")
+    print("  de FPR REALIZADA, que es la carga de revisión que vas a tener de verdad.\n")
+    print(f"  {'alpha nominal':>14s} {'FPR realizada':>16s} {'exceso':>8s} {'recall medio':>13s}")
+    for row in r["curva_de_operacion"]:
+        print(f"  {row['alpha_nominal']:14.3f} "
+              f"{row['fpr_realizada_media']:11.3f} ±{row['fpr_realizada_std']:.3f} "
+              f"{row['factor_de_exceso']:7.1f}x {row['recall_medio']:13.3f}")
     print(f"\n  -> {args.output / 'summary.json'}")
 
 

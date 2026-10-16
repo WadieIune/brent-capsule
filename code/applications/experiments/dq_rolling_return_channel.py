@@ -71,6 +71,38 @@ def cumulative_return_path(return_windows: np.ndarray) -> np.ndarray:
     return np.concatenate([origin, np.cumsum(returns, axis=1)], axis=1)
 
 
+def zero_return_run_scores(return_windows: np.ndarray, target: int = 0) -> np.ndarray:
+    """Longest exact-zero return run for the target series in each window."""
+    returns = np.asarray(return_windows, dtype=float)
+    scores = np.zeros(len(returns), dtype=float)
+    for i, window in enumerate(returns):
+        run = best = 0
+        for value in window[:, target]:
+            run = run + 1 if np.isfinite(value) and value == 0.0 else 0
+            best = max(best, run)
+        scores[i] = best
+    return scores
+
+
+def causal_hampel_scores(z_windows: np.ndarray, target: int = 0,
+                         min_history: int = 8) -> np.ndarray:
+    """Maximum robust-z of each target return vs strictly preceding window data."""
+    windows = np.asarray(z_windows, dtype=float)
+    scores = np.zeros(len(windows), dtype=float)
+    for i, window in enumerate(windows):
+        series = window[:, target]
+        for t in range(min_history, len(series)):
+            history = series[:t]
+            history = history[np.isfinite(history)]
+            if len(history) < min_history or not np.isfinite(series[t]):
+                continue
+            median = float(np.median(history))
+            mad = float(np.median(np.abs(history - median))) * 1.4826
+            if mad > 1e-12:
+                scores[i] = max(scores[i], abs(float(series[t]) - median) / mad)
+    return scores
+
+
 def normalize_corrupted_window(full_prices: np.ndarray, start: int, stop: int,
                                corrupted_window: np.ndarray) -> np.ndarray:
     """Causal rolling normalization for a changed [start, stop) return window."""
@@ -115,6 +147,7 @@ def representations(price_windows: np.ndarray, z_windows: np.ndarray) -> dict[st
 def detector_features(price_windows: np.ndarray, z_windows: np.ndarray,
                       cnn_score: np.ndarray | None = None) -> dict[str, np.ndarray]:
     reps = representations(price_windows, z_windows)
+    raw_returns = reps["raw_returns"]
     result = {f"channel_{name}": channel_features(value)
               for name, value in reps.items()}
     result["price_controls"] = np.column_stack([
@@ -123,6 +156,9 @@ def detector_features(price_windows: np.ndarray, z_windows: np.ndarray,
         result["channel_causal_z_returns"],
         base.score_cross_asset(z_windows),
         base.score_3sigma(z_windows),
+        np.max(np.abs(z_windows[:, :, 0]), axis=1),
+        causal_hampel_scores(z_windows),
+        zero_return_run_scores(raw_returns),
     ])
     result["return_controls"] = return_controls
     if cnn_score is not None:
@@ -225,13 +261,16 @@ def _xgb(seed: int) -> XGBClassifier:
 
 
 def _record(result, model_name, calibration_scores, test_scores,
-            injected_scores, target=FP_TARGET):
-    threshold = gate.calibration_threshold(calibration_scores, target)
+            injected_scores, target=FP_TARGET, fixed_threshold=None,
+            inclusive=False):
+    threshold = (gate.calibration_threshold(calibration_scores, target)
+                 if fixed_threshold is None else float(fixed_threshold))
+    exceeds = (lambda scores: scores >= threshold) if inclusive else (lambda scores: scores > threshold)
     row = result.setdefault(model_name, {"test_false_positive_rate": [],
                                          "calibration_false_positive_rate": [],
                                          "recall_by_family": {}})
-    row["calibration_false_positive_rate"].append(float(np.mean(calibration_scores > threshold)))
-    row["test_false_positive_rate"].append(float(np.mean(test_scores > threshold)))
+    row["calibration_false_positive_rate"].append(float(np.mean(exceeds(calibration_scores))))
+    row["test_false_positive_rate"].append(float(np.mean(exceeds(test_scores))))
     dirty_test = np.concatenate(list(injected_scores.values()))
     row.setdefault("test_roc_auc", []).append(float(roc_auc_score(
         np.r_[np.zeros(len(test_scores)), np.ones(len(dirty_test))],
@@ -240,7 +279,7 @@ def _record(result, model_name, calibration_scores, test_scores,
     row.setdefault("roc_auc_by_family", {})
     for family, scores in injected_scores.items():
         row["recall_by_family"].setdefault(family, []).append(
-            float(np.mean(scores > threshold)))
+            float(np.mean(exceeds(scores))))
         row["roc_auc_by_family"].setdefault(family, []).append(float(roc_auc_score(
             np.r_[np.zeros(len(test_scores)), np.ones(len(scores))],
             np.r_[test_scores, scores],
@@ -365,6 +404,19 @@ def run(panel: Path, output_dir: Path, seeds: tuple[int, ...] = SEEDS) -> dict:
 
         direct = {
             "cnn_rolling_z_returns": (cal_scores, test_scores, dirty_cnn_scores),
+            "trim_zero_return_run_20": (
+                zero_return_run_scores(returns_from_prices(cal_p)),
+                zero_return_run_scores(returns_from_prices(test_p)),
+                {f: zero_return_run_scores(returns_from_prices(dirty_test_p[f]))
+                 for f in ALL_FAMILIES}),
+            "causal_hampel_target_return": (
+                causal_hampel_scores(cal_z), causal_hampel_scores(test_z),
+                {f: causal_hampel_scores(dirty_test_z[f]) for f in ALL_FAMILIES}),
+            "max_abs_target_rolling_z_return": (
+                np.max(np.abs(cal_z[:, :, 0]), axis=1),
+                np.max(np.abs(test_z[:, :, 0]), axis=1),
+                {f: np.max(np.abs(dirty_test_z[f][:, :, 0]), axis=1)
+                 for f in ALL_FAMILIES}),
             "cross_asset_1_minus_r2": (
                 base.score_cross_asset(cal_z), base.score_cross_asset(test_z),
                 {f: base.score_cross_asset(dirty_test_z[f]) for f in ALL_FAMILIES}),
@@ -381,8 +433,12 @@ def run(panel: Path, output_dir: Path, seeds: tuple[int, ...] = SEEDS) -> dict:
                     {f: dirty_features[f][f"channel_{rep}"][:, j] for f in ALL_FAMILIES},
                 )
         for name, (cal, test, dirty) in direct.items():
-            _record(result, name, cal, test, dirty)
-            _record_rolling(rolling_result, name, cal, test, dirty)
+            if name == "trim_zero_return_run_20":
+                _record(result, name, cal, test, dirty,
+                        fixed_threshold=WINDOW, inclusive=True)
+            else:
+                _record(result, name, cal, test, dirty)
+                _record_rolling(rolling_result, name, cal, test, dirty)
 
         for config, model in xgb_models.items():
             cal = model.predict_proba(cal_features[config])[:, 1]
@@ -450,6 +506,11 @@ def run(panel: Path, output_dir: Path, seeds: tuple[int, ...] = SEEDS) -> dict:
                 "limitations": "exploratory; the rolling stream is unadjudicated, windows overlap, and no calibration guarantee is claimed",
             },
             "defect_protocol": "price-space corruption followed by causal recomputation of raw and standardized returns",
+            "statistical_controls": {
+                "trim_zero_return_run_20": "fixed rule at >=20 exact consecutive target-asset zero returns; not recalibrated",
+                "causal_hampel_target_return": "maximum robust-z against preceding observations only",
+                "max_abs_target_rolling_z_return": "3-sigma-style target series score; same validation threshold protocol",
+            },
             "fit_families": list(FIT_FAMILIES),
             "test_families": list(ALL_FAMILIES),
             "return_transforms": ["raw_returns", "cumulative_returns_rebased_at_zero", "causal_rolling_z_returns"],
@@ -460,7 +521,7 @@ def run(panel: Path, output_dir: Path, seeds: tuple[int, ...] = SEEDS) -> dict:
                 "synthetic defect labels; no real incident prevalence or PPV",
                 "ROC AUC is descriptive on synthetic defects and overlapping windows; it is not a calibrated operating-point comparison",
                 "FPR is reported as observed and may differ from the nominal calibration target",
-                "the CNN marginal value is explored by XGB with versus without the CNN score on the same return feature bank; no winner is asserted from recall alone",
+                "XGB return feature bank includes channel, cross-asset, 3-sigma, causal Hampel, target-series z and TRIM run length; CNN is tested as an additional feature",
             ],
         },
         "results": summarized,

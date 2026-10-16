@@ -172,14 +172,12 @@ causales y defectos inyectados en precio. Protocolo, cifras y limitaciones:
 
 En ventanas rolling, canal sobre retornos acumulados y canal sobre precios
 tuvieron AUC descriptiva 0,857 y 0,855 respectivamente, y FPR OOS 26,6% y
-27,4%. La pequeña diferencia no confirma una mejora robusta. XGBoost con
-controles de precio obtuvo AUC 0,890, frente a 0,880 con controles de retorno y
-0,873 al añadir el score CNN a estos últimos. La CNN sola tuvo AUC 0,790, pero
-FPR OOS 15,1% ante un objetivo nominal del 5%. Esto no valida un combinador ni
-una calibración operativa: son ventanas solapadas, la calibración es pequeña y
-las etiquetas son sintéticas. La lectura compatible con la tesis del paper es
-cobertura por representación especializada más calibración transferible, no
-superioridad genérica de IA ni sustitución de precio por retornos.
+27,4%. La pequeña diferencia no confirma una mejora robusta. En la primera
+comparación, XGBoost con controles de precio obtuvo AUC 0,890 y el banco de
+retorno inicial 0,880; la reevaluación ampliada del baseline se detalla abajo.
+La CNN sola tuvo AUC 0,790 y FPR OOS 15,1% ante un objetivo nominal del 5%.
+Son ventanas solapadas, calibración pequeña y etiquetas sintéticas: no validan
+por sí mismas un detector operativo ni superioridad genérica de IA.
 
 Se añadió una comparación de calibración causal rodante. Actualizar con todos
 los scores pasados redujo FPR del XGBoost de precio de 20,4% a 7,0%, pero el
@@ -190,6 +188,15 @@ recalibración. Ninguna política alcanzó un gate operativo estable. Por tanto,
 la transferencia de calibración bajo drift es un problema central del
 framework, no algo que se resuelva aplicando una ventana móvil sin control de
 calidad del conjunto calibrador.
+
+**Actualización del baseline, 2026-10-16:** XGBoost de precio dio FPR 20,4% /
+AUC 0,890; XGBoost con banco ampliado de retornos (canal, cross-asset, 3σ,
+Hampel causal, z-score objetivo y TRIM) dio 34,1% / 0,883; al añadir CNN,
+26,1% / 0,875. Menor FPR no compensa aquí la caída de AUC y del recall de
+`source_switch` (76,3% a 63,2%). TRIM detectó el stale sintético (recall 100%,
+FPR 0%) pero no otras familias; Hampel causal dio FPR 6,5% y AUC 0,617. El
+resultado apoya controles especializados por tipología, no una victoria general
+de la IA. Métricas completas en el informe rolling y su JSON.
 
 ## Representaciones y controles
 

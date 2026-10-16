@@ -40,6 +40,43 @@
       "fresh"
     ]
   },
+  "curva_de_operacion": [
+    {
+      "alpha_nominal": 0.005,
+      "fpr_realizada_media": 0.08333333333333333,
+      "fpr_realizada_std": 0.0038016493612180007,
+      "recall_medio": 0.6048387096774193,
+      "factor_de_exceso": 16.666666666666664
+    },
+    {
+      "alpha_nominal": 0.01,
+      "fpr_realizada_media": 0.08333333333333333,
+      "fpr_realizada_std": 0.0038016493612180007,
+      "recall_medio": 0.6081029185867896,
+      "factor_de_exceso": 8.333333333333332
+    },
+    {
+      "alpha_nominal": 0.02,
+      "fpr_realizada_media": 0.09946236559139783,
+      "fpr_realizada_std": 0.0038016493612180007,
+      "recall_medio": 0.6163594470046084,
+      "factor_de_exceso": 4.973118279569891
+    },
+    {
+      "alpha_nominal": 0.05,
+      "fpr_realizada_media": 0.11559139784946237,
+      "fpr_realizada_std": 0.0038016493612180007,
+      "recall_medio": 0.6457373271889403,
+      "factor_de_exceso": 2.3118279569892475
+    },
+    {
+      "alpha_nominal": 0.1,
+      "fpr_realizada_media": 0.2016129032258064,
+      "fpr_realizada_std": 0.011404948083653995,
+      "recall_medio": 0.7000768049155145,
+      "factor_de_exceso": 2.016129032258064
+    }
+  ],
   "gate_por_clase_rodante": {
     "false_positive_rate": 0.11559139784946237,
     "stale|restated": 1.0,

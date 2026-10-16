@@ -95,6 +95,10 @@ FUENTES_AGUAS_ABAJO = {
     "backtest_canal": "backtest_canal_dsr_pbo.json",
 }
 
+#: Curva de operación del gate. Se lee, no se escribe a mano: si se recalibra el
+#: gate, el entregable recoge el nuevo punto de operación solo.
+FUENTE_OPERACION = "dq_rolling_gate/summary.json"
+
 
 def _dig(payload: dict, path: str, source: str):
     """Navega un camino `a.b.c` y falla con un mensaje que dice dónde se rompió.
@@ -211,9 +215,11 @@ METRICAS = [
      "De los tramos que SÍ tenían un defecto inyectado, qué fracción levantó alerta el "
      "control. Es la métrica principal de cobertura. Recall 1,00 = los caza todos.",
      "TP / (TP + FN)"),
-    ("FPR (tasa de falsas alarmas)",
+    ("FPR realizada",
      "De los tramos LIMPIOS, qué fracción levantó alerta igualmente. Es el coste operativo: "
-     "cada falsa alarma es trabajo de revisión que no encuentra nada. Objetivo fijado: 5 %.",
+     "cada falsa alarma es trabajo de revisión que no encuentra nada. NO se promete un "
+     "objetivo nominal, porque no se cumple fuera de muestra: se DECLARA la medida. Ver la "
+     "hoja de punto de operación.",
      "FP / (FP + TN)"),
     ("Recall a objetivo nominal",
      "Los umbrales se fijan en una porción de validación limpia con un objetivo nominal del 5 %. "
@@ -305,7 +311,8 @@ def _recall_fill(value: float, chance: float) -> PatternFill:
     return PatternFill("solid", fgColor="5BA85B")
 
 
-def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
+def build_excel(stack: dict, dist: dict, aguas_abajo: list, operacion: list,
+                path: Path) -> None:
     families = stack["protocol"]["families"]
     singles = stack["single_controls_validation_threshold"]
     subsets = stack["gate_subsets_validation_threshold"]
@@ -352,7 +359,7 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
          "test de defectos ni evidencia de que 3σ distinga errores de mercado."),
         ("Lo que NO se afirma",
          "No se da ninguna cifra de capital. No se demuestra transferencia a otras asset "
-         "classes. No se afirma prevalencia real de defectos. Ver hoja 8."),
+         "classes. No se afirma prevalencia real de defectos. Ver hoja 9."),
     ]
     _header(ws, 4, ["Pregunta", "Respuesta"], [30, 110])
     for i, (k, v) in enumerate(puntos, start=5):
@@ -390,8 +397,44 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
         ws.row_dimensions[r].height = 46
     ws.freeze_panes = "A5"
 
+    # --- 1c. Punto de operación declarado ---
+    ws = _sheet(wb, "3 Punto de operación",
+                "LA HOJA QUE HAY QUE LEER PARA DIMENSIONAR LA REVISIÓN. El gate no promete una "
+                "tasa nominal de falsas alarmas, porque no se cumple fuera de muestra: declara "
+                "la medida. Elige la fila por capacidad de revisión disponible.")
+    _header(ws, 4, ["α nominal pedido", "FPR REALIZADA", "dispersión", "exceso sobre nominal",
+                    "recall medio"], [18, 18, 14, 22, 16])
+    for r, fila in enumerate(operacion, start=5):
+        valores = [fila["alpha_nominal"], round(fila["fpr_realizada_media"], 3),
+                   f"± {fila['fpr_realizada_std']:.3f}",
+                   f"{fila['factor_de_exceso']:.1f}x", round(fila["recall_medio"], 3)]
+        for col, value in enumerate(valores, start=1):
+            cell = ws.cell(row=r, column=col, value=value)
+            cell.border = BORDER
+            cell.alignment = Alignment(horizontal="center")
+        ws.cell(row=r, column=2).font = Font(bold=True)
+
+    suelo = min(f["fpr_realizada_media"] for f in operacion)
+    fila = 5 + len(operacion) + 1
+    for texto in (
+        f"SUELO MEDIDO: el gate no baja de {suelo:.3f} de ventanas limpias marcadas. Pedir un "
+        "α de 0,005 o de 0,010 da exactamente lo mismo, así que dimensionar la revisión "
+        "suponiendo un 5 % o un 1 % es dimensionar mal.",
+        "Por encima del suelo el intercambio es real y suave: más carga de revisión compra más "
+        "cobertura. El punto se elige por capacidad disponible, no por un número de referencia.",
+        "El exceso sobre el nominal tiene dos causas medidas. La resolución de la muestra de "
+        "calibración ya está corregida ampliando la ventana. La que queda es deriva: cada "
+        "control realiza ~2,6 veces su tasa nominal porque el tramo reciente no predice la cola "
+        "del siguiente. Esa es la que fija el suelo y no se arregla repartiendo mejor.",
+    ):
+        cell = ws.cell(row=fila, column=1, value=texto)
+        cell.alignment, cell.font = WRAP, Font(size=9, italic=True)
+        ws.merge_cells(start_row=fila, start_column=1, end_row=fila, end_column=5)
+        ws.row_dimensions[fila].height = 46
+        fila += 1
+
     # --- 2. Cobertura por control y familia ---
-    ws = _sheet(wb, "3 Cobertura", f"Recall por control y familia; objetivo nominal de calibración "
+    ws = _sheet(wb, "4 Cobertura", f"Recall por control y familia; objetivo nominal de calibración "
                 f"{target:.0%}, FPR de test observada y no igualada. Azar ≈ {chance:.3f}; en gris lo que está en el azar. "
                 "«Reescribe historia» = el defecto altera datos ya publicados; «dato nuevo» = solo "
                 "afecta a las sesiones recientes.")
@@ -411,7 +454,7 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
                 cell.alignment = Alignment(horizontal="center")
 
     # --- 3. Gate A vs Gate B ---
-    ws = _sheet(wb, "4 Gate A vs Gate B",
+    ws = _sheet(wb, "5 Gate A vs Gate B",
                 "Los umbrales se calibran con el mismo objetivo nominal en validación, pero la FPR "
                 "realizada en test difiere. Las diferencias de recall son descriptivas y no aíslan "
                 "el valor incremental de ninguna capa. Este benchmark mide controles en paralelo; "
@@ -442,7 +485,7 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
                   "preespecificado.").font = Font(italic=True, size=9)
 
     # --- 4. Familias de defecto ---
-    ws = _sheet(wb, "5 Familias", "Mejor control observado por familia, selección post hoc en el mismo test; lectura exploratoria.")
+    ws = _sheet(wb, "6 Familias", "Mejor control observado por familia, selección post hoc en el mismo test; lectura exploratoria.")
     _header(ws, 4, ["Familia", "Qué es", "Mejor control (reescribe)", "Recall",
                     "Mejor control (dato nuevo)", "Recall"], [20, 62, 26, 10, 26, 10])
     for r, fam in enumerate(families, start=5):
@@ -459,7 +502,7 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
         ws.row_dimensions[r].height = 30
 
     # --- 5b. Modelos de riesgo aguas abajo ---
-    ws = _sheet(wb, "6 Modelos aguas abajo",
+    ws = _sheet(wb, "7 Modelos aguas abajo",
                 "La serie que valida el gate alimenta a estos modelos. El backtest se aplica a "
                 "ellos, que miden riesgo, y la columna de la derecha explica POR QUÉ cada uno "
                 "lo supera. Son resultados de las líneas de riesgo del proyecto, no de este gate.")
@@ -475,7 +518,7 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
         ws.row_dimensions[r].height = 76
 
     # --- 5. Estado de validación ---
-    ws = _sheet(wb, "7 Estado", "Estado de validación de cada afirmación de esta entrega. "
+    ws = _sheet(wb, "8 Estado", "Estado de validación de cada afirmación de esta entrega. "
                 "Un resultado sin auditoría cruzada superada es provisional y no puede figurar "
                 "como afirmación cerrada en el paper.")
     _header(ws, 4, ["Afirmación", "Estado", "Alcance y condición"], [44, 26, 72])
@@ -489,7 +532,7 @@ def build_excel(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
         ws.row_dimensions[r].height = 52
 
     # --- 6. Limitaciones ---
-    ws = _sheet(wb, "8 Limitaciones", "Lo que estos números NO permiten afirmar. Leer antes de "
+    ws = _sheet(wb, "9 Limitaciones", "Lo que estos números NO permiten afirmar. Leer antes de "
                 "usar cualquier cifra de las hojas anteriores.")
     _header(ws, 4, ["Limitación", "Detalle"], [28, 112])
     for r, (k, v) in enumerate(LIMITES, start=5):
@@ -515,7 +558,8 @@ def _p(doc, text, size=10, bold=False, italic=False, color=None, space=6):
     return par
 
 
-def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
+def build_word(stack: dict, dist: dict, aguas_abajo: list, operacion: list,
+               path: Path) -> None:
     families = stack["protocol"]["families"]
     singles = stack["single_controls_validation_threshold"]
     subsets = stack["gate_subsets_validation_threshold"]
@@ -559,7 +603,31 @@ def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
             "separado del ajuste por una purga, y quedan congelados antes del test. La FPR OOS se "
             "reporta sin feedback. No se reclama garantía conformal ni estabilidad bajo drift.")
 
-    doc.add_heading("3. Resultado principal: ninguna representación domina", level=1)
+    doc.add_heading("3. Punto de operación declarado", level=1)
+    suelo = min(f["fpr_realizada_media"] for f in operacion)
+    _p(doc, "El gate no promete una tasa nominal de falsas alarmas, porque no se cumple fuera "
+            "de muestra. Declara la medida, que es lo que permite dimensionar la capacidad de "
+            f"revisión sobre un número real. El suelo medido es {suelo:.1%} de ventanas limpias "
+            "marcadas: por debajo de ahí no existe configuración, de modo que pedir un 5 % o un "
+            "1 % no cambia nada salvo la expectativa de quien lo lee.")
+    tabla_op = doc.add_table(rows=1, cols=3)
+    tabla_op.style = "Light Grid Accent 1"
+    for i, h in enumerate(("α nominal pedido", "FPR realizada (medida)", "recall medio")):
+        celda = tabla_op.rows[0].cells[i]
+        celda.text = h
+        celda.paragraphs[0].runs[0].bold = True
+    for fila in operacion:
+        fila_t = tabla_op.add_row().cells
+        fila_t[0].text = f"{fila['alpha_nominal']:.3f}"
+        fila_t[1].text = f"{fila['fpr_realizada_media']:.3f} ± {fila['fpr_realizada_std']:.3f}"
+        fila_t[2].text = f"{fila['recall_medio']:.3f}"
+    _p(doc, "Por encima del suelo el intercambio es real y suave: más carga de revisión compra "
+            "más cobertura. El exceso sobre el nominal se descompone en resolución de la muestra "
+            "de calibración, ya corregida, y deriva residual —cada control realiza unas 2,6 veces "
+            "su tasa nominal—, que es la que fija el suelo y no se arregla repartiendo mejor el "
+            "presupuesto entre controles.", italic=True)
+
+    doc.add_heading("4. Ninguna representación domina", level=1)
     _p(doc, "Medido sobre siete familias de defecto sintéticas, con umbrales calibrados al mismo "
             "objetivo nominal en validación y FPR observada de forma independiente en test, el "
             "resultado es una matriz de coberturas "
@@ -588,7 +656,7 @@ def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
             "la complementa en el eje de la procedencia. Y en ese escenario la cobertura cae "
             "para todos los controles: es el frente abierto.", italic=True)
 
-    doc.add_heading("4. Qué aporta —y qué no— la capa de IA", level=1)
+    doc.add_heading("5. Qué aporta —y qué no— la capa de IA", level=1)
     keys = [f"{f}|{m}" for f in families for m in ("restated", "fresh")]
     media = {n: sum(b[k] for k in keys) / len(keys) for n, b in subsets.items()}
     _p(doc, f"Recall medio descriptivo por configuración con FPR OOS no igualada "
@@ -607,7 +675,7 @@ def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
             "que la diferencia de recall mezcla sensibilidad con punto de operación. No se atribuye "
             "ventaja ni perjuicio al combinador sin comparación a FPR equivalente y validación externa.")
 
-    doc.add_heading("5. Los modelos de riesgo que consumen la serie", level=1)
+    doc.add_heading("6. Los modelos de riesgo que consumen la serie", level=1)
     _p(doc, "El gate de calidad entrega una serie validada a los modelos de riesgo. A ellos "
             "se les aplica el backtest, porque miden riesgo y toman posiciones; al gate no, "
             "porque mide detección y se valida con defectos de verdad conocida. Conviene "
@@ -615,11 +683,11 @@ def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
     for modelo, veredicto, evidencia, porque in aguas_abajo:
         doc.add_paragraph(f"{modelo} — {veredicto}. {evidencia} {porque}", style="List Bullet")
 
-    doc.add_heading("6. Estado de validación", level=1)
+    doc.add_heading("7. Estado de validación", level=1)
     for nombre, estado, motivo in ESTADO:
         doc.add_paragraph(f"{nombre} — {estado}. {motivo}", style="List Bullet")
 
-    doc.add_heading("7. Lo que estos resultados no permiten afirmar", level=1)
+    doc.add_heading("8. Lo que estos resultados no permiten afirmar", level=1)
     for k, v in LIMITES:
         doc.add_paragraph(f"{k}. {v}", style="List Bullet")
     _p(doc, "Un resultado sin auditoría cruzada superada es provisional y no puede figurar "
@@ -627,6 +695,16 @@ def build_word(stack: dict, dist: dict, aguas_abajo: list, path: Path) -> None:
 
     path.parent.mkdir(parents=True, exist_ok=True)
     doc.save(path)
+
+
+def load_operating_curve(reports: Path) -> list[dict]:
+    """Curva de operación del gate: carga de alarmas realizada frente a recall."""
+    path = reports / FUENTE_OPERACION
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Falta {path}. Ejecuta antes dq_rolling_gate.py: el punto de operación "
+            "declarado sale de ahí y no se escribe a mano.")
+    return json.loads(path.read_text(encoding="utf-8"))["curva_de_operacion"]
 
 
 def run(output_dir: Path) -> dict:
@@ -643,8 +721,9 @@ def run(output_dir: Path) -> dict:
     xlsx = output_dir / "resultados_dq.xlsx"
     docx = output_dir / "resumen_dq_estado_del_arte.docx"
     aguas_abajo = load_downstream(REPORTS)
-    build_excel(stack, dist, aguas_abajo, xlsx)
-    build_word(stack, dist, aguas_abajo, docx)
+    operacion = load_operating_curve(REPORTS)
+    build_excel(stack, dist, aguas_abajo, operacion, xlsx)
+    build_word(stack, dist, aguas_abajo, operacion, docx)
     return {"excel": str(xlsx), "word": str(docx)}
 
 

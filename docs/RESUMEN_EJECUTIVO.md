@@ -27,6 +27,82 @@ horizonte y metodología y aquí no se calcula.
 Advertencia de alcance: esa comparación es descriptiva y de muestra completa,
 con *look-ahead* por la estandarización ex post. No es un umbral desplegable.
 
+## Punto de operación declarado
+
+**El gate no promete una tasa nominal de falsas alarmas: declara la medida.** Un
+objetivo nominal del 5 % no se cumple fuera de muestra, y esconderlo detrás de la
+palabra «objetivo» haría que el consumidor dimensionara mal su capacidad de
+revisión. La curva de operación medida, con calibración rodante por clase de
+control sobre el bloque de test 2024-2026:
+
+| α nominal pedido | **FPR realizada** | exceso | recall medio |
+|---|---|---|---|
+| 0,005 | **0,083 ± 0,004** | 16,7× | 0,605 |
+| 0,010 | **0,083 ± 0,004** | 8,3× | 0,608 |
+| 0,020 | 0,099 ± 0,004 | 5,0× | 0,616 |
+| 0,050 | 0,116 ± 0,004 | 2,3× | 0,646 |
+| 0,100 | 0,202 ± 0,011 | 2,0× | 0,700 |
+
+Dos lecturas operativas, y la primera es la que condiciona el despliegue:
+
+1. **Hay un suelo en torno al 8 % de ventanas limpias marcadas.** Pedir 0,005 o
+   0,010 da exactamente lo mismo: el gate no baja de ahí. Por debajo de ese punto
+   no existe configuración, así que dimensionar la revisión suponiendo un 5 % o
+   un 1 % es dimensionar mal.
+2. **Por encima del suelo hay un intercambio real y suave.** De 0,083 a 0,202 de
+   carga, el recall sube de 0,605 a 0,700. El punto se elige por capacidad de
+   revisión disponible, no por un número de referencia.
+
+La dispersión entre semillas es pequeña (±0,004 salvo en el extremo), así que la
+curva es estable dentro de esta muestra.
+
+### Por qué existe ese suelo
+
+El exceso sobre el nominal se descompone en dos términos medidos, y solo uno es
+corregible:
+
+- **Resolución de la muestra de calibración.** Con siete controles estadísticos
+  el presupuesto por control es 0,0071, y una ventana rodante de 60 solo resuelve
+  1/60 = 0,0167. Ampliar la ventana a 236 baja la suma de tasas individuales de
+  0,282 a 0,129. **Corregido.**
+- **Deriva residual.** Aun con resolución suficiente, cada control realiza **2,6
+  veces** su tasa nominal: el cuantil del tramo reciente no predice la cola del
+  siguiente. **No corregido, y es el que fija el suelo.**
+
+La correlación media entre las alertas de los controles estadísticos es **0,09**,
+es decir, casi independientes, de modo que la unión equivale a la suma de las
+tasas individuales. De ahí se sigue la regla de composición:
+
+> Con *m* controles casi independientes, cada uno excediendo su tasa nominal por
+> un factor de deriva *k*, la unión aterriza en **≈ k·α con independencia de
+> *m***. Repartir mejor el presupuesto entre controles no ayuda; lo que hay que
+> reducir es *k*.
+
+Con *k* ≈ 2,3 medido, la regla predice 0,115 y se observa 0,113. Esto también
+dice qué **no** hay que seguir intentando: afinar el reparto del presupuesto es
+un término que ya no manda.
+
+Reducir *k* exige más historia de calibración, y eso hoy está limitado por
+trabajar sobre un solo activo con 124 ventanas de test solapadas al 75 %.
+
+## Calibración por clase de control
+
+Los controles no admiten todos el mismo esquema, y mezclarlos fue una de las
+causas del descalibre:
+
+- **Estadísticos** (3σ, cross-asset, CNN, los de canal): puntuación continua, hay
+  cola que estimar, se calibran por **cuantil rodante** sobre el flujo observado.
+  Sin etiquetas —solo entra la puntuación de cada ventana que llega—, así que es
+  desplegable.
+- **Deterministas** (vintage, retícula): su puntuación limpia es **constante** —la
+  discrepancia con el snapshot es cero, la retícula es el tick nativo— y no hay
+  cola que estimar. El umbral correcto es **semántico**: cualquier valor distinto
+  del nominal es una alerta. Aplicarles un cuantil es un error de categoría, y
+  medido le sube la tasa de falsas alarmas a vintage de 0,000 a 0,129.
+
+Como los deterministas no consumen presupuesto, α se reparte **solo entre los
+estadísticos**.
+
 ## Arquitectura
 
 El gate de calidad de dato se despliega en dos capas y entrega una serie
@@ -56,10 +132,17 @@ Figuras regeneradas por el runner: [arquitectura y cobertura](../results/figures
 Detección sobre defectos de **verdad conocida** inyectados en los precios
 crudos, con retornos y normalización recalculados para que el defecto se
 propague como en producción. Partición cronológica: entrenamiento hasta
-2018-12-31, validación 2019-2023, test desde 2024-01-05. Métrica principal
-**recall con umbrales calibrados a objetivo nominal común; FPR OOS no igualada**;
-no se reporta precisión/PPV
-porque exigiría una prevalencia real que no se tiene.
+2018-12-31, validación 2019-2023, test desde 2024-01-05.
+
+Se reportan **dos métricas y hay que no confundirlas**. La **FPR realizada** es
+la carga de revisión medida fuera de muestra, y es la que se declara arriba: no
+hay objetivo nominal que prometer. El **recall** se lee siempre junto al punto de
+operación al que se obtuvo, porque comparar recalls a cargas de alarmas distintas
+fue el error que llevó a conclusiones falsas en las dos direcciones.
+
+No se reporta precisión/PPV: exigiría una prevalencia real de defectos que no se
+tiene, y declararla con una prevalencia inventada daría un número sin
+significado.
 
 **Esto no es un backtest.** El gate no toma posiciones: se valida midiendo
 detección. El backtest valida a los modelos de riesgo aguas abajo.

@@ -70,3 +70,17 @@ def test_rolling_threshold_is_causal_and_non_alert_policy_excludes_alerts():
     assert non_alerts[0] == initial_threshold
     assert all_past[1] > initial_threshold
     assert non_alerts[1] == initial_threshold
+
+
+def test_trim_run_score_respects_exact_twenty_return_rule():
+    returns = np.zeros((2, 20, len(dq.base.ASSETS)))
+    returns[0, -1, 0] = 0.01
+    scores = dq.zero_return_run_scores(returns)
+    np.testing.assert_array_equal(scores, [19, 20])
+
+
+def test_hampel_target_score_uses_local_past_and_detects_spike():
+    windows = np.zeros((1, 20, len(dq.base.ASSETS)))
+    windows[0, :8, 0] = [-1, 1, -1, 1, -1, 1, -1, 1]
+    windows[0, 8, 0] = 8
+    assert dq.causal_hampel_scores(windows)[0] > 3.5

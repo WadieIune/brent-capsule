@@ -43,12 +43,15 @@ paralelos en precio/vintage para no borrar cambios de nivel, tick o restatement.
 La prueba rolling 2026-10-16 está documentada en
 `docs/hallazgos/2026-10-16-rolling-returns-vs-precios.md`. Sobre el panel
 BRENT/WTI/DTWEXBGS/COPPER/EUROSTOXX50, el canal acumulado de retornos no mostró
-mejora robusta frente al canal de precio; el XGBoost de controles de precio
-obtuvo AUC OOS 0,890 frente a 0,880 para controles de retorno y 0,873 al añadir
-score CNN. La CNN sola obtuvo AUC 0,790 y FPR OOS 15,1% frente al 5% nominal.
-Se conserva como evidencia experimental negativa/inconclusa, no como prueba de
-que la IA carezca de valor. Confirma que representación, discriminación y
-calibración operativa deben evaluarse por separado.
+mejora robusta frente al canal de precio. En la comparación ampliada con
+controles estadísticos fuertes, XGBoost de precio obtuvo AUC OOS 0,890 / FPR
+20,4%; XGBoost de retorno obtuvo 0,883 / 34,1%, y con CNN 0,875 / 26,1%. La
+CNN sola obtuvo AUC 0,790 y FPR OOS 15,1% frente al 5% nominal. TRIM >=20
+detectó todo el stale sintético (recall 100%, FPR 0%); Hampel causal obtuvo
+AUC 0,617 / FPR 6,5%. Se conserva como evidencia experimental
+negativa/inconclusa, no como prueba de que la IA carezca de valor. Confirma que
+representación, controles por tipología, discriminación y calibración
+operativa deben evaluarse por separado.
 
 La extensión causal de umbral rodante tampoco resolvió el problema: para
 XGBoost de precio, incluir scores pasados baja FPR de 20,4% a 7,0%, pero el

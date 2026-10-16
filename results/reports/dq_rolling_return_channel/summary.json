@@ -3,7 +3,7 @@
     "source": "/home/wadie/Escritorio/brent-capsule/data/panel_extendido_2026-09-09.csv",
     "sha256": "b5512282a5e7d42d01000dd687893d1fa26e5ef470aedbded8fad91fd355f7f3",
     "code_sha256": {
-      "dq_rolling_return_channel.py": "dd6ef6d637ad86448f9ff910516519afcfcc888e998bf7ac621a1890e5cc6818",
+      "dq_rolling_return_channel.py": "af19f47513d0b28899e7d2737650db21bbf3107c645fe416daa07ad85a6b0b27",
       "dq_cnn1d_supervised.py": "a022893dda4551494364144c6c652bd51b782f7fbcb3655de98a5e9efbd5b583",
       "dq_channel_representation.py": "ccb29b48f021f21208dfc363a984ac9747cde61fee5332821d7ebef009ca9794",
       "dq_quantize_price_grid.py": "2a08529249f1e2da72a95c2cf4ac2140bd29c7bdeee2f35788bd59f3ec5ecb50",
@@ -43,6 +43,11 @@
       "limitations": "exploratory; the rolling stream is unadjudicated, windows overlap, and no calibration guarantee is claimed"
     },
     "defect_protocol": "price-space corruption followed by causal recomputation of raw and standardized returns",
+    "statistical_controls": {
+      "trim_zero_return_run_20": "fixed rule at >=20 exact consecutive target-asset zero returns; not recalibrated",
+      "causal_hampel_target_return": "maximum robust-z against preceding observations only",
+      "max_abs_target_rolling_z_return": "3-sigma-style target series score; same validation threshold protocol"
+    },
     "fit_families": [
       "decoupling",
       "stale",
@@ -73,7 +78,7 @@
       "synthetic defect labels; no real incident prevalence or PPV",
       "ROC AUC is descriptive on synthetic defects and overlapping windows; it is not a calibrated operating-point comparison",
       "FPR is reported as observed and may differ from the nominal calibration target",
-      "the CNN marginal value is explored by XGB with versus without the CNN score on the same return feature bank; no winner is asserted from recall alone"
+      "XGB return feature bank includes channel, cross-asset, 3-sigma, causal Hampel, target-series z and TRIM run length; CNN is tested as an additional feature"
     ]
   },
   "results": {
@@ -148,6 +153,228 @@
         "quantize": {
           "mean": 0.5089533472077697,
           "std": 0.006595418465687948
+        }
+      }
+    },
+    "trim_zero_return_run_20": {
+      "calibration_false_positive_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "test_false_positive_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "test_roc_auc": {
+        "mean": 0.694533224319905,
+        "std": 0.00042291536631271996
+      },
+      "recall_by_family": {
+        "stale": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "reversible_jump": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "decoupling": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "lag1_calendar": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "weekly_ffill": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "source_switch": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "quantize": {
+          "mean": 0.0,
+          "std": 0.0
+        }
+      },
+      "roc_auc_by_family": {
+        "stale": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "reversible_jump": {
+          "mean": 0.4986559139784947,
+          "std": 0.001900824680608997
+        },
+        "decoupling": {
+          "mean": 0.4959677419354838,
+          "std": 5.551115123125783e-17
+        },
+        "lag1_calendar": {
+          "mean": 0.5,
+          "std": 0.0
+        },
+        "weekly_ffill": {
+          "mean": 1.0,
+          "std": 0.0
+        },
+        "source_switch": {
+          "mean": 0.5,
+          "std": 0.0
+        },
+        "quantize": {
+          "mean": 0.8671089143253555,
+          "std": 0.003895434867363152
+        }
+      }
+    },
+    "causal_hampel_target_return": {
+      "calibration_false_positive_rate": {
+        "mean": 0.04411764705882353,
+        "std": 0.0
+      },
+      "test_false_positive_rate": {
+        "mean": 0.06451612903225806,
+        "std": 0.0
+      },
+      "test_roc_auc": {
+        "mean": 0.6170082627223626,
+        "std": 0.006975882036820974
+      },
+      "recall_by_family": {
+        "stale": {
+          "mean": 0.09677419354838708,
+          "std": 1.3877787807814457e-17
+        },
+        "reversible_jump": {
+          "mean": 0.3629032258064517,
+          "std": 0.05702474041826994
+        },
+        "decoupling": {
+          "mean": 0.1908602150537634,
+          "std": 0.010058218781650372
+        },
+        "lag1_calendar": {
+          "mean": 0.04032258064516129,
+          "std": 0.0
+        },
+        "weekly_ffill": {
+          "mean": 0.9919354838709676,
+          "std": 1.1102230246251565e-16
+        },
+        "source_switch": {
+          "mean": 0.22849462365591397,
+          "std": 0.0038016493612179937
+        },
+        "quantize": {
+          "mean": 0.09139784946236558,
+          "std": 0.02011643756330076
+        }
+      },
+      "roc_auc_by_family": {
+        "stale": {
+          "mean": 0.5478017689906347,
+          "std": 0.0
+        },
+        "reversible_jump": {
+          "mean": 0.640738813735692,
+          "std": 0.02649024230718186
+        },
+        "decoupling": {
+          "mean": 0.5656867845993757,
+          "std": 0.010199319910623622
+        },
+        "lag1_calendar": {
+          "mean": 0.44211758584807487,
+          "std": 5.551115123125783e-17
+        },
+        "weekly_ffill": {
+          "mean": 0.9968999306278182,
+          "std": 0.0014012628001380748
+        },
+        "source_switch": {
+          "mean": 0.6467113250086715,
+          "std": 0.00726398556943877
+        },
+        "quantize": {
+          "mean": 0.4791016302462712,
+          "std": 0.009213518393794626
+        }
+      }
+    },
+    "max_abs_target_rolling_z_return": {
+      "calibration_false_positive_rate": {
+        "mean": 0.0,
+        "std": 0.0
+      },
+      "test_false_positive_rate": {
+        "mean": 0.09677419354838708,
+        "std": 1.3877787807814457e-17
+      },
+      "test_roc_auc": {
+        "mean": 0.6072249269114514,
+        "std": 0.0017167607756343128
+      },
+      "recall_by_family": {
+        "stale": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "reversible_jump": {
+          "mean": 0.7876344086021505,
+          "std": 0.013707041703206397
+        },
+        "decoupling": {
+          "mean": 0.3225806451612903,
+          "std": 0.006584649846191333
+        },
+        "lag1_calendar": {
+          "mean": 0.29838709677419356,
+          "std": 0.0
+        },
+        "weekly_ffill": {
+          "mean": 0.3172043010752688,
+          "std": 0.013707041703206397
+        },
+        "source_switch": {
+          "mean": 0.3763440860215053,
+          "std": 0.010058218781650372
+        },
+        "quantize": {
+          "mean": 0.06182795698924731,
+          "std": 0.007603298722435997
+        }
+      },
+      "roc_auc_by_family": {
+        "stale": {
+          "mean": 0.0,
+          "std": 0.0
+        },
+        "reversible_jump": {
+          "mean": 0.9408710544571627,
+          "std": 0.0028554782504222457
+        },
+        "decoupling": {
+          "mean": 0.6714360041623308,
+          "std": 0.001461029348377951
+        },
+        "lag1_calendar": {
+          "mean": 0.664021852237253,
+          "std": 0.0
+        },
+        "weekly_ffill": {
+          "mean": 0.6819068678459939,
+          "std": 0.006558098838747052
+        },
+        "source_switch": {
+          "mean": 0.7865938258758237,
+          "std": 0.0063338669723357385
+        },
+        "quantize": {
+          "mean": 0.5057448838015955,
+          "std": 0.001716873905066223
         }
       }
     },
@@ -1563,12 +1790,12 @@
         "std": 0.0
       },
       "test_false_positive_rate": {
-        "mean": 0.467741935483871,
-        "std": 0.01316929969238269
+        "mean": 0.34139784946236557,
+        "std": 0.024929081977138993
       },
       "test_roc_auc": {
-        "mean": 0.8797523041474654,
-        "std": 0.003107801387337294
+        "mean": 0.8826897824686585,
+        "std": 0.0032783168064324723
       },
       "recall_by_family": {
         "stale": {
@@ -1576,58 +1803,58 @@
           "std": 0.0
         },
         "reversible_jump": {
-          "mean": 0.9838709677419355,
-          "std": 0.011404948083653983
+          "mean": 0.9704301075268816,
+          "std": 0.010058218781650372
         },
         "decoupling": {
-          "mean": 1.0,
-          "std": 0.0
+          "mean": 0.9973118279569894,
+          "std": 0.003801649361217994
         },
         "lag1_calendar": {
           "mean": 1.0,
           "std": 0.0
         },
         "weekly_ffill": {
-          "mean": 0.9973118279569894,
+          "mean": 0.9946236559139785,
           "std": 0.003801649361217994
         },
         "source_switch": {
-          "mean": 0.8172043010752689,
-          "std": 0.020116437563300792
+          "mean": 0.7634408602150536,
+          "std": 0.013707041703206399
         },
         "quantize": {
-          "mean": 0.48655913978494625,
-          "std": 0.013707041703206425
+          "mean": 0.3682795698924732,
+          "std": 0.007603298722435988
         }
       },
       "roc_auc_by_family": {
         "stale": {
-          "mean": 0.9749067811307666,
-          "std": 0.002231759193831295
+          "mean": 0.9794484911550468,
+          "std": 0.0044860989492665265
         },
         "reversible_jump": {
-          "mean": 0.9470603537981269,
-          "std": 0.004921327890840991
+          "mean": 0.9504422476586889,
+          "std": 0.0036478417435952485
         },
         "decoupling": {
-          "mean": 0.9825052029136317,
-          "std": 0.0027365576092571835
+          "mean": 0.9789715574054805,
+          "std": 0.003381198955616808
         },
         "lag1_calendar": {
-          "mean": 0.9829387790496011,
-          "std": 0.0005921132623892844
+          "mean": 0.9785271418661118,
+          "std": 0.002756748197702495
         },
         "weekly_ffill": {
-          "mean": 0.9843912591050988,
-          "std": 0.0013548820665972834
+          "mean": 0.9843479014915019,
+          "std": 0.0016710971505898393
         },
         "source_switch": {
-          "mean": 0.7775429240374611,
-          "std": 0.01596702621507573
+          "mean": 0.7908428720083247,
+          "std": 0.009818812407777803
         },
         "quantize": {
-          "mean": 0.5089208289975721,
-          "std": 0.007367717191441744
+          "mean": 0.5162482656954562,
+          "std": 0.007718188037705359
         }
       }
     },
@@ -1637,71 +1864,71 @@
         "std": 0.0
       },
       "test_false_positive_rate": {
-        "mean": 0.26344086021505375,
-        "std": 0.053628863825967744
+        "mean": 0.260752688172043,
+        "std": 0.07342204453627776
       },
       "test_roc_auc": {
-        "mean": 0.8730442619295377,
-        "std": 0.0023779212757820203
+        "mean": 0.8748203756008127,
+        "std": 0.0027004524953637868
       },
       "recall_by_family": {
         "stale": {
-          "mean": 0.9973118279569894,
-          "std": 0.003801649361217994
+          "mean": 0.989247311827957,
+          "std": 0.015206597444871975
         },
         "reversible_jump": {
-          "mean": 0.9516129032258065,
-          "std": 0.011404948083653983
+          "mean": 0.9543010752688174,
+          "std": 0.015206597444871977
         },
         "decoupling": {
           "mean": 1.0,
           "std": 0.0
         },
         "lag1_calendar": {
-          "mean": 0.978494623655914,
-          "std": 0.01657100538432519
+          "mean": 0.9704301075268816,
+          "std": 0.026611545528526008
         },
         "weekly_ffill": {
-          "mean": 1.0,
-          "std": 0.0
+          "mean": 0.9946236559139785,
+          "std": 0.007603298722435987
         },
         "source_switch": {
-          "mean": 0.6505376344086021,
-          "std": 0.08842410862042216
+          "mean": 0.6317204301075269,
+          "std": 0.10292575117783144
         },
         "quantize": {
-          "mean": 0.28225806451612906,
-          "std": 0.06968538385384795
+          "mean": 0.2661290322580645,
+          "std": 0.06968538385384797
         }
       },
       "roc_auc_by_family": {
         "stale": {
-          "mean": 0.9664954040929586,
-          "std": 0.004745307094321015
+          "mean": 0.9696496704821366,
+          "std": 0.0030246403008333234
         },
         "reversible_jump": {
-          "mean": 0.9532713319458898,
-          "std": 0.0024266226400417733
+          "mean": 0.9538783385362469,
+          "std": 0.0009842990014521963
         },
         "decoupling": {
-          "mean": 0.9874046132500868,
-          "std": 0.0002788909194041114
+          "mean": 0.985496878251821,
+          "std": 0.001741065990744129
         },
         "lag1_calendar": {
-          "mean": 0.9605770898369754,
-          "std": 0.00811932817566269
+          "mean": 0.9594389524800556,
+          "std": 0.00979513890064326
         },
         "weekly_ffill": {
-          "mean": 0.9734976586888657,
-          "std": 0.0032668530466049435
+          "mean": 0.9750260145681583,
+          "std": 0.0020171777340362435
         },
         "source_switch": {
-          "mean": 0.7590509018383629,
-          "std": 0.013636839702639769
+          "mean": 0.7674622788761707,
+          "std": 0.01263708022890234
         },
         "quantize": {
-          "mean": 0.5110128338536247,
-          "std": 0.012317616828542634
+          "mean": 0.5127904960110995,
+          "std": 0.012706101979910648
         }
       }
     }
@@ -1794,6 +2021,186 @@
         "threshold_end": {
           "mean": 0.5489064753055573,
           "std": 0.1513382329078925
+        }
+      }
+    },
+    "causal_hampel_target_return": {
+      "rolling_all_past": {
+        "test_false_positive_rate": {
+          "mean": 0.06451612903225806,
+          "std": 0.0
+        },
+        "recall_by_family": {
+          "stale": {
+            "mean": 0.10483870967741936,
+            "std": 0.0
+          },
+          "reversible_jump": {
+            "mean": 0.3602150537634408,
+            "std": 0.038016493612179965
+          },
+          "decoupling": {
+            "mean": 0.1801075268817204,
+            "std": 0.01005821878165038
+          },
+          "lag1_calendar": {
+            "mean": 0.056451612903225805,
+            "std": 0.0
+          },
+          "weekly_ffill": {
+            "mean": 0.9919354838709676,
+            "std": 1.1102230246251565e-16
+          },
+          "source_switch": {
+            "mean": 0.2338709677419355,
+            "std": 0.01742134596346199
+          },
+          "quantize": {
+            "mean": 0.08602150537634408,
+            "std": 0.01657100538432521
+          }
+        },
+        "threshold_start": {
+          "mean": 5.850228524638669,
+          "std": 0.0
+        },
+        "threshold_end": {
+          "mean": 8.17960475695372,
+          "std": 0.0
+        }
+      },
+      "rolling_non_alerts": {
+        "test_false_positive_rate": {
+          "mean": 0.09677419354838708,
+          "std": 1.3877787807814457e-17
+        },
+        "recall_by_family": {
+          "stale": {
+            "mean": 0.2016129032258064,
+            "std": 2.7755575615628914e-17
+          },
+          "reversible_jump": {
+            "mean": 0.44623655913978494,
+            "std": 0.03626542355707539
+          },
+          "decoupling": {
+            "mean": 0.2876344086021505,
+            "std": 0.026611545528525977
+          },
+          "lag1_calendar": {
+            "mean": 0.08870967741935483,
+            "std": 1.3877787807814457e-17
+          },
+          "weekly_ffill": {
+            "mean": 0.9946236559139785,
+            "std": 0.003801649361217994
+          },
+          "source_switch": {
+            "mean": 0.3440860215053763,
+            "std": 0.013707041703206425
+          },
+          "quantize": {
+            "mean": 0.10752688172043012,
+            "std": 0.029691830691363604
+          }
+        },
+        "threshold_start": {
+          "mean": 5.850228524638669,
+          "std": 0.0
+        },
+        "threshold_end": {
+          "mean": 3.797573286418888,
+          "std": 0.0
+        }
+      }
+    },
+    "max_abs_target_rolling_z_return": {
+      "rolling_all_past": {
+        "test_false_positive_rate": {
+          "mean": 0.06451612903225806,
+          "std": 0.0
+        },
+        "recall_by_family": {
+          "stale": {
+            "mean": 0.0,
+            "std": 0.0
+          },
+          "reversible_jump": {
+            "mean": 0.7741935483870966,
+            "std": 0.017421345963461975
+          },
+          "decoupling": {
+            "mean": 0.32526881720430106,
+            "std": 0.013707041703206399
+          },
+          "lag1_calendar": {
+            "mean": 0.3064516129032258,
+            "std": 0.0
+          },
+          "weekly_ffill": {
+            "mean": 0.29838709677419356,
+            "std": 0.006584649846191333
+          },
+          "source_switch": {
+            "mean": 0.3682795698924732,
+            "std": 0.010058218781650372
+          },
+          "quantize": {
+            "mean": 0.05107526881720429,
+            "std": 0.003801649361217997
+          }
+        },
+        "threshold_start": {
+          "mean": 4.045684814453125,
+          "std": 0.0
+        },
+        "threshold_end": {
+          "mean": 4.1584367752075195,
+          "std": 0.0
+        }
+      },
+      "rolling_non_alerts": {
+        "test_false_positive_rate": {
+          "mean": 0.20967741935483872,
+          "std": 0.0
+        },
+        "recall_by_family": {
+          "stale": {
+            "mean": 0.0,
+            "std": 0.0
+          },
+          "reversible_jump": {
+            "mean": 0.8709677419354839,
+            "std": 0.0
+          },
+          "decoupling": {
+            "mean": 0.40322580645161293,
+            "std": 0.011404948083654009
+          },
+          "lag1_calendar": {
+            "mean": 0.3790322580645162,
+            "std": 5.551115123125783e-17
+          },
+          "weekly_ffill": {
+            "mean": 0.3924731182795698,
+            "std": 0.021166687833365082
+          },
+          "source_switch": {
+            "mean": 0.5456989247311828,
+            "std": 0.007603298722435988
+          },
+          "quantize": {
+            "mean": 0.19892473118279566,
+            "std": 0.003801649361217994
+          }
+        },
+        "threshold_start": {
+          "mean": 4.045684814453125,
+          "std": 0.0
+        },
+        "threshold_end": {
+          "mean": 3.21055006980896,
+          "std": 0.0
         }
       }
     },
@@ -3510,52 +3917,52 @@
     "xgb_return_controls": {
       "rolling_all_past": {
         "test_false_positive_rate": {
-          "mean": 0.10215053763440861,
-          "std": 0.0038016493612180007
+          "mean": 0.11559139784946237,
+          "std": 0.010058218781650377
         },
         "recall_by_family": {
           "stale": {
-            "mean": 0.8118279569892474,
-            "std": 0.040232875126601536
+            "mean": 0.879032258064516,
+            "std": 0.053897681870331775
           },
           "reversible_jump": {
-            "mean": 0.793010752688172,
-            "std": 0.029691830691363625
+            "mean": 0.771505376344086,
+            "std": 0.023124530287748975
           },
           "decoupling": {
-            "mean": 0.8629032258064516,
-            "std": 0.013169299692382666
+            "mean": 0.825268817204301,
+            "std": 0.027414083406412833
           },
           "lag1_calendar": {
-            "mean": 0.8709677419354839,
-            "std": 0.017421345963461975
+            "mean": 0.8333333333333334,
+            "std": 0.04985816395427799
           },
           "weekly_ffill": {
-            "mean": 0.9112903225806451,
-            "std": 0.011404948083653983
+            "mean": 0.9166666666666666,
+            "std": 0.013707041703206399
           },
           "source_switch": {
-            "mean": 0.3897849462365592,
-            "std": 0.03111784113653285
+            "mean": 0.4005376344086022,
+            "std": 0.05362886382596776
           },
           "quantize": {
-            "mean": 0.11021505376344087,
-            "std": 0.007603298722435994
+            "mean": 0.10752688172043012,
+            "std": 0.01370704170320641
           }
         },
         "threshold_start": {
-          "mean": 0.08076485494772594,
-          "std": 0.002220578447114044
+          "mean": 0.14722718795140585,
+          "std": 0.015063916452512408
         },
         "threshold_end": {
-          "mean": 0.3067450126012166,
-          "std": 0.023263891634367734
+          "mean": 0.34580038984616596,
+          "std": 0.012577804781157666
         }
       },
       "rolling_non_alerts": {
         "test_false_positive_rate": {
-          "mean": 0.489247311827957,
-          "std": 0.016571005384325214
+          "mean": 0.3629032258064517,
+          "std": 0.013169299692382666
         },
         "recall_by_family": {
           "stale": {
@@ -3563,127 +3970,127 @@
             "std": 0.0
           },
           "reversible_jump": {
-            "mean": 0.9838709677419355,
-            "std": 0.011404948083653983
+            "mean": 0.978494623655914,
+            "std": 0.007603298722435988
           },
           "decoupling": {
-            "mean": 1.0,
-            "std": 0.0
+            "mean": 0.9973118279569894,
+            "std": 0.003801649361217994
           },
           "lag1_calendar": {
             "mean": 1.0,
             "std": 0.0
           },
           "weekly_ffill": {
-            "mean": 0.9973118279569894,
+            "mean": 0.9946236559139785,
             "std": 0.003801649361217994
           },
           "source_switch": {
-            "mean": 0.825268817204301,
-            "std": 0.024929081977139018
+            "mean": 0.771505376344086,
+            "std": 0.013707041703206397
           },
           "quantize": {
-            "mean": 0.5026881720430108,
-            "std": 0.01657100538432519
+            "mean": 0.3897849462365592,
+            "std": 0.003801649361217994
           }
         },
         "threshold_start": {
-          "mean": 0.08076485494772594,
-          "std": 0.002220578447114044
+          "mean": 0.14722718795140585,
+          "std": 0.015063916452512408
         },
         "threshold_end": {
-          "mean": 0.06776962553461392,
-          "std": 0.005400459405200261
+          "mean": 0.11774443338314693,
+          "std": 0.02315682611994568
         }
       }
     },
     "xgb_return_controls_plus_cnn": {
       "rolling_all_past": {
         "test_false_positive_rate": {
-          "mean": 0.09408602150537633,
-          "std": 0.0038016493612179937
+          "mean": 0.09677419354838708,
+          "std": 0.01316929969238268
         },
         "recall_by_family": {
           "stale": {
-            "mean": 0.7419354838709676,
-            "std": 0.04609254892333933
+            "mean": 0.8064516129032259,
+            "std": 0.03666177875533834
           },
           "reversible_jump": {
-            "mean": 0.793010752688172,
-            "std": 0.031117841136532872
+            "mean": 0.7876344086021505,
+            "std": 0.021166687833365064
           },
           "decoupling": {
-            "mean": 0.8897849462365591,
-            "std": 0.01657100538432519
+            "mean": 0.9112903225806451,
+            "std": 0.017421345963461975
           },
           "lag1_calendar": {
-            "mean": 0.7204301075268816,
-            "std": 0.026611545528526008
+            "mean": 0.728494623655914,
+            "std": 0.05322309105705196
           },
           "weekly_ffill": {
-            "mean": 0.8064516129032259,
-            "std": 0.006584649846191379
+            "mean": 0.8225806451612904,
+            "std": 0.006584649846191333
           },
           "source_switch": {
-            "mean": 0.3440860215053763,
-            "std": 0.013707041703206425
+            "mean": 0.34677419354838707,
+            "std": 0.023741292651418947
           },
           "quantize": {
-            "mean": 0.10483870967741936,
-            "std": 0.011404948083653995
+            "mean": 0.11290322580645161,
+            "std": 0.0
           }
         },
         "threshold_start": {
-          "mean": 0.3280160079399745,
-          "std": 0.10630568214129063
+          "mean": 0.33655087649822235,
+          "std": 0.1244683423107848
         },
         "threshold_end": {
-          "mean": 0.6191167136033376,
-          "std": 0.09890065663830418
+          "mean": 0.6273637513319651,
+          "std": 0.11742742894957382
         }
       },
       "rolling_non_alerts": {
         "test_false_positive_rate": {
-          "mean": 0.29301075268817206,
-          "std": 0.0748838079418501
+          "mean": 0.271505376344086,
+          "std": 0.06757959725793837
         },
         "recall_by_family": {
           "stale": {
-            "mean": 0.9973118279569894,
-            "std": 0.003801649361217994
+            "mean": 0.9946236559139785,
+            "std": 0.007603298722435987
           },
           "reversible_jump": {
-            "mean": 0.9623655913978495,
-            "std": 0.01657100538432519
+            "mean": 0.9596774193548386,
+            "std": 0.017421345963461975
           },
           "decoupling": {
             "mean": 1.0,
             "std": 0.0
           },
           "lag1_calendar": {
-            "mean": 0.9838709677419355,
-            "std": 0.013169299692382666
+            "mean": 0.989247311827957,
+            "std": 0.007603298722435988
           },
           "weekly_ffill": {
-            "mean": 1.0,
-            "std": 0.0
+            "mean": 0.9973118279569894,
+            "std": 0.003801649361217994
           },
           "source_switch": {
-            "mean": 0.6747311827956989,
-            "std": 0.07855719997958308
+            "mean": 0.6586021505376344,
+            "std": 0.082855026921626
           },
           "quantize": {
-            "mean": 0.3064516129032258,
-            "std": 0.06842968850192395
+            "mean": 0.28763440860215056,
+            "std": 0.06462803914070596
           }
         },
         "threshold_start": {
-          "mean": 0.3280160079399745,
-          "std": 0.10630568214129063
+          "mean": 0.33655087649822235,
+          "std": 0.1244683423107848
         },
         "threshold_end": {
-          "mean": 0.18801764647165933,
-          "std": 0.11599754834199634
+          "mean": 0.20478112250566483,
+          "std": 0.10101366236652634
         }
       }
     }
